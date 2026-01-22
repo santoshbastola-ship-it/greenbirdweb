@@ -1,26 +1,81 @@
 @import "tailwindcss";
 
+/* Greenbird Homestead Color Palette */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --forest-green: #2D5A27;
+  --forest-green-light: #3a7234;
+  --forest-green-dark: #1f3e1b;
+  --earthy-brown: #5C4033;
+  --earthy-brown-light: #7a5544;
+  --earthy-brown-dark: #3d2a22;
+  --cream: #FCF9F1;
+  --cream-dark: #f5f0e4;
+  
+  --background: #FCF9F1;
+  --foreground: #1a1a1a;
 }
 
 @theme inline {
+  /* Custom Greenbird Colors */
+  --color-forest-green: #2D5A27;
+  --color-forest-green-light: #3a7234;
+  --color-forest-green-dark: #1f3e1b;
+  --color-earthy-brown: #5C4033;
+  --color-earthy-brown-light: #7a5544;
+  --color-earthy-brown-dark: #3d2a22;
+  --color-cream: #FCF9F1;
+  --color-cream-dark: #f5f0e4;
+  
+  /* Semantic Colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-primary: var(--forest-green);
+  --color-primary-light: var(--forest-green-light);
+  --color-primary-dark: var(--forest-green-dark);
+  --color-secondary: var(--earthy-brown);
+  --color-secondary-light: var(--earthy-brown-light);
+  --color-secondary-dark: var(--earthy-brown-dark);
+  
+  /* Typography */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #1a1a1a;
+    --foreground: #FCF9F1;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Utility Classes */
+.text-balance {
+  text-wrap: balance;
+}
+
+.bg-gradient-green {
+  background: linear-gradient(135deg, var(--forest-green) 0%, var(--forest-green-light) 100%);
+}
+
+.bg-gradient-brown {
+  background: linear-gradient(135deg, var(--earthy-brown) 0%, var(--earthy-brown-light) 100%);
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus Styles for Accessibility */
+*:focus-visible {
+  outline: 2px solid var(--forest-green);
+  outline-offset: 2px;
 }

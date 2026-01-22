@@ -1,0 +1,94 @@
+import { Facebook, MessageCircle, Mail, MapPin, Phone } from "lucide-react";
+
+export default function Footer() {
+    return (
+        <footer className="bg-[#5C4033] text-white pt-12 pb-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                    {/* Brand Section */}
+                    <div>
+                        <div className="bg-white p-2 rounded-lg inline-block mb-4">
+                            <img
+                                src="/images/logo.jpg"
+                                alt="Greenbird Homestead"
+                                className="h-10 w-auto object-contain"
+                            />
+                        </div>
+                        <p className="text-gray-300 text-sm leading-relaxed">
+                            Providing fresh, organic farm products directly to your table.
+                            Sustainable farming for a better future.
+                        </p>
+                    </div>
+
+                    {/* Quick Links */}
+                    <div>
+                        <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
+                        <ul className="space-y-2 text-sm text-gray-300">
+                            <li><a href="/shop" className="hover:text-white transition-colors">Shop</a></li>
+                            <li><a href="/about" className="hover:text-white transition-colors">Our Story</a></li>
+                            <li><a href="/blog" className="hover:text-white transition-colors">Blog</a></li>
+                            <li><a href="/orders" className="hover:text-white transition-colors">My Orders</a></li>
+                        </ul>
+                    </div>
+
+                    {/* Contact Info */}
+                    <div>
+                        <h4 className="text-lg font-semibold mb-4">Contact</h4>
+                        <ul className="space-y-3 text-sm text-gray-300">
+                            <li className="flex items-start gap-2">
+                                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                                <span>Kathmandu, Nepal</span>
+                            </li>
+                            <li className="flex items-center gap-2">
+                                <Mail className="h-4 w-4 flex-shrink-0" />
+                                <a href="mailto:contact@greenbird.com" className="hover:text-white transition-colors">
+                                    contact@greenbird.com
+                                </a>
+                            </li>
+                            <li className="flex items-center gap-2">
+                                <Phone className="h-4 w-4 flex-shrink-0" />
+                                <a href="tel:+9779800000000" className="hover:text-white transition-colors">
+                                    +977 9800000000
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    {/* Social Media */}
+                    <div>
+                        <h4 className="text-lg font-semibold mb-4">Connect With Us</h4>
+                        <div className="flex gap-3">
+                            <a
+                                href="https://wa.me/9779800000000"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors"
+                                aria-label="WhatsApp"
+                            >
+                                <MessageCircle className="h-5 w-5" />
+                            </a>
+                            <a
+                                href="https://facebook.com/greenbirdhomestead"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors"
+                                aria-label="Facebook"
+                            >
+                                <Facebook className="h-5 w-5" />
+                            </a>
+                        </div>
+                        <p className="text-gray-300 text-sm mt-4">
+                            Follow us for farm updates, recipes, and special offers!
+                        </p>
+                    </div>
+                </div>
+
+                {/* Bottom Bar */}
+                <div className="border-t border-white/20 pt-8 text-center text-sm text-gray-300">
+                    &copy; {new Date().getFullYear()} Greenbird Homestead. All rights reserved.
+                </div>
+            </div>
+        </footer>
+    );
+}
+

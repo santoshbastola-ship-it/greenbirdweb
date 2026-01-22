@@ -1,65 +1,142 @@
-import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, Leaf, ShieldCheck, Truck } from "lucide-react";
+import ProductCard from "@/components/ui/ProductCard";
+
+import { Product } from "@/types";
+
+// Mock Data for Display
+const FEATURED_PRODUCTS: Product[] = [
+  {
+    id: "1",
+    name: "Fresh Organic Eggs",
+    businessType: "livestock",
+    unit: "pcs",
+    priceUnit: "pcs",
+    currentPrice: 350,
+    currentStock: 50,
+    stockHistory: [],
+    priceHistory: [],
+    createdAt: new Date(),
+    createdBy: "admin",
+    images: ["https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?auto=format&fit=crop&q=80&w=800"],
+    description: "Farm fresh organic eggs, collected daily from free-range chickens.",
+    isAvailableForSale: true,
+  },
+  {
+    id: "2",
+    name: "Premium Goat Meat",
+    businessType: "livestock",
+    unit: "kg",
+    priceUnit: "kg",
+    currentPrice: 1800,
+    currentStock: 10,
+    stockHistory: [],
+    priceHistory: [],
+    createdAt: new Date(),
+    createdBy: "admin",
+    images: ["https://images.unsplash.com/photo-1606211475515-534570dfba41?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"],
+    description: "Tender, fresh goat meat processed hygienically. Perfect for curries.",
+    isAvailableForSale: true,
+  },
+  {
+    id: "3",
+    name: "Seasonal Vegetables Mix",
+    businessType: "crop",
+    unit: "kg",
+    priceUnit: "kg",
+    currentPrice: 150,
+    currentStock: 0, // Out of stock
+    stockHistory: [],
+    priceHistory: [],
+    createdAt: new Date(),
+    createdBy: "admin",
+    images: ["https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&q=80&w=800"],
+    description: "A basket of freshly harvested seasonal vegetables including spinach.",
+    isAvailableForSale: true,
+  },
+];
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="flex flex-col min-h-screen">
+      {/* Hero Section */}
+      <section className="relative bg-[#2D5A27] text-white overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=2940&auto=format&fit=crop')] bg-cover bg-center opacity-30"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 md:py-48 text-center">
+          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
+            Farm Fresh, <span className="text-[#FCF9F1]">Straight to You</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-xl md:text-2xl text-gray-100 mb-10 max-w-2xl mx-auto">
+            Experience the taste of nature with our organically raised livestock and extensive crop selection.
           </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link
+              href="/shop"
+              className="bg-white text-[#2D5A27] hover:bg-[#FCF9F1] font-bold py-4 px-8 rounded-full transition-colors flex items-center justify-center shadow-lg"
+            >
+              Shop Fresh <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+            <Link
+              href="/booking"
+              className="bg-[#5C4033] hover:bg-[#3d2a22] text-white font-bold py-4 px-8 rounded-full transition-colors shadow-lg"
+            >
+              Book Homestead
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+
+
+      {/* Value Props */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-6 bg-[#2D5A27]/5 rounded-2xl text-center hover:shadow-lg transition-shadow">
+              <div className="bg-[#2D5A27]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Leaf className="h-8 w-8 text-[#2D5A27]" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">100% Organic</h3>
+              <p className="text-gray-600">No harmful chemicals or pesticides. Just pure, natural goodness.</p>
+            </div>
+            <div className="p-6 bg-[#2D5A27]/5 rounded-2xl text-center hover:shadow-lg transition-shadow">
+              <div className="bg-[#2D5A27]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Truck className="h-8 w-8 text-[#2D5A27]" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Fast Delivery</h3>
+              <p className="text-gray-600">From our farm to your doorstep in record time.</p>
+            </div>
+            <div className="p-6 bg-[#2D5A27]/5 rounded-2xl text-center hover:shadow-lg transition-shadow">
+              <div className="bg-[#2D5A27]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <ShieldCheck className="h-8 w-8 text-[#2D5A27]" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Quality Grade</h3>
+              <p className="text-gray-600">Certified quality checks to ensure you get the best.</p>
+            </div>
+          </div>
         </div>
-      </main>
+      </section>
+
+      {/* Featured Products */}
+      <section className="py-16 bg-[#FCF9F1]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-end mb-12">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900">Featured Products</h2>
+              <p className="text-gray-600 mt-2">Bestsellers from our farm this week</p>
+            </div>
+            <Link href="/shop" className="text-[#2D5A27] font-semibold hover:text-[#1f3e1b] flex items-center">
+              View All <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {FEATURED_PRODUCTS.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
