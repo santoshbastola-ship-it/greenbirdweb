@@ -1,5 +1,9 @@
 # Release Notes
 
+## [0.1.6] - 2026-01-23
+- UI improvements and bug fixes
+
+
 ## [0.1.5] - 2026-01-23
 - Order cancellation with mandatory reason
 
