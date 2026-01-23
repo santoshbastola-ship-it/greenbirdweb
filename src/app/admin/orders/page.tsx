@@ -293,19 +293,21 @@ function StatusDropdown({
 
     const colors = getStatusColor(currentStatus);
     const statuses = [OrderStatus.Open, OrderStatus.Accepted, OrderStatus.Delivered, OrderStatus.Cancelled];
+    const isCancelled = currentStatus === OrderStatus.Cancelled;
 
     return (
         <div className="relative">
             <button
-                onClick={() => setIsOpen(!isOpen)}
-                disabled={isUpdating}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full border font-semibold text-sm transition-all ${colors.bg} ${colors.text} ${colors.border} hover:opacity-80 disabled:opacity-50`}
+                onClick={() => !isCancelled && setIsOpen(!isOpen)}
+                disabled={isUpdating || isCancelled}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full border font-semibold text-sm transition-all ${colors.bg} ${colors.text} ${colors.border} ${isCancelled ? 'cursor-not-allowed opacity-75' : 'hover:opacity-80'} disabled:opacity-50`}
+                title={isCancelled ? "Cancelled orders cannot be modified" : ""}
             >
                 <span>{currentStatus}</span>
-                <ChevronDown className="h-4 w-4" />
+                {!isCancelled && <ChevronDown className="h-4 w-4" />}
             </button>
 
-            {isOpen && (
+            {isOpen && !isCancelled && (
                 <>
                     <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">

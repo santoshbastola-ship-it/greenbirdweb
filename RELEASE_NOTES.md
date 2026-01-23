@@ -1,5 +1,17 @@
 # Release Notes
 
+## [0.1.4] - 2026-01-23
+### Added
+- **Order Cancellation**: Customers can now cancel their Open or Accepted orders with mandatory cancellation reason
+  - Predefined cancellation reasons for quick selection
+  - Custom reason option for specific cases
+  - Cancellation reason displayed on cancelled orders
+- **Order Protection**: Cancelled orders cannot be edited or have their status changed
+
+### Changed
+- **Admin Orders**: Status dropdown disabled for cancelled orders to prevent accidental modifications
+
+
 ## [0.1.3] - 2026-01-23
 ### Added
 - **Customer Profile Page**: Users can now view and manage their profile details, contact information, and delivery addresses via the navbar dropdown menu.
