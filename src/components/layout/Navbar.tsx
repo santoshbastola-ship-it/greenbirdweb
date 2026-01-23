@@ -7,6 +7,8 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import CartBadge from "./CartBadge";
 
+import CheckoutButton from "./CheckoutButton";
+
 import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
@@ -27,13 +29,13 @@ export default function Navbar() {
     return (
         <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between h-16 items-center">
+                <div className="flex justify-between h-20 items-center">
                     {/* Logo */}
                     <Link href="/" className="flex items-center">
                         <img
-                            src="/images/logo.jpg"
+                            src="/images/logo.png"
                             alt="Greenbird Homestead"
-                            className="h-12 w-auto object-contain"
+                            className="h-16 w-auto object-contain"
                         />
                     </Link>
 
@@ -70,6 +72,7 @@ export default function Navbar() {
 
                     {/* Right Icons */}
                     <div className="flex items-center space-x-4">
+                        <CheckoutButton />
                         <Link href="/cart" className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
                             <ShoppingCart className="h-5 w-5" />
                             <CartBadge />
@@ -97,6 +100,9 @@ export default function Navbar() {
                                         <p className="text-xs text-gray-500 truncate">{user.email}</p>
                                     </div>
 
+                                    <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700">
+                                        My Profile
+                                    </Link>
                                     <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700">
                                         My Orders
                                     </Link>

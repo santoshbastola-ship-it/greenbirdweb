@@ -54,6 +54,9 @@ export interface TransactionRecord {
     deliveryFee?: number;
     deliveryAddress?: string;
     customerPhone?: string;
+    deliveryInstructions?: string;
+    expectedDeliveryDate?: string | Date;
+    expectedDeliveryTime?: string;
     soldBy: string;
     enteredBy: string; // User ID
     entryTimestamp: Date | string;

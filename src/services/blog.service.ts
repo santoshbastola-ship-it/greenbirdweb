@@ -31,7 +31,7 @@ export const BlogService = {
             const q = query(blogRef, orderBy("date", "desc"));
             const snapshot = await getDocs(q);
 
-            return snapshot.docs.map(doc => {
+            const firestorePosts = snapshot.docs.map(doc => {
                 const data = doc.data();
                 return {
                     id: doc.id,
@@ -39,6 +39,10 @@ export const BlogService = {
                     date: data.date instanceof Timestamp ? data.date.toDate().toISOString() : data.date
                 } as BlogPost;
             });
+
+            // Merge mock posts with real posts (mock posts first, but you can change order)
+            // Using a Map to deduplicate by ID if necessary, though IDs are likely different (post-1 vs auto-gen)
+            return [...MOCK_BLOG_POSTS, ...firestorePosts];
         } catch (error) {
             console.error("Error fetching blog posts:", error);
             return MOCK_BLOG_POSTS;
@@ -58,7 +62,9 @@ export const BlogService = {
             const snapshot = await getDocs(query(blogRef)); // Simple approach for now
             const doc = snapshot.docs.find(d => d.data().slug === slug);
 
-            if (!doc) return null;
+            if (!doc) {
+                return MOCK_BLOG_POSTS.find(p => p.slug === slug) || null;
+            }
 
             const data = doc.data();
             return {

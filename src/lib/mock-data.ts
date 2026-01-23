@@ -77,7 +77,7 @@ export const MOCK_PRODUCTS: Product[] = [
         priceHistory: [],
         createdAt: new Date(),
         createdBy: "admin",
-        images: ["https://images.unsplash.com/photo-1592973979730-1c0953c84852?auto=format&fit=crop&q=80&w=800"], // Tractor
+        images: [], // Tractor images removed to fix preload warning
         description: "Heavy duty tractor available for rental services.",
         isAvailableForSale: false,
     }
@@ -109,5 +109,44 @@ export const MOCK_BLOG_POSTS = [
         readTime: 7,
         categories: ["Livestock", "Poultry"],
         tags: ["chickens", "eggs", "farming"]
+    },
+    {
+        id: "post-3",
+        title: "Organic Slow Farming",
+        slug: "organic-slow-farming",
+        excerpt: "Embracing the rhythm of nature for sustainable agriculture and better health.",
+        content: "Slow farming is about returning to the roots of agriculture, where quality takes precedence over quantity. Unlike industrial farming, which focuses on speed and mass production, organic slow farming emphasizes soil health, biodiversity, and the natural growth cycles of crops. This approach not only produces food that is richer in nutrients and flavor but also preserves the environment for future generations. By choosing slow-farmed organic produce, you are supporting a system that values the earth and sustainable living.",
+        imageUrl: "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?auto=format&fit=crop&q=80&w=800",
+        date: new Date().toISOString(),
+        author: "Farmer Santosh",
+        readTime: 6,
+        categories: ["Organic", "Sustainability"],
+        tags: ["farming", "slow food", "organic"]
+    },
+    {
+        id: "post-4",
+        title: "How Much Protein Do We Really Need?",
+        slug: "how-much-protein-we-need",
+        excerpt: "Understanding daily protein requirements for a balanced and healthy lifestyle.",
+        content: "Protein is a building block of life, essential for repairing tissues and making enzymes and hormones. But how much do we really need? The recommended dietary allowance (RDA) is 0.8 grams of protein per kilogram of body weight, but this can vary based on activity level, age, and health goals. Athletes may need more, while sedentary individuals might need less. It's important to get protein from a variety of sources, including lean meats, eggs, dairy, beans, and nuts, to ensure a complete amino acid profile.",
+        imageUrl: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&q=80&w=800",
+        date: new Date().toISOString(),
+        author: "Nutrition Expert",
+        readTime: 5,
+        categories: ["Health", "Nutrition"],
+        tags: ["protein", "health", "diet"]
+    },
+    {
+        id: "post-5",
+        title: "Better Parenting Tips for Parents of Teenagers",
+        slug: "parenting-tips-for-teenagers",
+        excerpt: "Navigating the teenage years with patience, understanding, and effective communication.",
+        content: "Parenting teenagers can be challenging, but it's also a rewarding journey of growth for both parents and children. Key tips include active listening, respecting their growing need for privacy and independence, and maintaining open lines of communication. Avoid judgment and criticism; instead, offer support and guidance. Set clear boundaries but be willing to negotiate. Remember, your teenager is learning to navigate the world on their own, and your steady, supportive presence is their strongest anchor.",
+        imageUrl: "https://images.unsplash.com/photo-1591114227092-2fe654224c2d?auto=format&fit=crop&q=80&w=800",
+        date: new Date().toISOString(),
+        author: "Family Counselor",
+        readTime: 8,
+        categories: ["Lifestyle", "Family"],
+        tags: ["parenting", "teenagers", "family"]
     }
 ];

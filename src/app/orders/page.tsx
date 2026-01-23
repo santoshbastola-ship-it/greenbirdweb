@@ -6,6 +6,7 @@ import { TransactionService } from "@/services/transaction.service";
 import { TransactionRecord, OrderStatus } from "@/types";
 import { useRouter } from "next/navigation";
 import { Package, Calendar, ChevronRight } from "lucide-react";
+import { toNepali } from "@/lib/date-helper";
 import Link from "next/link";
 
 
@@ -71,7 +72,7 @@ export default function MyOrdersPage() {
                                                 <h3 className="font-bold text-gray-900">Order #{order.billNo}</h3>
                                                 <div className="flex items-center text-sm text-gray-500 mt-1">
                                                     <Calendar className="h-3 w-3 mr-1" />
-                                                    {new Date(order.date).toLocaleDateString()} {new Date(order.date).toLocaleTimeString()}
+                                                    {toNepali(order.date, "DD MMM YYYY")} {new Date(order.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </div>
                                             </div>
                                         </div>

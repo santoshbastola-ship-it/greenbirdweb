@@ -71,18 +71,18 @@ export default function AdminSidebar() {
                         {!isCollapsed && (
                             <div className="bg-white p-2 rounded-lg flex items-center justify-center flex-1 transition-all duration-300 overflow-hidden">
                                 <img
-                                    src="/images/logo.jpg"
+                                    src="/images/logo.png"
                                     alt="Greenbird Logo"
-                                    className="h-12 object-contain"
+                                    className="h-16 object-contain"
                                 />
                             </div>
                         )}
                         {isCollapsed && (
                             <div className="bg-white p-1 rounded-lg flex items-center justify-center w-10 h-10 transition-all duration-300">
                                 <img
-                                    src="/images/logo.jpg"
+                                    src="/images/logo.png"
                                     alt="Greenbird Logo"
-                                    className="h-8 object-contain"
+                                    className="h-10 object-contain"
                                 />
                             </div>
                         )}

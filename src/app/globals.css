@@ -10,7 +10,7 @@
   --earthy-brown-dark: #3d2a22;
   --cream: #FCF9F1;
   --cream-dark: #f5f0e4;
-  
+
   --background: #FCF9F1;
   --foreground: #1a1a1a;
 }
@@ -25,7 +25,7 @@
   --color-earthy-brown-dark: #3d2a22;
   --color-cream: #FCF9F1;
   --color-cream-dark: #f5f0e4;
-  
+
   /* Semantic Colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -35,7 +35,7 @@
   --color-secondary: var(--earthy-brown);
   --color-secondary-light: var(--earthy-brown-light);
   --color-secondary-dark: var(--earthy-brown-dark);
-  
+
   /* Typography */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -78,4 +78,16 @@ html {
 *:focus-visible {
   outline: 2px solid var(--forest-green);
   outline-offset: 2px;
+}
+
+/* Hide scrollbar utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }

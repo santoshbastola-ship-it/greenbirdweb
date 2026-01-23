@@ -17,7 +17,8 @@ export default function LoginPage() {
 
         try {
             await signInWithGoogle();
-            router.push("/shop");
+            const redirectTo = new URLSearchParams(window.location.search).get("redirect") || "/shop";
+            router.push(redirectTo);
         } catch (err: any) {
             console.error("Login error:", err);
 
@@ -42,9 +43,9 @@ export default function LoginPage() {
                 <div className="text-center">
                     <div className="mx-auto flex justify-center mb-6">
                         <img
-                            src="/images/logo.jpg"
+                            src="/images/logo.png"
                             alt="Greenbird Logo"
-                            className="h-24 w-auto object-contain"
+                            className="h-32 w-auto object-contain"
                         />
                     </div>
                     <h2 className="text-3xl font-extrabold text-gray-900">Welcome</h2>

@@ -1,5 +1,33 @@
 # Release Notes
 
+## [0.1.3] - 2026-01-23
+### Added
+- **Customer Profile Page**: Users can now view and manage their profile details, contact information, and delivery addresses via the navbar dropdown menu.
+- **Blog Section**: Added three new informative blog posts:
+  - "Organic Slow Farming" - Insights into sustainable farming practices
+  - "How Much Protein We Need?" - Nutritional guidance
+  - "Better Parenting Tips for Teenagers Parents" - Parenting advice
+- **Mobile Category Filter**: Redesigned shop category filter with horizontal scrolling for improved mobile experience.
+- **Cart Error Handling**: Added error boundary component for better cart page stability.
+- **Checkout Enhancements**: 
+  - Added delivery instructions field for customer notes
+  - Added expected delivery date/time picker with Nepali date support
+  - Made address and contact number fields mandatory
+- **Footer Version Display**: Application version now visible in footer.
+
+### Fixed
+- **Shop Page State**: Fixed issue where item "Added" status would revert to "Add" when adding other items to cart.
+- **Checkout Flow**: Users now remain on checkout page after login instead of being redirected.
+- **User Logout**: Resolved logout functionality bug in Navbar authentication flow.
+- **Cart Persistence**: Fixed issues where newly placed orders were not appearing in "View Status" or "My Orders" sections.
+
+### Changed
+- **Logo Enhancement**: Updated and made application logo more prominent across all pages (Navbar, Footer, Login, Admin).
+- **Login Page**: Changed greeting from "Welcome Back" to "Welcome" for better user experience.
+- **Shop Page UI**: Added informational note: "Item quantity can be set from the Checkout page."
+- **Category Filter**: Moved from sidebar to top-positioned selector for better mobile accessibility.
+
+
 ## [0.1.1] - 2026-01-23
 - Fixed logout functionality bug in Navbar where useAuth hook was called incorrectly.
 

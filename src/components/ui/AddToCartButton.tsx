@@ -20,16 +20,16 @@ export default function AddToCartButton({
     showIcon = true,
     fullWidth = false
 }: AddToCartButtonProps) {
-    const addItem = useCartStore((state) => state.addItem);
-    const [isAdded, setIsAdded] = useState(false);
+    const { items, addItem } = useCartStore();
+
+    // Check if item is already in cart
+    const isAdded = items.some(item => item.productId === product.id);
 
     const handleAdd = (e: React.MouseEvent) => {
         e.preventDefault(); // Prevent link navigation if inside a link
-        addItem(product, quantity);
-
-        // Visual feedback
-        setIsAdded(true);
-        setTimeout(() => setIsAdded(false), 2000);
+        if (!isAdded) {
+            addItem(product, quantity);
+        }
     };
 
     const baseClasses = "flex items-center justify-center space-x-2 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed";
@@ -42,7 +42,7 @@ export default function AddToCartButton({
             <button
                 onClick={handleAdd}
                 disabled={product.currentStock <= 0}
-                className={`${className} ${isAdded ? "!bg-[#2D5A27]" : "bg-[#5C4033]"} text-white transition-colors duration-300`}
+                className={`${className} ${isAdded ? "!bg-[#2D5A27] cursor-default" : "bg-[#5C4033]"} text-white transition-colors duration-300`}
             >
                 {showIcon && <ShoppingBag className="h-4 w-4 mr-2" />}
                 <span>{isAdded ? "Added!" : "Add to Cart"}</span>
@@ -55,7 +55,7 @@ export default function AddToCartButton({
         <button
             onClick={handleAdd}
             disabled={product.currentStock <= 0}
-            className={`${baseClasses} ${defaultClasses} ${isAdded ? "!bg-[#2D5A27]" : ""}`}
+            className={`${baseClasses} ${defaultClasses} ${isAdded ? "!bg-[#2D5A27] cursor-default" : ""}`}
         >
             {showIcon && <ShoppingBag className="h-3 w-3" />}
             <span>{isAdded ? "Added" : "Add"}</span>

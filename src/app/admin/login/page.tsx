@@ -71,9 +71,9 @@ export default function AdminLoginPage() {
                 <div className="text-center">
                     <div className="mx-auto flex justify-center mb-6">
                         <img
-                            src="/images/logo.jpg"
+                            src="/images/logo.png"
                             alt="Greenbird Logo"
-                            className="h-24 w-auto object-contain brightness-110"
+                            className="h-32 w-auto object-contain brightness-110"
                         />
                     </div>
                     <h2 className="text-3xl font-extrabold">Admin Dashboard</h2>

@@ -9,9 +9,9 @@ export default function Footer() {
                     <div>
                         <div className="bg-white p-2 rounded-lg inline-block mb-4">
                             <img
-                                src="/images/logo.jpg"
+                                src="/images/logo.png"
                                 alt="Greenbird Homestead"
-                                className="h-10 w-auto object-contain"
+                                className="h-16 w-auto object-contain"
                             />
                         </div>
                         <p className="text-gray-300 text-sm leading-relaxed">
@@ -85,7 +85,7 @@ export default function Footer() {
 
                 {/* Bottom Bar */}
                 <div className="border-t border-white/20 pt-8 text-center text-sm text-gray-300">
-                    &copy; {new Date().getFullYear()} Greenbird Homestead. All rights reserved.
+                    &copy; {new Date().getFullYear()} Greenbird Homestead. All rights reserved. v{process.env.NEXT_PUBLIC_APP_VERSION || '0.1.3'}
                 </div>
             </div>
         </footer>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCartStore } from "@/store/useCartStore";
-import { Minus, Plus, Trash2, ArrowRight, Phone, MapPin, PlusCircle, X, Check, Truck, CreditCard } from "lucide-react";
+import { Minus, Plus, Trash2, ArrowRight, Phone, MapPin, PlusCircle, X, Check, Truck, CreditCard, Clock, Calendar } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -10,6 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 import { TransactionService } from "@/services/transaction.service";
 import { UserService } from "@/services/user.service";
 import { TransactionType, PaymentStatus, OrderStatus } from "@/types";
+import { getTodayNepali } from "@/lib/date-helper";
 
 const DELIVERY_FEE = 50;
 
@@ -24,6 +25,11 @@ export default function CartPage() {
     const [newAddress, setNewAddress] = useState("");
     const [selectedAddressIndex, setSelectedAddressIndex] = useState(0);
     const [isAddressMode, setIsAddressMode] = useState(false); // To toggle adding new address
+
+    // Delivery Preferences
+    const [deliveryInstructions, setDeliveryInstructions] = useState("");
+    const [expectedDate, setExpectedDate] = useState(getTodayNepali());
+    const [expectedTime, setExpectedTime] = useState("");
 
     const { user, dbUser, refreshDbUser } = useAuth();
     const router = useRouter();
@@ -96,7 +102,7 @@ export default function CartPage() {
             await TransactionService.createTransaction({
                 billNo: "ORD-" + Math.floor(Math.random() * 100000),
                 type: TransactionType.Sale,
-                items: items.map(i => ({
+                items: validItems.map(i => ({
                     productId: i.productId,
                     productName: i.productName,
                     businessType: i.businessType || 'product',
@@ -119,7 +125,10 @@ export default function CartPage() {
                 paidAmount: 0,
                 payments: [],
                 deliveryAddress: activeProfile.address,
-                customerPhone: activeProfile.phoneNumber
+                customerPhone: activeProfile.phoneNumber,
+                deliveryInstructions,
+                expectedDeliveryDate: expectedDate,
+                expectedDeliveryTime: expectedTime
             });
 
             clearCart();
@@ -134,10 +143,10 @@ export default function CartPage() {
 
     if (!mounted) return <div className="min-h-screen bg-gray-50 pt-20 text-center">Loading cart...</div>;
 
-    const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const total = subtotal + DELIVERY_FEE;
+    // Defensive check: Ensure items is an array and filter out invalid ones
+    const validItems = Array.isArray(items) ? items.filter(item => item && item.productId) : [];
 
-    if (items.length === 0) {
+    if (validItems.length === 0) {
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
                 <h1 className="text-2xl font-bold text-gray-900 mb-4">Your Cart is Empty</h1>
@@ -151,6 +160,13 @@ export default function CartPage() {
             </div>
         );
     }
+
+    const subtotal = validItems.reduce((sum, item) => {
+        const price = Number(item.price) || 0;
+        const quantity = Number(item.quantity) || 0;
+        return sum + (price * quantity);
+    }, 0);
+    const total = subtotal + DELIVERY_FEE;
 
     return (
         <div className="min-h-screen bg-gray-50 py-12">
@@ -167,7 +183,7 @@ export default function CartPage() {
                                 Review Cart Items
                             </h2>
                             <div className="space-y-6">
-                                {items.map((item) => (
+                                {validItems.map((item) => (
                                     <div key={item.productId} className="flex flex-col sm:flex-row items-center border-b border-gray-100 pb-6 last:border-0 last:pb-0">
                                         <div className="h-20 w-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 mb-4 sm:mb-0 box-content">
                                             <img
@@ -341,6 +357,51 @@ export default function CartPage() {
                                                 )}
                                             </div>
                                         )}
+                                    </div>
+
+                                    {/* Delivery Preferences */}
+                                    <div className="space-y-4 pt-4 border-t border-gray-100">
+                                        <h3 className="font-semibold text-gray-900 flex items-center">
+                                            <Truck className="h-4 w-4 mr-2 text-green-600" /> Delivery Preferences
+                                        </h3>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-700 mb-1 flex items-center">
+                                                    <Calendar className="h-3 w-3 mr-1 text-gray-400" /> Expected Date
+                                                </label>
+                                                <input
+                                                    type="date"
+                                                    value={expectedDate}
+                                                    onChange={(e) => setExpectedDate(e.target.value)}
+                                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-sm"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium text-gray-700 mb-1 flex items-center">
+                                                    <Clock className="h-3 w-3 mr-1 text-gray-400" /> Time (Optional)
+                                                </label>
+                                                <input
+                                                    type="time"
+                                                    value={expectedTime}
+                                                    onChange={(e) => setExpectedTime(e.target.value)}
+                                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-sm"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                                Delivery Instructions / Comments (Optional)
+                                            </label>
+                                            <textarea
+                                                value={deliveryInstructions}
+                                                onChange={(e) => setDeliveryInstructions(e.target.value)}
+                                                rows={2}
+                                                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-sm resize-none"
+                                                placeholder="e.g. Call upon arrival, leave at gate..."
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             )}

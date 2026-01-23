@@ -40,24 +40,26 @@ export const TransactionService = {
     // Get transactions by Customer ID
     getTransactionsByCustomerId: async (customerId: string): Promise<TransactionRecord[]> => {
         try {
+            // Simplified query to avoid composite index requirement
             const q = query(
                 collection(db, COLLECTION_NAME),
-                where("customerId", "==", customerId),
-                where("type", "==", TransactionType.Sale), // Only show sales/orders to customer
-                orderBy("entryTimestamp", "desc")
+                where("customerId", "==", customerId)
             );
+
             const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                date: new Date(doc.data().date),
-                entryTimestamp: new Date(doc.data().entryTimestamp)
-            } as TransactionRecord));
+
+            // Filter and sort in memory
+            return querySnapshot.docs
+                .map(doc => ({
+                    id: doc.id,
+                    ...doc.data(),
+                    date: new Date(doc.data().date),
+                    entryTimestamp: new Date(doc.data().entryTimestamp)
+                } as TransactionRecord))
+                .filter(record => record.type === TransactionType.Sale)
+                .sort((a, b) => new Date(b.entryTimestamp).getTime() - new Date(a.entryTimestamp).getTime());
         } catch (error) {
             console.error("Error fetching customer transactions:", error);
-            // Indexing might be required, so fallback without ordering if it fails might be needed, 
-            // but usually we just need to create the index.
-            // For now, let's return [] or try simpler query if needed.
             return [];
         }
     },
