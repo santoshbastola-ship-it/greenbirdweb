@@ -77,12 +77,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 }
 
 // Generates static params for all posts
-// Generates static params for all posts
 export async function generateStaticParams() {
-    // Fallback to static mock data to avoid build issues
-    return [
-        { slug: 'sustainable-farming-practices' },
-        { slug: 'organic-vs-conventional' },
-        { slug: 'seasonal-crops-guide' }
-    ];
+    try {
+        const posts = await BlogService.getAllPosts();
+        return posts.map(post => ({
+            slug: post.slug
+        }));
+    } catch (error) {
+        console.error('Error generating static params for blog:', error);
+        // Fallback to empty array - Next.js will handle this gracefully
+        return [];
+    }
 }

@@ -19,7 +19,7 @@ export default function Navbar() {
     const links = [
         { href: "/", label: "Home" },
         { href: "/shop", label: "Shop" },
-        { href: "/about", label: "About Farm" },
+        { href: "/about", label: "Our Story" },
         { href: "/blog", label: "Blog" },
         { href: "/contact", label: "Contact Us" },
     ];

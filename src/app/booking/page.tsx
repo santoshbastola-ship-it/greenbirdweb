@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BookingService } from "@/services/booking.service";
 import { Calendar, Users, Phone, Mail, User, Info, Loader2, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { getTodayNepali } from "@/lib/date-helper";
 
 export default function BookingPage() {
     const { user } = useAuth();
@@ -14,7 +15,7 @@ export default function BookingPage() {
         name: user?.displayName || "",
         email: user?.email || "",
         phone: "",
-        checkInDate: "",
+        checkInDate: getTodayNepali(),
         checkOutDate: "",
         guests: 1,
         specialRequests: ""

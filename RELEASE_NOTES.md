@@ -1,5 +1,9 @@
 # Release Notes
 
+## [0.1.5] - 2026-01-23
+- Order cancellation with mandatory reason
+
+
 ## [0.1.4] - 2026-01-23
 ### Added
 - **Order Cancellation**: Customers can now cancel their Open or Accepted orders with mandatory cancellation reason

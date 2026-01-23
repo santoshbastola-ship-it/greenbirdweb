@@ -177,15 +177,16 @@ export default function CartPage() {
                     {/* LEFT COLUMN: Cart Items */}
                     <div className="flex-1 space-y-6">
                         {/* Cart Items List */}
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                                <span className="bg-green-100 text-green-800 h-8 w-8 rounded-full flex items-center justify-center text-sm mr-3">1</span>
+                        <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
+                            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center">
+                                <span className="bg-green-100 text-green-800 h-7 w-7 md:h-8 md:w-8 rounded-full flex items-center justify-center text-xs md:text-sm mr-2 md:mr-3">1</span>
                                 Review Cart Items
                             </h2>
-                            <div className="space-y-6">
+                            <div className="space-y-3 md:space-y-6">
                                 {validItems.map((item) => (
-                                    <div key={item.productId} className="flex flex-col sm:flex-row items-center border-b border-gray-100 pb-6 last:border-0 last:pb-0">
-                                        <div className="h-20 w-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 mb-4 sm:mb-0 box-content">
+                                    <div key={item.productId} className="flex items-center gap-3 md:gap-4 border-b border-gray-100 pb-3 md:pb-6 last:border-0 last:pb-0">
+                                        {/* Product Image - Smaller on mobile */}
+                                        <div className="h-14 w-14 md:h-20 md:w-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                                             <img
                                                 src={item.imageUrl || "/placeholder.png"}
                                                 alt={item.productName}
@@ -193,34 +194,36 @@ export default function CartPage() {
                                             />
                                         </div>
 
-                                        <div className="flex-1 sm:ml-6 text-center sm:text-left w-full">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h3 className="text-base font-bold text-gray-900">{item.productName}</h3>
-                                                    <p className="text-sm text-gray-500">Rs. {item.price} / {item.unit}</p>
+                                        {/* Product Details */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex justify-between items-start gap-2 mb-2">
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="text-sm md:text-base font-bold text-gray-900 truncate">{item.productName}</h3>
+                                                    <p className="text-xs md:text-sm text-gray-500">Rs. {item.price} / {item.unit}</p>
                                                 </div>
-                                                <p className="text-base font-bold text-gray-900 hidden sm:block">Rs. {item.price * item.quantity}</p>
+                                                <p className="text-sm md:text-base font-bold text-gray-900 whitespace-nowrap">Rs. {item.price * item.quantity}</p>
                                             </div>
 
-                                            <div className="flex items-center justify-between mt-4">
+                                            {/* Quantity Controls and Remove - Compact on mobile */}
+                                            <div className="flex items-center justify-between gap-2">
                                                 <div className="flex items-center border border-gray-200 rounded-lg">
                                                     <button
                                                         onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                                                        className="p-1.5 hover:bg-gray-50 text-gray-500"
+                                                        className="p-1 md:p-1.5 hover:bg-gray-50 text-gray-500"
                                                     >
                                                         <Minus className="h-3 w-3" />
                                                     </button>
-                                                    <span className="w-8 text-center font-medium text-sm">{item.quantity}</span>
+                                                    <span className="w-7 md:w-8 text-center font-medium text-xs md:text-sm">{item.quantity}</span>
                                                     <button
                                                         onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                                                        className="p-1.5 hover:bg-gray-50 text-gray-500"
+                                                        className="p-1 md:p-1.5 hover:bg-gray-50 text-gray-500"
                                                     >
                                                         <Plus className="h-3 w-3" />
                                                     </button>
                                                 </div>
                                                 <button
                                                     onClick={() => removeItem(item.productId)}
-                                                    className="text-red-500 hover:text-red-700 text-sm font-medium transition-colors"
+                                                    className="text-red-500 hover:text-red-700 text-xs md:text-sm font-medium transition-colors"
                                                 >
                                                     Remove
                                                 </button>
@@ -236,9 +239,9 @@ export default function CartPage() {
                     <div className="w-full lg:w-[480px] space-y-6">
 
                         {/* Shipping Details */}
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                                <span className="bg-green-100 text-green-800 h-8 w-8 rounded-full flex items-center justify-center text-sm mr-3">2</span>
+                        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center">
+                                <span className="bg-green-100 text-green-800 h-7 w-7 md:h-8 md:w-8 rounded-full flex items-center justify-center text-xs md:text-sm mr-2 md:mr-3">2</span>
                                 Shipping Details
                             </h2>
 
@@ -250,18 +253,18 @@ export default function CartPage() {
                                     </Link>
                                 </div>
                             ) : (
-                                <div className="space-y-6">
+                                <div className="space-y-4 md:space-y-6">
                                     {/* Customer Info (Read-only) */}
-                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                                    <div className="bg-gray-50 p-3 md:p-4 rounded-xl border border-gray-100">
                                         <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">Customer</p>
-                                        <p className="font-semibold text-gray-900">{user.displayName || "Valued Customer"}</p>
-                                        <p className="text-sm text-gray-600 truncate">{user.email}</p>
+                                        <p className="font-semibold text-gray-900 text-sm md:text-base">{user.displayName || "Valued Customer"}</p>
+                                        <p className="text-xs md:text-sm text-gray-600 truncate">{user.email}</p>
                                     </div>
 
                                     {/* Phone Number */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                                            <Phone className="h-4 w-4 mr-2 text-green-600" /> Contact Number
+                                        <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2 flex items-center">
+                                            <Phone className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2 text-green-600" /> Contact Number
                                         </label>
                                         <input
                                             type="tel"
@@ -269,15 +272,15 @@ export default function CartPage() {
                                             value={phoneNumber}
                                             onChange={(e) => setPhoneNumber(e.target.value)}
                                             placeholder="Enter your phone number"
-                                            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none bg-gray-50 focus:bg-white"
+                                            className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none bg-gray-50 focus:bg-white"
                                         />
                                     </div>
 
                                     {/* Address Selection */}
                                     <div>
-                                        <div className="flex justify-between items-center mb-2">
-                                            <label className="block text-sm font-medium text-gray-700 flex items-center">
-                                                <MapPin className="h-4 w-4 mr-2 text-green-600" /> Delivery Address
+                                        <div className="flex justify-between items-center mb-1.5 md:mb-2">
+                                            <label className="block text-xs md:text-sm font-medium text-gray-700 flex items-center">
+                                                <MapPin className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2 text-green-600" /> Delivery Address
                                             </label>
                                             {!isAddressMode && (
                                                 <button
@@ -296,51 +299,51 @@ export default function CartPage() {
                                                     value={newAddress}
                                                     onChange={(e) => setNewAddress(e.target.value)}
                                                     placeholder="Enter full address (e.g. Street, City, Landmark)"
-                                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                                                    className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                                                     autoFocus
                                                 />
                                                 <div className="flex gap-2">
                                                     <button
                                                         onClick={handleAddAddress}
                                                         disabled={!newAddress.trim()}
-                                                        className="flex-1 bg-green-600 text-white py-2 rounded-lg text-sm font-bold hover:bg-green-700 disabled:opacity-50 transition-colors"
+                                                        className="flex-1 bg-green-600 text-white py-2 rounded-lg text-xs md:text-sm font-bold hover:bg-green-700 disabled:opacity-50 transition-colors"
                                                     >
                                                         Save Address
                                                     </button>
                                                     <button
                                                         onClick={() => setIsAddressMode(false)}
-                                                        className="px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-medium"
+                                                        className="px-3 md:px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs md:text-sm font-medium"
                                                     >
                                                         Cancel
                                                     </button>
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="space-y-3">
+                                            <div className="space-y-2 md:space-y-3">
                                                 {addresses.length === 0 ? (
                                                     <button
                                                         onClick={() => setIsAddressMode(true)}
-                                                        className="w-full py-8 border-2 border-dashed border-gray-200 rounded-xl text-gray-500 hover:border-green-500 hover:text-green-600 transition-all flex flex-col items-center justify-center gap-2"
+                                                        className="w-full py-6 md:py-8 border-2 border-dashed border-gray-200 rounded-xl text-gray-500 hover:border-green-500 hover:text-green-600 transition-all flex flex-col items-center justify-center gap-2"
                                                     >
-                                                        <PlusCircle className="h-6 w-6" />
-                                                        <span className="font-medium">Add Delivery Address</span>
+                                                        <PlusCircle className="h-5 w-5 md:h-6 md:w-6" />
+                                                        <span className="font-medium text-sm md:text-base">Add Delivery Address</span>
                                                     </button>
                                                 ) : (
                                                     addresses.map((addr, idx) => (
                                                         <div
                                                             key={idx}
                                                             onClick={() => setSelectedAddressIndex(idx)}
-                                                            className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex justify-between items-start ${selectedAddressIndex === idx
+                                                            className={`p-3 md:p-4 rounded-xl border-2 cursor-pointer transition-all flex justify-between items-start ${selectedAddressIndex === idx
                                                                 ? "border-green-500 bg-green-50/50"
                                                                 : "border-gray-100 hover:border-gray-200"
                                                                 }`}
                                                         >
-                                                            <div className="flex gap-3">
-                                                                <div className={`mt-0.5 h-4 w-4 rounded-full border flex items-center justify-center ${selectedAddressIndex === idx ? "border-green-600" : "border-gray-300"
+                                                            <div className="flex gap-2 md:gap-3">
+                                                                <div className={`mt-0.5 h-3.5 w-3.5 md:h-4 md:w-4 rounded-full border flex items-center justify-center ${selectedAddressIndex === idx ? "border-green-600" : "border-gray-300"
                                                                     }`}>
-                                                                    {selectedAddressIndex === idx && <div className="h-2 w-2 rounded-full bg-green-600" />}
+                                                                    {selectedAddressIndex === idx && <div className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-green-600" />}
                                                                 </div>
-                                                                <p className="text-sm text-gray-700 leading-snug">{addr}</p>
+                                                                <p className="text-xs md:text-sm text-gray-700 leading-snug">{addr}</p>
                                                             </div>
                                                             <button
                                                                 type="button"
@@ -350,7 +353,7 @@ export default function CartPage() {
                                                                 }}
                                                                 className="text-gray-300 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                                             >
-                                                                <Trash2 className="h-4 w-4" />
+                                                                <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
                                                             </button>
                                                         </div>
                                                     ))
@@ -360,12 +363,12 @@ export default function CartPage() {
                                     </div>
 
                                     {/* Delivery Preferences */}
-                                    <div className="space-y-4 pt-4 border-t border-gray-100">
-                                        <h3 className="font-semibold text-gray-900 flex items-center">
-                                            <Truck className="h-4 w-4 mr-2 text-green-600" /> Delivery Preferences
+                                    <div className="space-y-3 md:space-y-4 pt-3 md:pt-4 border-t border-gray-100">
+                                        <h3 className="font-semibold text-sm md:text-base text-gray-900 flex items-center">
+                                            <Truck className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2 text-green-600" /> Delivery Preferences
                                         </h3>
 
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-2 gap-3 md:gap-4">
                                             <div>
                                                 <label className="block text-xs font-medium text-gray-700 mb-1 flex items-center">
                                                     <Calendar className="h-3 w-3 mr-1 text-gray-400" /> Expected Date
@@ -374,7 +377,7 @@ export default function CartPage() {
                                                     type="date"
                                                     value={expectedDate}
                                                     onChange={(e) => setExpectedDate(e.target.value)}
-                                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-sm"
+                                                    className="w-full px-2 md:px-3 py-1.5 md:py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-xs md:text-sm"
                                                 />
                                             </div>
                                             <div>
@@ -385,7 +388,7 @@ export default function CartPage() {
                                                     type="time"
                                                     value={expectedTime}
                                                     onChange={(e) => setExpectedTime(e.target.value)}
-                                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-sm"
+                                                    className="w-full px-2 md:px-3 py-1.5 md:py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-xs md:text-sm"
                                                 />
                                             </div>
                                         </div>
@@ -398,7 +401,7 @@ export default function CartPage() {
                                                 value={deliveryInstructions}
                                                 onChange={(e) => setDeliveryInstructions(e.target.value)}
                                                 rows={2}
-                                                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-sm resize-none"
+                                                className="w-full px-2 md:px-3 py-1.5 md:py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-xs md:text-sm resize-none"
                                                 placeholder="e.g. Call upon arrival, leave at gate..."
                                             />
                                         </div>

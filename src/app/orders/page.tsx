@@ -10,11 +10,14 @@ import { toNepali } from "@/lib/date-helper";
 import Link from "next/link";
 
 
+type FilterStatus = 'all' | OrderStatus;
+
 export default function MyOrdersPage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const [orders, setOrders] = useState<TransactionRecord[]>([]);
     const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState<FilterStatus>('all');
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -40,6 +43,12 @@ export default function MyOrdersPage() {
         loadOrders();
     }, [user]);
 
+    const filteredOrders = filter === 'all'
+        ? orders
+        : filter === OrderStatus.Open
+            ? orders.filter(order => order.status === OrderStatus.Open || order.status === OrderStatus.Accepted)
+            : orders.filter(order => order.status === filter);
+
     if (loading || authLoading) return <div className="min-h-screen pt-20 text-center">Loading orders...</div>;
 
     return (
@@ -57,14 +66,68 @@ export default function MyOrdersPage() {
                         </Link>
                     </div>
                 ) : (
-                    <div className="space-y-6">
-                        {orders.map((order) => (
-                            <OrderCard key={order.id} order={order} onUpdate={loadOrders} />
-                        ))}
-                    </div>
+                    <>
+                        {/* Filter Tabs */}
+                        <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-100 p-2">
+                            <div className="flex flex-wrap gap-2">
+                                <FilterTab
+                                    label="All"
+                                    count={orders.length}
+                                    active={filter === 'all'}
+                                    onClick={() => setFilter('all')}
+                                />
+                                <FilterTab
+                                    label="Open"
+                                    count={orders.filter(o => o.status === OrderStatus.Open || o.status === OrderStatus.Accepted).length}
+                                    active={filter === OrderStatus.Open}
+                                    onClick={() => setFilter(OrderStatus.Open)}
+                                />
+                                <FilterTab
+                                    label="Delivered"
+                                    count={orders.filter(o => o.status === OrderStatus.Delivered).length}
+                                    active={filter === OrderStatus.Delivered}
+                                    onClick={() => setFilter(OrderStatus.Delivered)}
+                                />
+                                <FilterTab
+                                    label="Cancelled"
+                                    count={orders.filter(o => o.status === OrderStatus.Cancelled).length}
+                                    active={filter === OrderStatus.Cancelled}
+                                    onClick={() => setFilter(OrderStatus.Cancelled)}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Orders List */}
+                        <div className="space-y-6">
+                            {filteredOrders.length === 0 ? (
+                                <div className="bg-white rounded-xl p-8 text-center shadow-sm border border-gray-100">
+                                    <Package className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+                                    <p className="text-gray-500">No {filter !== 'all' ? filter : ''} orders found</p>
+                                </div>
+                            ) : (
+                                filteredOrders.map((order) => (
+                                    <OrderCard key={order.id} order={order} onUpdate={loadOrders} />
+                                ))
+                            )}
+                        </div>
+                    </>
                 )}
             </div>
         </div>
+    );
+}
+
+function FilterTab({ label, count, active, onClick }: { label: string; count: number; active: boolean; onClick: () => void }) {
+    return (
+        <button
+            onClick={onClick}
+            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${active
+                ? 'bg-green-600 text-white shadow-md'
+                : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                }`}
+        >
+            {label} <span className={`ml-1 ${active ? 'text-green-100' : 'text-gray-500'}`}>({count})</span>
+        </button>
     );
 }
 
@@ -210,7 +273,6 @@ function CancelOrderDialog({
 
     const predefinedReasons = [
         "Changed my mind",
-        "Found better price elsewhere",
         "Ordered by mistake",
         "Delivery time too long",
         "Product no longer needed",

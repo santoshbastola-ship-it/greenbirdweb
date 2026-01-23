@@ -1,4 +1,4 @@
-import { Facebook, MessageCircle, Mail, MapPin, Phone } from "lucide-react";
+import { Facebook, MessageCircle, Mail, MapPin, Phone, Instagram, Youtube } from "lucide-react";
 
 export default function Footer() {
     return (
@@ -41,14 +41,14 @@ export default function Footer() {
                             </li>
                             <li className="flex items-center gap-2">
                                 <Mail className="h-4 w-4 flex-shrink-0" />
-                                <a href="mailto:contact@greenbird.com" className="hover:text-white transition-colors">
-                                    contact@greenbird.com
+                                <a href="mailto:greenbirdhomestead@gmail.com" className="hover:text-white transition-colors">
+                                    greenbirdhomestead@gmail.com
                                 </a>
                             </li>
                             <li className="flex items-center gap-2">
                                 <Phone className="h-4 w-4 flex-shrink-0" />
-                                <a href="tel:+9779800000000" className="hover:text-white transition-colors">
-                                    +977 9800000000
+                                <a href="tel:+9779849850000" className="hover:text-white transition-colors">
+                                    +977 9849850000
                                 </a>
                             </li>
                         </ul>
@@ -59,7 +59,7 @@ export default function Footer() {
                         <h4 className="text-lg font-semibold mb-4">Connect With Us</h4>
                         <div className="flex gap-3">
                             <a
-                                href="https://wa.me/9779800000000"
+                                href="https://wa.me/9779849850000"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors"
@@ -75,6 +75,24 @@ export default function Footer() {
                                 aria-label="Facebook"
                             >
                                 <Facebook className="h-5 w-5" />
+                            </a>
+                            <a
+                                href="https://www.instagram.com/greenbirdhomestead"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors"
+                                aria-label="Instagram"
+                            >
+                                <Instagram className="h-5 w-5" />
+                            </a>
+                            <a
+                                href="https://www.youtube.com/@greenbirdhomestead"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors"
+                                aria-label="YouTube"
+                            >
+                                <Youtube className="h-5 w-5" />
                             </a>
                         </div>
                         <p className="text-gray-300 text-sm mt-4">

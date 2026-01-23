@@ -25,17 +25,17 @@ export default function ContactPage() {
                         />
                         <ContactCard
                             title="Email Us"
-                            content="contact@greenbird.com"
+                            content="greenbirdhomestead@gmail.com"
                             description="We'll get back to you within 24 hours."
                             icon={<Mail className="h-8 w-8 text-[#2D5A27]" />}
-                            href="mailto:contact@greenbird.com"
+                            href="mailto:greenbirdhomestead@gmail.com"
                         />
                         <ContactCard
                             title="Call Us"
-                            content="+977 9800000000"
-                            description="Available Mon-Sat, 9am - 6pm."
+                            content="+977 9849850000"
+                            description="Feel free to reach out anytime."
                             icon={<Phone className="h-8 w-8 text-[#2D5A27]" />}
-                            href="tel:+9779800000000"
+                            href="tel:+9779849850000"
                         />
                     </div>
                 </div>
@@ -52,7 +52,7 @@ export default function ContactPage() {
                     </div>
                     <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-white h-[450px] relative">
                         <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m12!1m3!1d113032.2275631557!2d85.3995!3d27.6955!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb1a47885b51dd%3A0x6446e5590916caaa!2sDuwakot%2C%20Bhaktapur!5e0!3m2!1sen!2snp!4v1705910000000!5m2!1sen!2snp"
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14129.579733920962!2d85.40287086459178!3d27.705090018938986!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb1b8d48047a05%3A0x11b568b26f18fdd1!2sGreenBird%20Homestead!5e0!3m2!1sen!2snp!4v1769169417753!5m2!1sen!2snp"
                             width="100%"
                             height="100%"
                             style={{ border: 0 }}
@@ -74,7 +74,7 @@ export default function ContactPage() {
                     </p>
                     <div className="flex justify-center gap-4">
                         <a
-                            href="https://wa.me/9779800000000"
+                            href="https://wa.me/9779849850000"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="bg-[#2D5A27] text-white px-8 py-3 rounded-full font-bold hover:bg-[#1f3e1b] transition-colors"
