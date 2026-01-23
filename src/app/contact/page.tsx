@@ -19,7 +19,7 @@ export default function ContactPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <ContactCard
                             title="Visit Us"
-                            content="Kathmandu, Nepal"
+                            content="Bastola Chowk, Besi Gaun, Duwakot, Bhaktapur, Nepal"
                             description="Come see our sustainable practices in person."
                             icon={<MapPin className="h-8 w-8 text-[#2D5A27]" />}
                         />
@@ -47,12 +47,12 @@ export default function ContactPage() {
                     <div className="text-center mb-12">
                         <h2 className="text-3xl md:text-4xl font-bold text-[#2D5A27] mb-4">Locate Us</h2>
                         <p className="text-gray-600 max-w-2xl mx-auto">
-                            Visit us at our headquarters in Kathmandu to learn more about our sustainable farming practices.
+                            Visit us at our homestead in Duwakot to learn more about our sustainable farming practices.
                         </p>
                     </div>
                     <div className="rounded-3xl overflow-hidden shadow-2xl border-4 border-white h-[450px] relative">
                         <iframe
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m12!1m3!1d113032.2275631557!2d85.25609252514589!3d27.708848243169877!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb198a307ba3ad%3A0x84e8b103f5e112ec!2sKathmandu%2044600!5e0!3m2!1sen!2snp!4v1705910000000!5m2!1sen!2snp"
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m12!1m3!1d113032.2275631557!2d85.3995!3d27.6955!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb1a47885b51dd%3A0x6446e5590916caaa!2sDuwakot%2C%20Bhaktapur!5e0!3m2!1sen!2snp!4v1705910000000!5m2!1sen!2snp"
                             width="100%"
                             height="100%"
                             style={{ border: 0 }}

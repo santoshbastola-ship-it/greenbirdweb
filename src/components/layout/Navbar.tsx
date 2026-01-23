@@ -12,7 +12,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
-    const { user, dbUser } = useAuth();
+    const { user, dbUser, logout } = useAuth();
 
     const links = [
         { href: "/", label: "Home" },
@@ -74,9 +74,51 @@ export default function Navbar() {
                             <ShoppingCart className="h-5 w-5" />
                             <CartBadge />
                         </Link>
-                        <Link href={user ? "/orders" : "/login"} className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
-                            <User className="h-5 w-5" />
-                        </Link>
+
+                        {user ? (
+                            <div className="relative group">
+                                <button className="flex items-center space-x-2 p-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                                    <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold overflow-hidden">
+                                        {user.photoURL ? (
+                                            <img src={user.photoURL} alt={user.displayName || "User"} className="h-full w-full object-cover" />
+                                        ) : (
+                                            (user.displayName || "U").charAt(0).toUpperCase()
+                                        )}
+                                    </div>
+                                    <span className="hidden md:block font-medium text-sm">
+                                        Hi, {user.displayName?.split(" ")[0] || "User"}
+                                    </span>
+                                </button>
+
+                                {/* Dropdown Menu */}
+                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all transform origin-top-right z-50">
+                                    <div className="px-4 py-3 border-b border-gray-50 md:hidden">
+                                        <p className="text-sm font-bold text-gray-900">{user.displayName || "User"}</p>
+                                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                    </div>
+
+                                    <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700">
+                                        My Orders
+                                    </Link>
+                                    {(dbUser?.role === 'admin' || dbUser?.role === 'manager') && (
+                                        <Link href="/admin" className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700">
+                                            Admin Dashboard
+                                        </Link>
+                                    )}
+                                    <button
+                                        onClick={() => logout()}
+                                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                    >
+                                        Logout
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                            <Link href="/login" className="flex items-center space-x-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-bold hover:bg-green-700 transition-colors">
+                                <User className="h-4 w-4" />
+                                <span>Login</span>
+                            </Link>
+                        )}
 
                         {/* Mobile Menu Button */}
                         <button
@@ -108,20 +150,6 @@ export default function Navbar() {
                                 {link.label}
                             </Link>
                         ))}
-                        {(dbUser?.role === 'admin' || dbUser?.role === 'manager') && (
-                            <Link
-                                href="/admin"
-                                onClick={() => setIsOpen(false)}
-                                className={clsx(
-                                    "block px-3 py-2 rounded-md text-base font-medium transition-colors",
-                                    isActive("/admin")
-                                        ? "bg-green-100 text-green-700"
-                                        : "text-green-600 hover:bg-green-50"
-                                )}
-                            >
-                                Admin Dashboard
-                            </Link>
-                        )}
                     </div>
                 </div>
             )}

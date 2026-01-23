@@ -47,7 +47,7 @@ export default function LoginPage() {
                             className="h-24 w-auto object-contain"
                         />
                     </div>
-                    <h2 className="text-3xl font-extrabold text-gray-900">Welcome Back</h2>
+                    <h2 className="text-3xl font-extrabold text-gray-900">Welcome</h2>
                     <p className="mt-2 text-sm text-gray-600">
                         Sign in to your Greenbird account
                     </p>
@@ -91,11 +91,7 @@ export default function LoginPage() {
                     </button>
                 </div>
 
-                <div className="text-center text-sm mt-6">
-                    <p className="text-gray-600">
-                        Staff member? <Link href="/admin/login" className="font-bold text-green-600 hover:text-green-500">Admin Login</Link>
-                    </p>
-                </div>
+
             </div>
         </div>
     );

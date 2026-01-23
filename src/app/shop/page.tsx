@@ -1,13 +1,10 @@
 import Link from "next/link";
 import ProductCard from "@/components/ui/ProductCard";
 import { ProductService } from "@/services/product.service";
+import OrderSuccessMessage from "@/components/ui/OrderSuccessMessage";
 import { Filter } from "lucide-react";
 
-export default async function ShopPage(props: {
-    searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-    const searchParams = await props.searchParams;
-    const orderSuccess = searchParams?.orderSuccess === 'true';
+export default async function ShopPage() {
     const products = await ProductService.getAllProducts();
     const categories = ["All", "Livestocks", "Crops", "Products", "Assets"];
 
@@ -40,17 +37,7 @@ export default async function ShopPage(props: {
 
                     {/* Product Grid */}
                     <div className="flex-1">
-                        {orderSuccess && (
-                            <div className="mb-8 bg-[#2D5A27]/10 border border-[#2D5A27]/20 text-[#2D5A27] rounded-2xl p-6 flex justify-between items-center shadow-sm">
-                                <div>
-                                    <span className="font-bold text-lg">Order Placed Successfully!</span>
-                                    <p className="text-gray-700 mt-1">You can view your order status in <Link href="/orders" className="underline font-semibold">My Orders</Link>.</p>
-                                </div>
-                                <Link href="/orders" className="bg-[#2D5A27] text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-[#1f3e1b] transition-colors">
-                                    View Status
-                                </Link>
-                            </div>
-                        )}
+                        <OrderSuccessMessage />
 
                         <div className="flex justify-between items-center mb-6">
                             <h1 className="text-2xl font-bold text-gray-900">All Products</h1>

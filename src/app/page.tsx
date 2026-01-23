@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Leaf, ShieldCheck, Truck } from "lucide-react";
+import { ArrowRight, Leaf, Utensils, Bird, Trees } from "lucide-react";
 import ProductCard from "@/components/ui/ProductCard";
 
 import { Product } from "@/types";
@@ -88,30 +88,49 @@ export default function Home() {
 
 
 
-      {/* Value Props */}
+      {/* Core Offerings & Products */}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-6 bg-[#2D5A27]/5 rounded-2xl text-center hover:shadow-lg transition-shadow">
-              <div className="bg-[#2D5A27]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Leaf className="h-8 w-8 text-[#2D5A27]" />
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900">Core Offerings & Products</h2>
+            <p className="text-gray-600 mt-2">Experience the best of what Greenbird Homestead has to offer</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Farm-to-Table Dining */}
+            <div className="p-6 bg-[#2D5A27]/5 rounded-2xl text-center hover:shadow-lg transition-shadow group">
+              <div className="bg-[#2D5A27]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[#2D5A27] transition-colors">
+                <Utensils className="h-8 w-8 text-[#2D5A27] group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">100% Organic</h3>
-              <p className="text-gray-600">No harmful chemicals or pesticides. Just pure, natural goodness.</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Farm-to-Table Dining</h3>
+              <p className="text-gray-600 text-sm">Dining experience where meals are prepared using fresh ingredients harvested directly from the farm.</p>
             </div>
-            <div className="p-6 bg-[#2D5A27]/5 rounded-2xl text-center hover:shadow-lg transition-shadow">
-              <div className="bg-[#2D5A27]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Truck className="h-8 w-8 text-[#2D5A27]" />
+
+            {/* Organic Produce */}
+            <div className="p-6 bg-[#2D5A27]/5 rounded-2xl text-center hover:shadow-lg transition-shadow group">
+              <div className="bg-[#2D5A27]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[#2D5A27] transition-colors">
+                <Leaf className="h-8 w-8 text-[#2D5A27] group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Fast Delivery</h3>
-              <p className="text-gray-600">From our farm to your doorstep in record time.</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Organic Produce</h3>
+              <p className="text-gray-600 text-sm">The farm grows a variety of organic vegetables without the use of synthetic chemicals.</p>
             </div>
-            <div className="p-6 bg-[#2D5A27]/5 rounded-2xl text-center hover:shadow-lg transition-shadow">
-              <div className="bg-[#2D5A27]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <ShieldCheck className="h-8 w-8 text-[#2D5A27]" />
+
+            {/* Free-Range Livestock */}
+            <div className="p-6 bg-[#2D5A27]/5 rounded-2xl text-center hover:shadow-lg transition-shadow group">
+              <div className="bg-[#2D5A27]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[#2D5A27] transition-colors">
+                <Bird className="h-8 w-8 text-[#2D5A27] group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Quality Grade</h3>
-              <p className="text-gray-600">Certified quality checks to ensure you get the best.</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Free-Range Livestock</h3>
+              <p className="text-gray-600 text-sm">Specializing in local free-range chicken and fresh farm eggs.</p>
+            </div>
+
+            {/* Nature Experience */}
+            <div className="p-6 bg-[#2D5A27]/5 rounded-2xl text-center hover:shadow-lg transition-shadow group">
+              <div className="bg-[#2D5A27]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[#2D5A27] transition-colors">
+                <Trees className="h-8 w-8 text-[#2D5A27] group-hover:text-white transition-colors" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Nature Experience</h3>
+              <p className="text-gray-600 text-sm">A "place to have fun" and connect with nature, perfect for escaping the city.</p>
             </div>
           </div>
         </div>

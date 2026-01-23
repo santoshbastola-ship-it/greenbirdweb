@@ -15,7 +15,7 @@ export default function Footer() {
                             />
                         </div>
                         <p className="text-gray-300 text-sm leading-relaxed">
-                            Providing fresh, organic farm products directly to your table.
+                            The homestead emphasizes "Organic, Local, and Fresh" as its primary mission.
                             Sustainable farming for a better future.
                         </p>
                     </div>
@@ -37,7 +37,7 @@ export default function Footer() {
                         <ul className="space-y-3 text-sm text-gray-300">
                             <li className="flex items-start gap-2">
                                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                                <span>Kathmandu, Nepal</span>
+                                <span>Bastola Chowk, Besi Gaun, Duwakot, Bhaktapur, Nepal</span>
                             </li>
                             <li className="flex items-center gap-2">
                                 <Mail className="h-4 w-4 flex-shrink-0" />
