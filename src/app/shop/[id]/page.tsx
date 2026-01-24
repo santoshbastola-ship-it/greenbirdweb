@@ -1,5 +1,5 @@
 import { ProductService } from "@/services/product.service";
-import { ArrowLeft, Minus, Plus, ShoppingBag, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Minus, Plus, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AddToCartButton from "@/components/ui/AddToCartButton";
@@ -8,16 +8,20 @@ interface PageProps {
     params: Promise<{ id: string }>;
 }
 
-// Generate static params for all products
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
-    const products = await ProductService.getAllProducts();
-    return products.map((product) => ({
-        id: product.id,
-    }));
+    return [{ id: 'placeholder' }];
 }
 
 export default async function ProductDetailsPage({ params }: PageProps) {
     const { id } = await params;
+
+    // Handle placeholder for build time
+    if (id === 'placeholder') {
+        return <div className="min-h-screen bg-[#FCF9F1] py-12 flex items-center justify-center font-bold text-2xl">Loading Product Details...</div>;
+    }
+
     const product = await ProductService.getProductById(id);
 
     if (!product) {

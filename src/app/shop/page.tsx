@@ -3,6 +3,8 @@ import CategoryFilter from "@/components/shop/CategoryFilter";
 import ProductList from "@/components/shop/ProductList";
 import { Suspense } from "react";
 
+
+
 export default async function ShopPage() {
     const products = await ProductService.getAllProducts();
 

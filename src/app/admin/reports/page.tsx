@@ -33,9 +33,9 @@ export default function ReportsPage() {
 
     const loadFilterData = async () => {
         try {
-            const allUsers = await UserService.getAllUsers();
-            setCustomers(allUsers.filter(u => u.partnerType === "customer"));
-            setVendors(allUsers.filter(u => u.partnerType === "vendor"));
+            const allPartners = await UserService.getAllPartners();
+            setCustomers(allPartners.filter(u => (u.partnerType || "customer") === "customer"));
+            setVendors(allPartners.filter(u => u.partnerType === "vendor"));
         } catch (error) {
             console.error("Error loading filter data:", error);
         }

@@ -4,6 +4,10 @@ import {
     createUserWithEmailAndPassword,
     sendEmailVerification,
     signOut as firebaseSignOut,
+    sendPasswordResetEmail,
+    sendSignInLinkToEmail,
+    isSignInWithEmailLink,
+    signInWithEmailLink,
     GoogleAuthProvider,
     User,
     UserCredential
@@ -21,17 +25,62 @@ export const AuthService = {
     signInWithGoogle: async (): Promise<UserCredential> => {
         try {
             const result = await signInWithPopup(auth, googleProvider);
+            const email = result.user.email || '';
 
-            // Ensure customer exists in database
+            // Ensure user exists in database. ensureUserExists will handle the role lookup by email.
             await UserService.ensureUserExists(result.user.uid, {
                 name: result.user.displayName || 'Customer',
-                email: result.user.email || '',
-                role: 'customer'
+                email: email,
             });
 
             return result;
         } catch (error: any) {
             console.error("Error signing in with Google:", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Send passwordless sign-in link to email
+     */
+    sendSignInLink: async (email: string): Promise<void> => {
+        const actionCodeSettings = {
+            url: window.location.origin + '/login',
+            handleCodeInApp: true,
+        };
+        try {
+            await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+            window.localStorage.setItem('emailForSignIn', email);
+        } catch (error: any) {
+            console.error("Error sending sign-in link:", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Check if the sign-in link is valid
+     */
+    isSignInWithEmailLink: (authInstance: any, link: string): boolean => {
+        return isSignInWithEmailLink(authInstance, link);
+    },
+
+    /**
+     * Complete passwordless sign-in
+     */
+    completeSignInWithLink: async (email: string, link: string): Promise<UserCredential> => {
+        try {
+            const result = await signInWithEmailLink(auth, email, link);
+            window.localStorage.removeItem('emailForSignIn');
+
+            // Ensure user exists in database
+            await UserService.ensureUserExists(result.user.uid, {
+                email: email,
+                name: result.user.displayName || 'User'
+            });
+
+            return result;
+        } catch (error: any) {
+            console.error("Error completing sign-in with link:", error);
             throw error;
         }
     },
@@ -122,6 +171,48 @@ export const AuthService = {
      */
     checkEmailVerified: (user: User): boolean => {
         return user.emailVerified;
+    },
+
+    /**
+     * Update current user's password
+     */
+    updateUserPassword: async (newPassword: string): Promise<void> => {
+        const user = auth.currentUser;
+        if (!user) throw new Error("No user logged in");
+        try {
+            const { updatePassword } = await import("firebase/auth");
+            await updatePassword(user, newPassword);
+        } catch (error: any) {
+            console.error("Error updating password:", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Update current user's profile info
+     */
+    updateUserProfile: async (data: { displayName?: string; photoURL?: string }): Promise<void> => {
+        const user = auth.currentUser;
+        if (!user) throw new Error("No user logged in");
+        try {
+            const { updateProfile } = await import("firebase/auth");
+            await updateProfile(user, data);
+        } catch (error: any) {
+            console.error("Error updating profile:", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Send password reset email
+     */
+    sendPasswordResetEmail: async (email: string): Promise<void> => {
+        try {
+            await sendPasswordResetEmail(auth, email);
+        } catch (error: any) {
+            console.error("Error sending password reset email:", error);
+            throw error;
+        }
     },
 
     /**

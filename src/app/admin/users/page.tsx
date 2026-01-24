@@ -44,8 +44,14 @@ export default function UserManagementPage() {
         setIsLoading(true);
         try {
             const allUsers = await UserService.getAllUsers();
-            setUsers(allUsers);
-            setFilteredUsers(allUsers);
+            // Strictly filter out customers, only show admins and managers
+            const adminUsers = allUsers.filter(user => user.role === 'admin' || user.role === 'manager');
+
+            // Safety deduplication by id
+            const uniqueAdminUsers = adminUsers.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
+
+            setUsers(uniqueAdminUsers);
+            setFilteredUsers(uniqueAdminUsers);
         } catch (error) {
             console.error("Error loading users:", error);
         } finally {
@@ -53,15 +59,19 @@ export default function UserManagementPage() {
         }
     };
 
-    const handleInviteUser = async (email: string, password: string, name: string, role: UserRole) => {
+    const handleInviteUser = async (email: string, name: string, role: UserRole) => {
         try {
             // Only admin and manager can be created through this interface
             if (role !== 'admin' && role !== 'manager') {
                 throw new Error('Invalid role. Only admin and manager users can be created here.');
             }
 
-            // Create Firebase auth account with email/password
-            await AuthService.createUserAccount(email, password, name, role as 'admin' | 'manager');
+            // 1. Create user in Firestore (without UID yet)
+            await UserService.inviteUser(email, name, role as 'admin' | 'manager');
+
+            // 2. Send sign-in link
+            await AuthService.sendSignInLink(email);
+
             await loadUsers();
         } catch (error: any) {
             console.error("Error inviting user:", error);
@@ -78,6 +88,35 @@ export default function UserManagementPage() {
         } catch (error: any) {
             throw error;
         }
+    };
+
+    const handleDeleteUser = async (userId: string) => {
+        if (confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+            try {
+                await UserService.deleteUser(userId);
+                await loadUsers();
+                alert("User deleted successfully");
+            } catch (error) {
+                console.error("Error deleting user:", error);
+                alert("Failed to delete user");
+            }
+        }
+        setActiveMenu(null);
+    };
+
+    const handleResendInvite = async (email: string) => {
+        if (!email) {
+            alert("User has no email address");
+            return;
+        }
+        try {
+            await AuthService.sendSignInLink(email);
+            alert("Invitation sent successfully!");
+        } catch (error) {
+            console.error("Error resending invite:", error);
+            alert("Failed to send invitation");
+        }
+        setActiveMenu(null);
     };
 
     const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
@@ -240,6 +279,20 @@ export default function UserManagementPage() {
                                                             }`}
                                                     >
                                                         {user.isActive ? "Deactivate" : "Activate"}
+                                                    </button>
+                                                    {user.email && (
+                                                        <button
+                                                            onClick={() => handleResendInvite(user.email!)}
+                                                            className="w-full text-left px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 transition-colors"
+                                                        >
+                                                            Resend Invitation
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        onClick={() => handleDeleteUser(user.id)}
+                                                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
+                                                    >
+                                                        Delete User
                                                     </button>
                                                 </div>
                                             </>

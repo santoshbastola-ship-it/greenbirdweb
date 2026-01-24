@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 import { useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+
 
 export default function AdminSidebar() {
     const pathname = usePathname();
@@ -41,12 +43,15 @@ export default function AdminSidebar() {
         { href: "/admin/partners", label: "Partners", icon: Users },
         { href: "/admin/reports", label: "Reports", icon: BarChart3 },
         { href: "/admin/blog", label: "Blog", icon: FileText },
+        { href: "/admin/activities", label: "Farm Activities", icon: Activity },
         { href: "/admin/bookings", label: "Bookings", icon: CalendarDays },
         { href: "/admin/users", label: "Users", icon: Users },
         { href: "/admin/settings", label: "Settings", icon: Settings },
     ];
 
     const isActive = (path: string) => pathname === path || pathname.startsWith(`${path}/`);
+
+    const { logout } = useAuth();
 
     return (
         <>
@@ -126,7 +131,10 @@ export default function AdminSidebar() {
 
                     {/* Footer / Logout */}
                     <div className="p-4 border-t border-green-800">
-                        <button className="flex items-center w-full px-4 py-2 text-sm font-medium text-green-200 hover:text-white transition-colors group relative">
+                        <button
+                            onClick={() => logout()}
+                            className="flex items-center w-full px-4 py-2 text-sm font-medium text-green-200 hover:text-white transition-colors group relative"
+                        >
                             <LogOut className={clsx("h-5 w-5 flex-shrink-0", !isCollapsed && "mr-3")} />
                             {!isCollapsed && <span>Sign Out</span>}
                             {isCollapsed && (

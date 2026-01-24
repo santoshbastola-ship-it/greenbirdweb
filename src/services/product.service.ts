@@ -1,63 +1,84 @@
-import { collection, getDocs, doc, getDoc, query, where, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { collection, getDocs, doc, getDoc, query, where, updateDoc, deleteDoc, addDoc } from "firebase/firestore";
+import { db, storage } from "@/lib/firebase";
 import { Product, StockHistoryEntry } from "@/types";
-import { MOCK_PRODUCTS } from "@/lib/mock-data";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const COLLECTION_NAME = "products";
 
 export const ProductService = {
     getAllProducts: async (): Promise<Product[]> => {
         try {
-            // Check if API key is present, if not, use mock
-            if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'replace_me') {
-                console.log("Using Mock Data (No API Key)");
-                return MOCK_PRODUCTS;
-            }
-
             const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
-            if (querySnapshot.empty) {
-                return MOCK_PRODUCTS; // Fallback if DB is empty
-            }
             return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
         } catch (error) {
             console.error("Error fetching products:", error);
-            return MOCK_PRODUCTS; // Fallback on error
+            return [];
         }
     },
 
     getProductById: async (id: string): Promise<Product | null> => {
         try {
-            if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'replace_me') {
-                return MOCK_PRODUCTS.find(p => p.id === id) || null;
-            }
-
             const docRef = doc(db, COLLECTION_NAME, id);
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
                 return { id: docSnap.id, ...docSnap.data() } as Product;
             } else {
-                // Fallback to mock search in case we are in hybrid mode (or id is from mock)
-                return MOCK_PRODUCTS.find(p => p.id === id) || null;
+                return null;
             }
         } catch (error) {
             console.error("Error fetching product:", error);
-            return MOCK_PRODUCTS.find(p => p.id === id) || null;
+            return null;
         }
     },
 
     getProductsByCategory: async (category: string): Promise<Product[]> => {
         try {
-            if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'replace_me') {
-                return MOCK_PRODUCTS.filter(p => p.businessType === category);
-            }
-
             const q = query(collection(db, COLLECTION_NAME), where("businessType", "==", category));
             const querySnapshot = await getDocs(q);
             return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
         } catch (error) {
             console.error("Error fetching category:", error);
-            return MOCK_PRODUCTS.filter(p => p.businessType === category);
+            return [];
+        }
+    },
+
+    createProduct: async (product: Partial<Product>): Promise<string> => {
+        try {
+            const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+                ...product,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            });
+            return docRef.id;
+        } catch (error) {
+            console.error("Error creating product:", error);
+            throw error;
+        }
+    },
+
+    updateProduct: async (id: string, product: Partial<Product>): Promise<void> => {
+        try {
+            const docRef = doc(db, COLLECTION_NAME, id);
+            await updateDoc(docRef, {
+                ...product,
+                updatedAt: new Date().toISOString(),
+            });
+        } catch (error) {
+            console.error("Error updating product:", error);
+            throw error;
+        }
+    },
+
+    uploadProductImage: async (file: File): Promise<string> => {
+        try {
+            const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
+            const snapshot = await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(snapshot.ref);
+            return downloadURL;
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            throw error;
         }
     },
 
@@ -101,31 +122,28 @@ export const ProductService = {
             note: note
         };
 
-        // 4. Update Persistence (Mock or Firebase)
+        // 4. Update Persistence (Firebase)
         try {
-            if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'replace_me') {
-                // Mock Update
-                const index = MOCK_PRODUCTS.findIndex(p => p.id === productId);
-                if (index !== -1) {
-                    MOCK_PRODUCTS[index] = {
-                        ...MOCK_PRODUCTS[index],
-                        currentStock: newStock,
-                        stockHistory: [historyEntry, ...(MOCK_PRODUCTS[index].stockHistory || [])]
-                    };
-                }
-            } else {
-                // Firebase Update
-                // Note: In a real app, this should be a transaction to ensure atomicity
-                const docRef = doc(db, COLLECTION_NAME, productId);
-                const currentHistory = product.stockHistory || [];
+            // Firebase Update
+            // Note: In a real app, this should be a transaction to ensure atomicity
+            const docRef = doc(db, COLLECTION_NAME, productId);
+            const currentHistory = product.stockHistory || [];
 
-                await updateDoc(docRef, {
-                    currentStock: newStock,
-                    stockHistory: [historyEntry, ...currentHistory]
-                });
-            }
+            await updateDoc(docRef, {
+                currentStock: newStock,
+                stockHistory: [historyEntry, ...currentHistory]
+            });
         } catch (error) {
             console.error("Error updating stock:", error);
+            throw error;
+        }
+    },
+
+    deleteProduct: async (id: string): Promise<void> => {
+        try {
+            await deleteDoc(doc(db, COLLECTION_NAME, id));
+        } catch (error) {
+            console.error("Error deleting product:", error);
             throw error;
         }
     }

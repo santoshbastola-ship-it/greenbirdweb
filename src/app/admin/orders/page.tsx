@@ -14,6 +14,8 @@ const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(
 });
 
 import "nepali-datepicker-reactjs/dist/index.css";
+import PaymentStatusDropdown from "@/components/admin/PaymentStatusDropdown";
+import OrderPartialPaymentDialog from "@/components/admin/OrderPartialPaymentDialog";
 
 type TabStatus = OrderStatus;
 
@@ -160,6 +162,7 @@ function OrderCard({ order, onUpdate }: { order: TransactionRecord; onUpdate: ()
     const [isUpdating, setIsUpdating] = useState(false);
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [showDetails, setShowDetails] = useState(false);
+    const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
     const getStatusColor = (status: OrderStatus) => {
         switch (status) {
@@ -186,6 +189,46 @@ function OrderCard({ order, onUpdate }: { order: TransactionRecord; onUpdate: ()
         }
     };
 
+    const handlePaymentStatusChange = async (newStatus: PaymentStatus) => {
+        if (newStatus === order.paymentStatus) return;
+
+        if (newStatus === PaymentStatus.PartialCash || newStatus === PaymentStatus.PartialOnline) {
+            setShowPaymentDialog(true);
+            return;
+        }
+
+        if (!confirm(`Are you sure you want to mark this order as ${newStatus}?`)) return;
+
+        setIsUpdating(true);
+        try {
+            const totalAmount = order.items.reduce((sum, item) => sum + item.totalPrice, 0) - (order.discount || 0);
+            let payAmount = 0;
+            let payments = order.payments || [];
+
+            if (newStatus === PaymentStatus.PaidCash || newStatus === PaymentStatus.PaidOnline) {
+                payAmount = totalAmount;
+                const remaining = totalAmount - (order.paidAmount || 0);
+                if (remaining > 0) {
+                    payments = [...payments, {
+                        amount: remaining,
+                        date: new Date(),
+                        note: `Full Payment - ${newStatus === PaymentStatus.PaidOnline ? "Online" : "Cash"}`
+                    }];
+                }
+            } else if (newStatus === PaymentStatus.Pending) {
+                payAmount = 0; // Reset paid amount if marked as pending
+            }
+
+            await TransactionService.updatePaymentStatus(order.id, newStatus, payAmount, payments);
+            onUpdate();
+        } catch (error) {
+            console.error("Error updating payment status:", error);
+            alert("Failed to update payment status");
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
     const color = getStatusColor(order.status);
     const colorClasses = {
         blue: "bg-blue-50 text-blue-700 border-blue-200",
@@ -196,12 +239,12 @@ function OrderCard({ order, onUpdate }: { order: TransactionRecord; onUpdate: ()
     };
 
     const totalAmount = order.items.reduce((sum, item) => sum + item.totalPrice, 0) - (order.discount || 0);
+    const remaining = totalAmount - (order.paidAmount || 0);
 
     return (
         <>
             <div
-                className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:border-green-200 transition-colors cursor-pointer"
-                onClick={() => setShowDetails(true)}
+                className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 transition-colors"
             >
                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
                     <div className="flex-1">
@@ -217,7 +260,7 @@ function OrderCard({ order, onUpdate }: { order: TransactionRecord; onUpdate: ()
                             <div className="flex items-center text-gray-700">
                                 <User className="h-4 w-4 mr-2 text-gray-400" />
                                 <span className="font-medium">{order.partyName}</span>
-                                {order.customerId && <span className="ml-2 text-xs text-gray-500">(Registered)</span>}
+                                {order.customerId && null}
                             </div>
                             <div className="flex items-start text-gray-600">
                                 <ShoppingBag className="h-4 w-4 mr-2 text-gray-400 mt-0.5" />
@@ -226,28 +269,45 @@ function OrderCard({ order, onUpdate }: { order: TransactionRecord; onUpdate: ()
                         </div>
                     </div>
 
-                    <div className="flex flex-col items-end gap-3">
-                        <div className="text-right">
-                            <div className="text-2xl font-bold text-green-700">Rs. {totalAmount.toLocaleString()}</div>
-                            <div className="text-xs text-gray-500">Payment: {order.paymentStatus}</div>
+                    <div className="flex flex-col items-end gap-3 w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0 mt-2 md:mt-0">
+                        <div className="text-right w-full md:w-auto flex flex-row md:flex-col justify-between md:justify-end items-center md:items-end mb-2 md:mb-0">
+                            <div className="text-left md:text-right">
+                                <div className="text-2xl font-bold text-green-700">Rs. {totalAmount.toLocaleString()}</div>
+                                {remaining > 0 && (order.paidAmount || 0) > 0 && <div className="text-sm font-medium text-orange-600">Remaining: Rs. {remaining.toLocaleString()}</div>}
+                            </div>
+                            <div className="flex justify-end mt-0 md:mt-1 ml-4 md:ml-0">
+                                <PaymentStatusDropdown
+                                    currentStatus={order.paymentStatus || PaymentStatus.Pending}
+                                    onChange={handlePaymentStatusChange}
+                                    color={
+                                        (order.paymentStatus === PaymentStatus.PaidCash || order.paymentStatus === PaymentStatus.PaidOnline) ? "green" :
+                                            (order.paymentStatus === PaymentStatus.PartialCash || order.paymentStatus === PaymentStatus.PartialOnline) ? "orange" : "red"
+                                    }
+                                />
+                            </div>
                         </div>
 
-                        {/* Status Dropdown */}
-                        <StatusDropdown
-                            currentStatus={order.status}
-                            onStatusChange={handleStatusChange}
-                            isUpdating={isUpdating}
-                            onCancelClick={() => setShowCancelDialog(true)}
-                        />
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setShowDetails(true);
-                            }}
-                            className="text-xs font-semibold text-green-600 hover:text-green-700 underline"
-                        >
-                            View Details
-                        </button>
+                        {/* Actions Row */}
+                        <div className="flex flex-row md:flex-col items-center md:items-end justify-end gap-3 w-full md:w-auto">
+                            <button
+                                onClick={() => setShowDetails(true)}
+                                className="hidden md:block text-xs font-semibold text-green-600 hover:text-green-700 underline"
+                            >
+                                View Details
+                            </button>
+                            <StatusDropdown
+                                currentStatus={order.status}
+                                onStatusChange={handleStatusChange}
+                                isUpdating={isUpdating}
+                                onCancelClick={() => setShowCancelDialog(true)}
+                            />
+                            <button
+                                onClick={() => setShowDetails(true)}
+                                className="md:hidden flex-1 px-4 py-2 border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 text-center"
+                            >
+                                View Details
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -276,6 +336,15 @@ function OrderCard({ order, onUpdate }: { order: TransactionRecord; onUpdate: ()
                 <OrderDetailsModal
                     order={order}
                     onClose={() => setShowDetails(false)}
+                />
+            )}
+
+            {/* Payment Dialog */}
+            {showPaymentDialog && (
+                <OrderPartialPaymentDialog
+                    order={order}
+                    onClose={() => setShowPaymentDialog(false)}
+                    onSuccess={onUpdate}
                 />
             )}
         </>
@@ -309,7 +378,7 @@ function StatusDropdown({
     const isCancelled = currentStatus === OrderStatus.Cancelled;
 
     return (
-        <div className="relative">
+        <div className={`relative ${isOpen ? 'z-40' : 'z-0'}`}>
             <button
                 onClick={() => !isCancelled && setIsOpen(!isOpen)}
                 disabled={isUpdating || isCancelled}
@@ -322,8 +391,8 @@ function StatusDropdown({
 
             {isOpen && !isCancelled && (
                 <>
-                    <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
+                    <div className="fixed inset-0 z-30" onClick={() => setIsOpen(false)} />
+                    <div className="absolute left-0 md:left-auto right-auto md:right-0 bottom-full mb-1 md:bottom-auto md:top-full md:mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
                         {statuses.map((status) => {
                             const statusColors = getStatusColor(status);
                             return (
@@ -417,6 +486,7 @@ function OrderDetailsModal({
 }) {
     const totalItemsPrice = order.items.reduce((sum, item) => sum + item.totalPrice, 0);
     const finalTotal = totalItemsPrice - (order.discount || 0);
+    const remainingAmount = finalTotal - (order.paidAmount || 0);
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -480,11 +550,7 @@ function OrderDetailsModal({
                             <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Customer Details</h4>
                             <div className="space-y-1">
                                 <p className="font-bold text-gray-900 text-lg">{order.partyName}</p>
-                                {order.customerId && (
-                                    <div className="inline-flex items-center px-2 py-0.5 rounded bg-green-50 text-green-700 text-xs font-medium">
-                                        Registered Customer
-                                    </div>
-                                )}
+                                {order.customerId && null}
                             </div>
                         </div>
                         <div>
@@ -535,6 +601,12 @@ function OrderDetailsModal({
                                         <td colSpan={3} className="px-4 py-4 text-right font-bold text-gray-900 text-lg">Grand Total</td>
                                         <td className="px-4 py-4 text-right font-bold text-green-700 text-lg">Rs. {finalTotal.toLocaleString()}</td>
                                     </tr>
+                                    {remainingAmount > 0 && (order.paidAmount || 0) > 0 && (
+                                        <tr className="bg-orange-50">
+                                            <td colSpan={3} className="px-4 py-3 text-right font-semibold text-orange-800">Remaining Amount</td>
+                                            <td className="px-4 py-3 text-right font-bold text-orange-700">Rs. {remainingAmount.toLocaleString()}</td>
+                                        </tr>
+                                    )}
                                 </tfoot>
                             </table>
                         </div>

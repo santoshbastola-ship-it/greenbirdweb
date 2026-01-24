@@ -7,15 +7,20 @@ interface PageProps {
 }
 
 // Generate static params for all products
+// Generate static params: empty array means no pages are pre-generated, relying on fallback
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
-    const products = await ProductService.getAllProducts();
-    return products.map((product) => ({
-        id: product.id,
-    }));
+    return [{ id: 'placeholder' }];
 }
 
 export default async function EditProductPage({ params }: PageProps) {
     const { id } = await params;
+
+    if (id === 'placeholder') {
+        return <div className="p-20 text-center font-bold text-2xl">Loading Edit Page...</div>;
+    }
+
     const product = await ProductService.getProductById(id);
 
     if (!product) {

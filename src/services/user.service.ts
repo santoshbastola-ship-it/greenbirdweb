@@ -2,14 +2,19 @@ import { collection, getDocs, query, where, doc, getDoc, addDoc, updateDoc, setD
 import { db } from "@/lib/firebase";
 import { User, UserRole } from "@/types";
 
-const COLLECTION_NAME = "users";
+const USERS_COLLECTION = "users";
+const PARTNERS_COLLECTION = "partners";
 
 export const UserService = {
     getAllCustomers: async (): Promise<User[]> => {
         try {
-            const q = query(collection(db, COLLECTION_NAME), where("role", "==", "customer"));
-            const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => {
+            // Fetch from both collections for transition
+            const q1 = query(collection(db, PARTNERS_COLLECTION), where("role", "==", "customer"));
+            const q2 = query(collection(db, USERS_COLLECTION), where("role", "==", "customer"));
+
+            const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+
+            const results = [...snap1.docs, ...snap2.docs].map(doc => {
                 const data = doc.data();
                 return {
                     id: doc.id,
@@ -17,6 +22,9 @@ export const UserService = {
                     createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt)
                 } as User;
             });
+
+            // De-duplicate if same ID exists in both (though shouldn't happen)
+            return results.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
         } catch (error) {
             console.error("Error fetching customers:", error);
             return [];
@@ -25,13 +33,20 @@ export const UserService = {
 
     getAllVendors: async (): Promise<User[]> => {
         try {
-            const q = query(
-                collection(db, COLLECTION_NAME),
+            const q1 = query(
+                collection(db, PARTNERS_COLLECTION),
                 where("role", "==", "customer"),
                 where("partnerType", "==", "vendor")
             );
-            const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => {
+            const q2 = query(
+                collection(db, USERS_COLLECTION),
+                where("role", "==", "customer"),
+                where("partnerType", "==", "vendor")
+            );
+
+            const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+
+            const results = [...snap1.docs, ...snap2.docs].map(doc => {
                 const data = doc.data();
                 return {
                     id: doc.id,
@@ -39,6 +54,8 @@ export const UserService = {
                     createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt)
                 } as User;
             });
+
+            return results.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
         } catch (error) {
             console.error("Error fetching vendors:", error);
             return [];
@@ -47,9 +64,12 @@ export const UserService = {
 
     getAllPartners: async (): Promise<User[]> => {
         try {
-            const q = query(collection(db, COLLECTION_NAME), where("role", "==", "customer"));
-            const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => {
+            const q1 = query(collection(db, PARTNERS_COLLECTION), where("role", "==", "customer"));
+            const q2 = query(collection(db, USERS_COLLECTION), where("role", "==", "customer"));
+
+            const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+
+            const results = [...snap1.docs, ...snap2.docs].map(doc => {
                 const data = doc.data();
                 return {
                     id: doc.id,
@@ -57,6 +77,8 @@ export const UserService = {
                     createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt)
                 } as User;
             });
+
+            return results.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
         } catch (error) {
             console.error("Error fetching partners:", error);
             return [];
@@ -65,8 +87,16 @@ export const UserService = {
 
     getUserById: async (id: string): Promise<User | null> => {
         try {
-            const docRef = doc(db, COLLECTION_NAME, id);
-            const docSnap = await getDoc(docRef);
+            // First check users collection (internal)
+            let docRef = doc(db, USERS_COLLECTION, id);
+            let docSnap = await getDoc(docRef);
+
+            if (!docSnap.exists()) {
+                // Then check partners collection
+                docRef = doc(db, PARTNERS_COLLECTION, id);
+                docSnap = await getDoc(docRef);
+            }
+
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 return {
@@ -84,8 +114,15 @@ export const UserService = {
 
     getUserByEmail: async (email: string): Promise<User | null> => {
         try {
-            const q = query(collection(db, COLLECTION_NAME), where("email", "==", email));
-            const querySnapshot = await getDocs(q);
+            // Check users first
+            let q = query(collection(db, USERS_COLLECTION), where("email", "==", email));
+            let querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                // Check partners
+                q = query(collection(db, PARTNERS_COLLECTION), where("email", "==", email));
+                querySnapshot = await getDocs(q);
+            }
 
             if (querySnapshot.empty) {
                 return null;
@@ -119,7 +156,7 @@ export const UserService = {
                 totalTransactionAmount: 0,
             };
 
-            const docRef = await addDoc(collection(db, COLLECTION_NAME), newCustomer);
+            const docRef = await addDoc(collection(db, PARTNERS_COLLECTION), newCustomer);
             return docRef.id;
         } catch (error) {
             console.error("Error creating customer:", error);
@@ -129,8 +166,19 @@ export const UserService = {
 
     updatePartnerTotal: async (partnerId: string, newTotal: number): Promise<void> => {
         try {
-            const docRef = doc(db, COLLECTION_NAME, partnerId);
-            await updateDoc(docRef, { totalTransactionAmount: newTotal });
+            // Try partners first
+            const docRef = doc(db, PARTNERS_COLLECTION, partnerId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                await updateDoc(docRef, { totalTransactionAmount: newTotal });
+            } else {
+                // If not in partners, maybe it's an old customer in users?
+                const userRef = doc(db, USERS_COLLECTION, partnerId);
+                const userSnap = await getDoc(userRef);
+                if (userSnap.exists()) {
+                    await updateDoc(userRef, { totalTransactionAmount: newTotal });
+                }
+            }
         } catch (error) {
             console.error("Error updating partner total:", error);
             // Don't throw - this is a background update
@@ -140,8 +188,9 @@ export const UserService = {
     // User Management Methods
     getAllUsers: async (): Promise<User[]> => {
         try {
-            const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
-            return querySnapshot.docs.map(doc => {
+            // Only internal users from USERS_COLLECTION
+            const querySnapshot = await getDocs(collection(db, USERS_COLLECTION));
+            const users = querySnapshot.docs.map(doc => {
                 const data = doc.data();
                 return {
                     id: doc.id,
@@ -149,6 +198,22 @@ export const UserService = {
                     createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt)
                 } as User;
             });
+
+            // Deduplicate by ID and Email
+            const uniqueUsers: User[] = [];
+            const seenIds = new Set<string>();
+            const seenEmails = new Set<string>();
+
+            for (const user of users) {
+                const email = user.email?.toLowerCase();
+                if (!seenIds.has(user.id) && (!email || !seenEmails.has(email))) {
+                    uniqueUsers.push(user);
+                    seenIds.add(user.id);
+                    if (email) seenEmails.add(email);
+                }
+            }
+
+            return uniqueUsers;
         } catch (error) {
             console.error("Error fetching all users:", error);
             return [];
@@ -157,8 +222,8 @@ export const UserService = {
 
     inviteUser: async (email: string, name: string, role: UserRole): Promise<string> => {
         try {
-            // Check if user already exists
-            const q = query(collection(db, COLLECTION_NAME), where("email", "==", email));
+            // Check if user already exists in users collection
+            const q = query(collection(db, USERS_COLLECTION), where("email", "==", email));
             const existingUsers = await getDocs(q);
 
             if (!existingUsers.empty) {
@@ -173,7 +238,7 @@ export const UserService = {
                 createdAt: new Date(),
             };
 
-            const docRef = await addDoc(collection(db, COLLECTION_NAME), newUser);
+            const docRef = await addDoc(collection(db, USERS_COLLECTION), newUser);
             return docRef.id;
         } catch (error) {
             console.error("Error inviting user:", error);
@@ -181,10 +246,35 @@ export const UserService = {
         }
     },
 
+    deleteUser: async (userId: string): Promise<void> => {
+        try {
+            await import("firebase/firestore").then(async ({ deleteDoc }) => {
+                const docRef = doc(db, USERS_COLLECTION, userId);
+                await deleteDoc(docRef);
+            });
+        } catch (error) {
+            console.error("Error deleting user:", error);
+            throw error;
+        }
+    },
+
     updateUser: async (userId: string, data: Partial<User>): Promise<void> => {
         try {
-            const docRef = doc(db, COLLECTION_NAME, userId);
-            await updateDoc(docRef, data);
+            // Check users first
+            let docRef = doc(db, USERS_COLLECTION, userId);
+            let docSnap = await getDoc(docRef);
+
+            if (!docSnap.exists()) {
+                // If not in users, check partners (for profile updates of customers if needed)
+                docRef = doc(db, PARTNERS_COLLECTION, userId);
+                docSnap = await getDoc(docRef);
+            }
+
+            if (docSnap.exists()) {
+                await setDoc(docRef, data, { merge: true });
+            } else {
+                throw new Error("User not found");
+            }
         } catch (error) {
             console.error("Error updating user:", error);
             throw error;
@@ -193,8 +283,18 @@ export const UserService = {
 
     toggleUserStatus: async (userId: string, isActive: boolean): Promise<void> => {
         try {
-            const docRef = doc(db, COLLECTION_NAME, userId);
-            await updateDoc(docRef, { isActive });
+            // Check users first
+            let docRef = doc(db, USERS_COLLECTION, userId);
+            let docSnap = await getDoc(docRef);
+
+            if (!docSnap.exists()) {
+                docRef = doc(db, PARTNERS_COLLECTION, userId);
+                docSnap = await getDoc(docRef);
+            }
+
+            if (docSnap.exists()) {
+                await setDoc(docRef, { isActive }, { merge: true });
+            }
         } catch (error) {
             console.error("Error toggling user status:", error);
             throw error;
@@ -203,13 +303,107 @@ export const UserService = {
 
     ensureUserExists: async (userId: string, userData: Partial<User>): Promise<void> => {
         try {
-            const docRef = doc(db, COLLECTION_NAME, userId);
-            const docSnap = await getDoc(docRef);
+            const adminEmails = ['greenbirdhomestead@gmail.com'];
+            const isHardcodedAdmin = userData.email && adminEmails.includes(userData.email);
 
-            if (!docSnap.exists()) {
-                await setDoc(docRef, {
+            // 1. Check if user already exists in USERS collection
+            const userDocRef = doc(db, USERS_COLLECTION, userId);
+            const userDocSnap = await getDoc(userDocRef);
+
+            if (userDocSnap.exists()) {
+                const currentData = userDocSnap.data();
+                if (isHardcodedAdmin && currentData.role !== 'admin') {
+                    await setDoc(userDocRef, { role: 'admin' }, { merge: true });
+                }
+                return;
+            }
+
+            // 2. Check if user exists in PARTNERS collection
+            const partnerDocRef = doc(db, PARTNERS_COLLECTION, userId);
+            const partnerDocSnap = await getDoc(partnerDocRef);
+
+            if (partnerDocSnap.exists()) {
+                // If they became an admin (e.g. invited via email in USERS collection), we should move them from PARTNERS to USERS
+                if (isHardcodedAdmin) {
+                    const currentData = partnerDocSnap.data();
+                    await setDoc(userDocRef, {
+                        ...currentData,
+                        ...userData,
+                        role: 'admin',
+                        isActive: true,
+                        createdAt: currentData.createdAt || new Date()
+                    });
+                    // Ideally delete from partners, but let's keep it safe for now or delete later
+                    return;
+                }
+                return;
+            }
+
+            // 3. User doesn't exist by UID in either collection. 
+            // Check if there's an email-based document in EITHER collection.
+            if (userData.email) {
+                // Check USERS collection (e.g. invited admin)
+                const qUser = query(collection(db, USERS_COLLECTION), where("email", "==", userData.email));
+                const userSnapshot = await getDocs(qUser);
+
+                if (!userSnapshot.empty) {
+                    const existingDoc = userSnapshot.docs[0];
+                    const existingData = existingDoc.data();
+                    await setDoc(userDocRef, {
+                        ...existingData,
+                        ...userData,
+                        role: isHardcodedAdmin ? 'admin' : (existingData.role || 'manager'), // If in USERS, they are at least manager
+                        isActive: true,
+                        createdAt: existingData.createdAt || new Date(),
+                    });
+                    return;
+                }
+
+                // Check PARTNERS collection
+                const qPartner = query(collection(db, PARTNERS_COLLECTION), where("email", "==", userData.email));
+                const partnerSnapshot = await getDocs(qPartner);
+
+                if (!partnerSnapshot.empty) {
+                    const existingDoc = partnerSnapshot.docs[0];
+                    const existingData = existingDoc.data();
+
+                    if (isHardcodedAdmin) {
+                        // Move to USERS
+                        await setDoc(userDocRef, {
+                            ...existingData,
+                            ...userData,
+                            role: 'admin',
+                            isActive: true,
+                            createdAt: existingData.createdAt || new Date(),
+                        });
+                    } else {
+                        // Keep in PARTNERS but with UID
+                        await setDoc(partnerDocRef, {
+                            ...existingData,
+                            ...userData,
+                            role: existingData.role || 'customer',
+                            isActive: true,
+                            createdAt: existingData.createdAt || new Date(),
+                        });
+                    }
+                    return;
+                }
+            }
+
+            // 4. No existing record found. Create NEW record.
+            if (isHardcodedAdmin) {
+                await setDoc(userDocRef, {
                     ...userData,
-                    role: userData.role || 'customer',
+                    role: 'admin',
+                    isActive: true,
+                    createdAt: new Date(),
+                    totalTransactionAmount: 0,
+                });
+            } else {
+                // Default to partner/customer
+                await setDoc(partnerDocRef, {
+                    ...userData,
+                    role: 'customer',
                     isActive: true,
                     createdAt: new Date(),
                     totalTransactionAmount: 0,

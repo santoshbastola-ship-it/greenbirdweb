@@ -4,271 +4,522 @@ import { useState, useEffect } from "react";
 import { ProductService } from "@/services/product.service";
 import { UserService } from "@/services/user.service";
 import { TransactionService } from "@/services/transaction.service";
-import { Product, StockUnit, TransactionType, PaymentStatus, OrderStatus, User } from "@/types";
-import { ArrowLeft, Plus, Trash2, Save, Search, ShoppingBag } from "lucide-react";
+import { Product, StockUnit, TransactionType, PaymentStatus, OrderStatus, User, SalesItem, BusinessType } from "@/types";
+import { ArrowLeft, Plus, Trash2, Save, UserPlus, Calendar, Package, Info, Edit, CreditCard, Tag } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import dynamic from 'next/dynamic';
+import AddPartnerModal from "@/components/admin/AddPartnerModal";
+import NepaliDate from "nepali-date-converter";
+import { toNepali } from "@/lib/date-helper";
 
-// Local interface for line items in the POS
-interface POSItem {
-    productId: string;
-    productName: string;
-    unit: StockUnit;
-    price: number;
-    quantity: number;
-    total: number;
-}
+// Dynamic import for NepaliDatePicker to avoid SSR issues
+const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
+    ssr: false,
+    loading: () => <input type="text" placeholder="Loading..." className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50" />
+});
+
+import "nepali-datepicker-reactjs/dist/index.css";
 
 export default function NewPurchasePage() {
     const router = useRouter();
-    const [products, setProducts] = useState<Product[]>([]);
     const [vendors, setVendors] = useState<User[]>([]);
-    const [partyName, setPartyName] = useState("");
-    const [vendorId, setVendorId] = useState<string | undefined>(undefined);
-    const [cart, setCart] = useState<POSItem[]>([]);
-    const [searchQuery, setSearchQuery] = useState("");
+    const [availableUsers, setAvailableUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(false);
+    const [showAddVendor, setShowAddVendor] = useState(false);
+
+    // Form State
+    const [purchaseDate, setPurchaseDate] = useState(toNepali(new Date(), "YYYY-MM-DD"));
+    const [selectedVendor, setSelectedVendor] = useState<User | null>(null);
+    const [purchasedBy, setPurchasedBy] = useState<string>("Admin");
+    const [items, setItems] = useState<SalesItem[]>([]);
+    const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(PaymentStatus.Pending);
+    const [paidAmount, setPaidAmount] = useState<string>("0");
+    const [discount, setDiscount] = useState<string>("0");
+
+    // Item Entry State
+    const [entryItem, setEntryItem] = useState({
+        name: "",
+        quantity: "",
+        totalPrice: "",
+        description: "",
+        businessType: 'product' as BusinessType,
+        unit: 'pcs' as StockUnit
+    });
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
     useEffect(() => {
         loadData();
     }, []);
 
     const loadData = async () => {
-        const data = await ProductService.getAllProducts();
-        setProducts(data);
-        // Assuming UserService has a method for vendors or we filter users
-        const allUsers = await UserService.getAllUsers();
-        const vendorsData = allUsers.filter(u => u.partnerType === "vendor");
-        setVendors(vendorsData);
+        const [allVendors, allUsers] = await Promise.all([
+            UserService.getAllVendors(),
+            UserService.getAllUsers()
+        ]);
+        setVendors(allVendors);
+        setAvailableUsers(allUsers);
+
+        // Find current user or default to first admin
+        const adminUser = allUsers.find(u => u.role === 'admin');
+        if (adminUser) setPurchasedBy(adminUser.name);
     };
 
-    const addToCart = (product: Product) => {
-        const existing = cart.find(item => item.productId === product.id);
-        if (existing) {
-            updateQuantity(product.id, existing.quantity + 1);
-        } else {
-            setCart([...cart, {
-                productId: product.id,
-                productName: product.name,
-                unit: product.unit,
-                price: product.currentPrice,
-                quantity: 1,
-                total: product.currentPrice
-            }]);
-        }
-    };
-
-    const updateQuantity = (id: string, qty: number) => {
-        if (qty <= 0) {
-            removeFromCart(id);
+    const handleAddItem = () => {
+        if (!entryItem.name || !entryItem.quantity || !entryItem.totalPrice) {
+            alert("Please fill in all required item fields (Name, Quantity, Total Price)");
             return;
         }
-        setCart(cart.map(item =>
-            item.productId === id
-                ? { ...item, quantity: qty, total: qty * item.price }
-                : item
-        ));
+
+        const qty = parseFloat(entryItem.quantity) || 0;
+        const total = parseFloat(entryItem.totalPrice) || 0;
+
+        const newItem: SalesItem = {
+            productId: editingIndex !== null ? items[editingIndex].productId : Date.now().toString(),
+            productName: entryItem.name,
+            businessType: entryItem.businessType,
+            quantity: qty,
+            unit: entryItem.unit,
+            priceUnit: entryItem.unit,
+            pricePerUnit: qty > 0 ? total / qty : 0,
+            totalPrice: total,
+            description: entryItem.description
+        };
+
+        if (editingIndex !== null) {
+            const updatedItems = [...items];
+            updatedItems[editingIndex] = newItem;
+            setItems(updatedItems);
+            setEditingIndex(null);
+        } else {
+            setItems([...items, newItem]);
+        }
+
+        // Reset Entry Form
+        setEntryItem({
+            name: "",
+            quantity: "",
+            totalPrice: "",
+            description: "",
+            businessType: 'product',
+            unit: 'pcs'
+        });
     };
 
-    const removeFromCart = (id: string) => {
-        setCart(cart.filter(item => item.productId !== id));
+    const handleEditItem = (index: number) => {
+        const item = items[index];
+        setEntryItem({
+            name: item.productName,
+            quantity: item.quantity.toString(),
+            totalPrice: item.totalPrice.toString(),
+            description: item.description || "",
+            businessType: item.businessType,
+            unit: item.unit
+        });
+        setEditingIndex(index);
     };
 
-    const filteredProducts = products.filter(p =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const handleRemoveItem = (index: number) => {
+        setItems(items.filter((_, i) => i !== index));
+        if (editingIndex === index) {
+            setEditingIndex(null);
+            setEntryItem({
+                name: "",
+                quantity: "",
+                totalPrice: "",
+                description: "",
+                businessType: 'product',
+                unit: 'pcs'
+            });
+        }
+    };
 
-    const totalAmount = cart.reduce((sum, item) => sum + item.total, 0);
+    const subtotal = items.reduce((sum, item) => sum + item.totalPrice, 0);
+    const totalPayable = subtotal - (parseFloat(discount) || 0);
 
     const handleSave = async () => {
-        if (!partyName) {
-            alert("Please enter Vendor/Supplier Name");
+        if (!selectedVendor) {
+            alert("Please select or add a Vendor");
             return;
         }
-        if (cart.length === 0) {
-            alert("Cart is empty");
+        if (items.length === 0) {
+            alert("Please add at least one item to the purchase");
             return;
         }
 
         setLoading(true);
         try {
+            // Convert Nepali Date BS to AD Date object
+            const nepaliDate = new NepaliDate(purchaseDate);
+            const adDate = nepaliDate.toJsDate();
+
             await TransactionService.createTransaction({
-                billNo: "PUR-" + Math.floor(Math.random() * 100000),
+                billNo: "PUR-" + Math.floor(Math.random() * 1000000).toString().padStart(6, '0'),
                 type: TransactionType.Purchase,
-                items: cart.map(item => ({
-                    productId: item.productId,
-                    productName: item.productName,
-                    businessType: 'product',
-                    quantity: item.quantity,
-                    unit: item.unit,
-                    priceUnit: item.unit,
-                    pricePerUnit: item.price,
-                    totalPrice: item.total
-                })),
-                ...(vendorId ? { customerId: vendorId } : {}),
-                partyName: partyName,
-                date: new Date(),
-                discount: 0,
-                soldBy: "Admin",
-                enteredBy: "admin",
+                items: items,
+                customerId: selectedVendor.id,
+                partyName: selectedVendor.name,
+                date: adDate,
+                discount: parseFloat(discount) || 0,
+                soldBy: purchasedBy,
+                enteredBy: "Admin", // Should be actual logged in user
                 entryTimestamp: new Date(),
-                paymentStatus: PaymentStatus.Pending, // Purchases often pending
+                paymentStatus: paymentStatus,
                 status: OrderStatus.Delivered,
-                paidAmount: 0,
-                payments: []
+                paidAmount: parseFloat(paidAmount) || 0,
+                payments: parseFloat(paidAmount) > 0 ? [{
+                    amount: parseFloat(paidAmount),
+                    date: new Date(),
+                    note: "Initial Payment"
+                }] : []
             });
 
-            alert("Purchase saved successfully");
+            alert("Purchase recorded successfully");
             router.push("/admin/sales");
         } catch (error) {
             console.error("Error saving purchase:", error);
-            alert("Failed to save purchase");
+            alert("Failed to record purchase. Please try again.");
         } finally {
             setLoading(false);
         }
     };
 
-    return (
-        <div className="h-[calc(100vh-100px)] flex flex-col md:flex-row gap-6">
-            {/* Left: Product Selection */}
-            <div className="w-full md:w-1/2 lg:w-3/5 flex flex-col h-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-4 border-b border-gray-100 bg-gray-50">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search materials/products..."
-                            className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:ring-red-500 focus:border-red-500"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            autoFocus
-                        />
-                    </div>
-                </div>
+    const handleAddVendor = async (vendorData: any) => {
+        try {
+            const newVendorId = await UserService.createCustomer({
+                ...vendorData,
+                partnerType: "vendor"
+            });
+            const newVendor: User = {
+                id: newVendorId,
+                ...vendorData,
+                role: 'customer',
+                partnerType: 'vendor',
+                isActive: true,
+                createdAt: new Date()
+            };
+            setVendors([newVendor, ...vendors]);
+            setSelectedVendor(newVendor);
+            setShowAddVendor(false);
+        } catch (error) {
+            console.error("Error adding vendor:", error);
+            alert("Failed to add vendor");
+        }
+    };
 
-                <div className="flex-1 overflow-y-auto p-4">
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filteredProducts.map(product => (
-                            <button
-                                key={product.id}
-                                onClick={() => addToCart(product)}
-                                className="flex flex-col text-left p-3 border border-gray-200 rounded-xl hover:border-red-500 hover:bg-red-50 transition-all active:scale-95"
-                            >
-                                <div className="h-24 w-full bg-gray-100 rounded-lg mb-3 overflow-hidden">
-                                    <img src={product.images[0] || "/placeholder.png"} className="h-full w-full object-cover" />
-                                </div>
-                                <h4 className="font-bold text-gray-900 text-sm">{product.name}</h4>
-                                <p className="text-xs text-gray-500">{product.currentStock} {product.unit} in stock</p>
-                                <p className="font-bold text-red-600 mt-1">Rs {product.currentPrice}</p>
-                            </button>
-                        ))}
+    return (
+        <div className="max-w-5xl mx-auto space-y-6 pb-20">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <Link href="/admin/sales" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <ArrowLeft className="h-6 w-6 text-gray-500" />
+                    </Link>
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">New Purchase</h1>
+                        <p className="text-sm text-gray-500">Record a new stock purchase or supply entry</p>
                     </div>
                 </div>
+                <button
+                    onClick={handleSave}
+                    disabled={loading || items.length === 0}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {loading ? "Recording..." : <><Save className="h-5 w-5" /> Record Purchase</>}
+                </button>
             </div>
 
-            {/* Right: Cart & Checkout */}
-            <div className="w-full md:w-1/2 lg:w-2/5 flex flex-col h-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50">
-                    <h2 className="font-bold text-gray-900 flex items-center">
-                        <Link href="/admin/sales" className="mr-3 text-gray-500 hover:text-black">
-                            <ArrowLeft className="h-5 w-5" />
-                        </Link>
-                        New Purchase
-                    </h2>
-                    <span className="text-sm font-medium bg-red-100 text-red-800 px-3 py-1 rounded-full">
-                        {cart.length} Items
-                    </span>
-                </div>
-
-                <div className="p-4 border-b border-gray-100">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">
-                        Vendor / Supplier Name
-                    </label>
-                    <div className="flex gap-2">
-                        <input
-                            type="text"
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 font-medium"
-                            placeholder="Enter vendor name"
-                            value={partyName}
-                            onChange={(e) => setPartyName(e.target.value)}
-                        />
-                        <select
-                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 text-sm w-1/3"
-                            onChange={(e) => {
-                                const selectedUser = vendors.find(v => v.id === e.target.value);
-                                if (selectedUser) {
-                                    setVendorId(selectedUser.id);
-                                    setPartyName(selectedUser.name || "");
-                                } else {
-                                    setVendorId(undefined);
-                                    setPartyName("");
-                                }
-                            }}
-                            value={vendorId || ""}
-                        >
-                            <option value="">Manual Entry</option>
-                            {vendors.map(v => (
-                                <option key={v.id} value={v.id}>
-                                    {v.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                    {cart.length === 0 ? (
-                        <div className="h-full flex flex-col items-center justify-center text-gray-400">
-                            <ShoppingBag className="h-12 w-12 mb-2 opacity-50" />
-                            <p>Add purchase items from the left</p>
-                        </div>
-                    ) : (
-                        cart.map((item) => (
-                            <div key={item.productId} className="flex items-center justify-between p-3 border border-gray-100 rounded-lg bg-gray-50">
-                                <div className="flex-1">
-                                    <h4 className="font-medium text-gray-900">{item.productName}</h4>
-                                    <div className="text-xs text-gray-500">
-                                        {item.quantity} {item.unit} x {item.price}
-                                    </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left: General Info & Items */}
+                <div className="lg:col-span-2 space-y-6">
+                    {/* General Information Card */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6">
+                        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <Info className="h-5 w-5 text-red-500" /> General Information
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-2">
+                                    <Calendar className="h-4 w-4 text-gray-400" /> Purchase Date (BS)
+                                </label>
+                                <div className="nepali-datepicker-container">
+                                    <NepaliDatePicker
+                                        value={purchaseDate}
+                                        onChange={(date: string) => setPurchaseDate(date)}
+                                        options={{ calenderLocale: "en", valueLocale: "en" }}
+                                        className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all"
+                                    />
                                 </div>
-                                <div className="flex items-center space-x-3">
-                                    <div className="flex items-center bg-white rounded-lg border border-gray-200 h-8">
-                                        <button onClick={() => updateQuantity(item.productId, item.quantity - 1)} className="px-2 hover:bg-gray-100">-</button>
-                                        <input
-                                            type="number"
-                                            className="w-12 text-center text-sm border-0 focus:ring-0 p-0"
-                                            value={item.quantity}
-                                            onChange={(e) => updateQuantity(item.productId, parseFloat(e.target.value) || 0)}
-                                        />
-                                        <button onClick={() => updateQuantity(item.productId, item.quantity + 1)} className="px-2 hover:bg-gray-100">+</button>
-                                    </div>
-                                    <div className="font-bold text-gray-900 w-16 text-right">
-                                        {item.total.toLocaleString()}
-                                    </div>
-                                    <button onClick={() => removeFromCart(item.productId)} className="text-red-500 hover:text-red-700">
-                                        <Trash2 className="h-4 w-4" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-2">
+                                    <UserPlus className="h-4 w-4 text-gray-400" /> Vendor / Supplier
+                                </label>
+                                <div className="flex gap-2">
+                                    <select
+                                        className="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                                        value={selectedVendor?.id || ""}
+                                        onChange={(e) => {
+                                            const v = vendors.find(v => v.id === e.target.value);
+                                            setSelectedVendor(v || null);
+                                        }}
+                                    >
+                                        <option value="">Select Vendor</option>
+                                        {vendors.map(v => (
+                                            <option key={v.id} value={v.id}>{v.name}</option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        onClick={() => setShowAddVendor(true)}
+                                        className="p-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors"
+                                        title="Add New Vendor"
+                                    >
+                                        <Plus className="h-5 w-5" />
                                     </button>
                                 </div>
                             </div>
-                        ))
-                    )}
+                        </div>
+                    </div>
+
+                    {/* Items Entry Card */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                <Package className="h-5 w-5 text-red-500" /> Purchase Items
+                            </h3>
+                            {items.length > 0 && (
+                                <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                                    {items.length} {items.length === 1 ? 'item' : 'items'} added
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Item Entry Form */}
+                        <div className="p-4 bg-gray-50 rounded-2xl space-y-4 border border-gray-100">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="md:col-span-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Item Name (e.g. Chicken Feed, Seeds)"
+                                        className="w-full px-4 py-2 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-red-500"
+                                        value={entryItem.name}
+                                        onChange={e => setEntryItem({ ...entryItem, name: e.target.value })}
+                                    />
+                                </div>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="number"
+                                        placeholder="Qty"
+                                        className="flex-1 px-4 py-2 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-red-500"
+                                        value={entryItem.quantity}
+                                        onChange={e => setEntryItem({ ...entryItem, quantity: e.target.value })}
+                                    />
+                                    <select
+                                        className="w-24 px-2 py-2 border border-gray-200 rounded-xl outline-none bg-white text-sm"
+                                        value={entryItem.unit}
+                                        onChange={e => setEntryItem({ ...entryItem, unit: e.target.value as StockUnit })}
+                                    >
+                                        <option value="pcs">Pcs</option>
+                                        <option value="kg">Kg</option>
+                                        <option value="ltr">Ltr</option>
+                                        <option value="crate">Crate</option>
+                                        <option value="carton">Carton</option>
+                                    </select>
+                                </div>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium">Rs</span>
+                                    <input
+                                        type="number"
+                                        placeholder="Total Price"
+                                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-red-500"
+                                        value={entryItem.totalPrice}
+                                        onChange={e => setEntryItem({ ...entryItem, totalPrice: e.target.value })}
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Remarks/Description (Optional)"
+                                        className="w-full px-4 py-2 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-red-500"
+                                        value={entryItem.description}
+                                        onChange={e => setEntryItem({ ...entryItem, description: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleAddItem}
+                                className="w-full py-2.5 bg-red-600 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-700 transition-all active:scale-[0.98]"
+                            >
+                                {editingIndex !== null ? <><Edit className="h-5 w-5" /> Update Item</> : <><Plus className="h-5 w-5" /> Add to List</>}
+                            </button>
+                        </div>
+
+                        {/* Items List */}
+                        {items.length > 0 ? (
+                            <div className="overflow-hidden border border-gray-100 rounded-2xl">
+                                <table className="w-full text-left">
+                                    <thead className="bg-gray-50 border-b border-gray-100">
+                                        <tr>
+                                            <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase">Item</th>
+                                            <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase text-right">Qty</th>
+                                            <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase text-right">Rate</th>
+                                            <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase text-right">Total</th>
+                                            <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-50">
+                                        {items.map((item, index) => (
+                                            <tr key={item.productId} className="group hover:bg-red-50/30 transition-colors">
+                                                <td className="px-4 py-4">
+                                                    <div className="font-bold text-gray-900">{item.productName}</div>
+                                                    {item.description && <div className="text-xs text-gray-500 mt-0.5 line-clamp-1">{item.description}</div>}
+                                                </td>
+                                                <td className="px-4 py-4 text-right font-medium text-gray-600">
+                                                    {item.quantity} <span className="text-[10px] uppercase font-bold text-gray-400">{item.unit}</span>
+                                                </td>
+                                                <td className="px-4 py-4 text-right text-sm text-gray-500">
+                                                    {item.pricePerUnit.toFixed(1)}
+                                                </td>
+                                                <td className="px-4 py-4 text-right font-bold text-gray-900">
+                                                    Rs {item.totalPrice.toLocaleString()}
+                                                </td>
+                                                <td className="px-4 py-4 text-right">
+                                                    <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <button onClick={() => handleEditItem(index)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                                            <Edit className="h-4 w-4" />
+                                                        </button>
+                                                        <button onClick={() => handleRemoveItem(index)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <div className="py-12 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-100 rounded-2xl">
+                                <Package className="h-12 w-12 mb-2 opacity-20" />
+                                <p className="text-sm font-medium">No items added yet</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                <div className="p-4 bg-gray-50 border-t border-gray-200">
-                    <div className="flex justify-between items-center mb-4">
-                        <span className="text-gray-600">Total Purchase Value</span>
-                        <span className="text-2xl font-bold text-red-700">Rs {totalAmount.toLocaleString()}</span>
+                {/* Right: Checkout & Settings */}
+                <div className="space-y-6">
+                    {/* Payment Settings Card */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6">
+                        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <CreditCard className="h-5 w-5 text-red-500" /> Payment & Status
+                        </h3>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">Payment Status</label>
+                                <select
+                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                                    value={paymentStatus}
+                                    onChange={(e) => setPaymentStatus(e.target.value as PaymentStatus)}
+                                >
+                                    <option value={PaymentStatus.Pending}>Pending (Credit)</option>
+                                    <option value={PaymentStatus.PaidCash}>Paid in Cash</option>
+                                    <option value={PaymentStatus.PaidOnline}>Paid Online</option>
+                                    <option value={PaymentStatus.PartialCash}>Partial - Cash</option>
+                                    <option value={PaymentStatus.PartialOnline}>Partial - Online</option>
+                                </select>
+                            </div>
+
+                            {(paymentStatus.includes('Partial') || paymentStatus.startsWith('Paid')) && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1.5 flex justify-between">
+                                        <span>Amount Paid (Rs)</span>
+                                        <button
+                                            onClick={() => setPaidAmount(totalPayable.toString())}
+                                            className="text-[10px] font-bold text-red-600 uppercase tracking-wider hover:underline"
+                                        >
+                                            Pay Full
+                                        </button>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none font-bold text-green-600"
+                                        value={paidAmount}
+                                        onChange={e => setPaidAmount(e.target.value)}
+                                    />
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-2">
+                                    <Tag className="h-4 w-4 text-gray-400" /> Discount Received (Rs)
+                                </label>
+                                <input
+                                    type="number"
+                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none text-red-600 font-medium"
+                                    value={discount}
+                                    onChange={e => setDiscount(e.target.value)}
+                                />
+                            </div>
+
+                            <hr className="border-gray-100" />
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">Purchased By</label>
+                                <select
+                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none"
+                                    value={purchasedBy}
+                                    onChange={(e) => setPurchasedBy(e.target.value)}
+                                >
+                                    {availableUsers.map(u => (
+                                        <option key={u.id} value={u.name}>{u.name} ({u.role})</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <button
-                        onClick={handleSave}
-                        disabled={loading}
-                        className="w-full bg-red-600 text-white py-3 rounded-xl font-bold hover:bg-red-700 transition-colors flex items-center justify-center disabled:opacity-70"
-                    >
-                        <Save className="h-5 w-5 mr-2" />
-                        {loading ? "Saving..." : "Record Purchase"}
-                    </button>
+
+                    {/* Summary Card */}
+                    <div className="bg-red-600 rounded-2xl shadow-lg p-6 text-white space-y-6">
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-red-100 font-medium">
+                                <span>Subtotal</span>
+                                <span>Rs {subtotal.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between text-red-100 font-medium">
+                                <span>Discount</span>
+                                <span>- Rs {(parseFloat(discount) || 0).toLocaleString()}</span>
+                            </div>
+                            <div className="h-px bg-red-500 my-4" />
+                            <div className="flex justify-between items-end">
+                                <div>
+                                    <div className="text-red-100 text-xs font-bold uppercase tracking-wider mb-1">Grand Total</div>
+                                    <div className="text-3xl font-black">Rs {totalPayable.toLocaleString()}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {(paymentStatus.includes('Partial')) && (
+                            <div className="bg-red-700/50 rounded-xl p-3 text-sm text-red-100 border border-red-500/30">
+                                <div className="flex justify-between font-bold text-white mb-1">
+                                    <span>Remaining Balance</span>
+                                    <span>Rs {(totalPayable - (parseFloat(paidAmount) || 0)).toLocaleString()}</span>
+                                </div>
+                                <p className="text-[10px] italic">Outstanding amount will be added to vendor ledger</p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
+
+            {/* Vendor Modal */}
+            {showAddVendor && (
+                <AddPartnerModal
+                    partnerType="vendor"
+                    onClose={() => setShowAddVendor(false)}
+                    onAdd={handleAddVendor}
+                />
+            )}
         </div>
     );
 }

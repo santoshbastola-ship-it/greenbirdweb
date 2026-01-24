@@ -52,9 +52,13 @@ export default function InventoryPage() {
 
     const handleDelete = async (id: string) => {
         if (confirm("Are you sure you want to delete this product?")) {
-            // Ideally: await ProductService.deleteProduct(id);
-            // For demo/mock:
-            setProducts(products.filter(p => p.id !== id));
+            try {
+                await ProductService.deleteProduct(id);
+                setProducts(products.filter(p => p.id !== id));
+            } catch (error) {
+                alert("Failed to delete product");
+                console.error(error);
+            }
         }
     };
 

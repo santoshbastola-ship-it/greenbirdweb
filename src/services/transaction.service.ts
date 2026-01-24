@@ -29,7 +29,11 @@ export const TransactionService = {
                 id: doc.id,
                 ...doc.data(),
                 date: new Date(doc.data().date), // Convert back to Date object
-                entryTimestamp: new Date(doc.data().entryTimestamp)
+                entryTimestamp: new Date(doc.data().entryTimestamp),
+                payments: doc.data().payments?.map((p: any) => ({
+                    ...p,
+                    date: p.date?.toDate ? p.date.toDate() : new Date(p.date)
+                })) || []
             } as TransactionRecord));
         } catch (error) {
             console.error("Error fetching transactions:", error);
@@ -67,28 +71,31 @@ export const TransactionService = {
     // Get transactions by Partner ID (for transaction history)
     getTransactionsByPartnerId: async (partnerId: string, type?: TransactionType): Promise<TransactionRecord[]> => {
         try {
-            let q;
-            if (type) {
-                q = query(
-                    collection(db, COLLECTION_NAME),
-                    where("customerId", "==", partnerId),
-                    where("type", "==", type),
-                    orderBy("entryTimestamp", "desc")
-                );
-            } else {
-                q = query(
-                    collection(db, COLLECTION_NAME),
-                    where("customerId", "==", partnerId),
-                    orderBy("entryTimestamp", "desc")
-                );
-            }
+            // Simplify query to avoid composite index requirement (customerId + type + entryTimestamp)
+            // Just query by customerId and filter/sort in memory
+            const q = query(
+                collection(db, COLLECTION_NAME),
+                where("customerId", "==", partnerId)
+            );
+
             const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => ({
+
+            let results = querySnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data(),
                 date: new Date(doc.data().date),
                 entryTimestamp: new Date(doc.data().entryTimestamp)
             } as TransactionRecord));
+
+            // Apply type filter if provided
+            if (type) {
+                results = results.filter(t => t.type === type);
+            }
+
+            // Sort by entryTimestamp descending
+            return results.sort((a, b) =>
+                new Date(b.entryTimestamp).getTime() - new Date(a.entryTimestamp).getTime()
+            );
         } catch (error) {
             console.error("Error fetching partner transactions by ID:", error);
             return [];

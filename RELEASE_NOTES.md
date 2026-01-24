@@ -1,5 +1,31 @@
 # Release Notes
 
+## [0.1.9] - 2026-01-24
+### Fixed
+- **Admin Dashboard**: Resolved an issue where refreshing the admin dashboard would incorrectly redirect specific admin roles to the home page.
+- **Order Status Dropdown**: Fixed visibility issues where options were truncated or hidden.
+- **Customer Transactions**: Fixed bug where customer transaction history was not displaying correctly.
+
+### Changed
+- **Date Formatting**: Adopted Nepali calendar with English numerals for all transaction dates.
+- **Admin Login**: Consolidated admin login flow for better security and user experience.
+- **Payment Status**: Added payment status tracking to admin order management.
+
+## [0.1.8] - 2026-01-24
+### Added
+- **Remaining Payment Display**:
+  - Admin Order List: Shows "Remaining: Rs. X" for partially paid orders.
+  - Admin Order Details: Added "Remaining Amount" row in the order items table.
+  - Customer Order History: Shows "Remaining: Rs. X" for partially paid orders.
+
+### Changed
+- **Mobile UI**: Improved alignment of status dropdown and action buttons on mobile devices.
+- **Dropdown Behavior**: Order status dropdown now opens upwards on mobile to prevent clipping and alignment issues.
+
+### Fixed
+- **Partial Payment Dates**: Fixed issue where partial payment dates were showing as "Invalid Date".
+- **Interaction Issues**: Order card no longer opens details on clicking anywhere; now requires clicking "View Details".
+
 ## [0.1.7] - 2026-01-24
 ### Added
 - **Global App Settings**: Introduced a new Settings page for administrators to manage delivery fees, free delivery thresholds, and application-wide discounts.

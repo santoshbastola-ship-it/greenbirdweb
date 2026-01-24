@@ -4,6 +4,8 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { useEffect } from "react";
+import AdminHeader from "@/components/admin/AdminHeader";
+
 
 export default function AdminLayout({
     children,
@@ -13,18 +15,36 @@ export default function AdminLayout({
     const pathname = usePathname();
     const router = useRouter();
     const { user, dbUser, loading } = useAuth();
-    const isLoginPage = pathname === "/admin/login";
 
     useEffect(() => {
-        if (!loading && !isLoginPage) {
-            if (!user) {
-                router.push("/admin/login");
-            } else if (dbUser && dbUser.role !== 'admin' && dbUser.role !== 'manager') {
-                // If logged in but not an admin, redirect to home or show error
+        console.log("AdminLayout Check:", {
+            loading,
+            hasUser: !!user,
+            hasDbUser: !!dbUser,
+            userRole: dbUser?.role,
+            pathname
+        });
+
+        if (loading) return;
+
+        if (!user) {
+            console.log("Redirecting to login (no user)");
+            router.push("/login?redirect=" + pathname);
+            return;
+        }
+
+        if (dbUser) {
+            if (dbUser.role !== 'admin' && dbUser.role !== 'manager') {
+                console.log("Redirecting to home (invalid role)", dbUser.role);
                 router.push("/");
             }
+        } else {
+            // User exists but dbUser is null. This might be a delay or failed fetch.
+            // For now, we won't redirect to home immediately to avoid the flash/race condition if it's just slow.
+            // But if it persists, it might mean the user is not in the DB.
+            console.log("User authenticated but no DB record found yet.");
         }
-    }, [user, dbUser, loading, isLoginPage, router]);
+    }, [user, dbUser, loading, pathname, router]);
 
     if (loading) {
         return (
@@ -32,10 +52,6 @@ export default function AdminLayout({
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
             </div>
         );
-    }
-
-    if (isLoginPage) {
-        return <>{children}</>;
     }
 
     // Don't render content if not authorized (standard protection)
@@ -46,9 +62,12 @@ export default function AdminLayout({
     return (
         <div className="flex min-h-screen bg-gray-100">
             <AdminSidebar />
-            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-4 md:p-10">
-                {children}
-            </main>
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+                <AdminHeader />
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-4 md:p-10">
+                    {children}
+                </main>
+            </div>
         </div>
     );
 }

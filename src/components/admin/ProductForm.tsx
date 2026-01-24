@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Product, BusinessType, StockUnit } from "@/types";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, Upload, X } from "lucide-react";
@@ -15,6 +15,9 @@ interface ProductFormProps {
 export default function ProductForm({ initialData, isEditMode = false }: ProductFormProps) {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [uploadingImage, setUploadingImage] = useState(false);
+
     const [formData, setFormData] = useState<Partial<Product>>(
         initialData || {
             name: "",
@@ -35,17 +38,14 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
 
         try {
             if (isEditMode && initialData) {
-                // Mock Update
-                console.log("Updating product", formData);
-                // await ProductService.updateProduct(initialData.id, formData);
-                alert("Product updated successfully (Mock)");
+                await ProductService.updateProduct(initialData.id, formData);
+                alert("Product updated successfully");
             } else {
-                // Mock Create
-                console.log("Creating product", formData);
-                // await ProductService.createProduct(formData);
-                alert("Product created successfully (Mock)");
+                await ProductService.createProduct(formData);
+                alert("Product created successfully");
             }
             router.push("/admin/inventory");
+            router.refresh();
         } catch (error) {
             console.error("Error saving product:", error);
             alert("Failed to save product");
@@ -65,6 +65,34 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
 
     const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData((prev) => ({ ...prev, [e.target.name]: e.target.checked }));
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploadingImage(true);
+        try {
+            const downloadURL = await ProductService.uploadProductImage(file);
+            setFormData(prev => ({
+                ...prev,
+                images: [...(prev.images || []), downloadURL]
+            }));
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            alert("Failed to upload image");
+        } finally {
+            setUploadingImage(false);
+            // Reset input so same file can be selected again if needed
+            if (fileInputRef.current) fileInputRef.current.value = "";
+        }
+    };
+
+    const removeImage = (indexToRemove: number) => {
+        setFormData(prev => ({
+            ...prev,
+            images: prev.images?.filter((_, index) => index !== indexToRemove)
+        }));
     };
 
     return (
@@ -212,15 +240,47 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                         <h2 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-4">Product Images</h2>
 
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center hover:bg-gray-50 transition-colors cursor-pointer">
-                            <Upload className="h-8 w-8 text-gray-400 mb-2" />
-                            <p className="text-sm text-gray-600">Click to upload image</p>
-                            <p className="text-xs text-gray-400 mt-1">(SVG, PNG, JPG)</p>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                        />
+
+                        <div
+                            onClick={() => fileInputRef.current?.click()}
+                            className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center text-center hover:bg-gray-50 transition-colors cursor-pointer"
+                        >
+                            {uploadingImage ? (
+                                <div className="text-sm text-gray-500">Uploading...</div>
+                            ) : (
+                                <>
+                                    <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                                    <p className="text-sm text-gray-600">Click to upload image</p>
+                                    <p className="text-xs text-gray-400 mt-1">(SVG, PNG, JPG)</p>
+                                </>
+                            )}
                         </div>
 
-                        {/* Image Preview Placeholder */}
+                        {/* Image Preview */}
                         <div className="mt-4 grid grid-cols-2 gap-2">
-                            {/* Logic to show uploaded images would go here */}
+                            {formData.images?.map((img, index) => (
+                                <div key={index} className="relative group aspect-square bg-gray-100 rounded-lg overflow-hidden">
+                                    <img
+                                        src={img}
+                                        alt={`Product ${index + 1}`}
+                                        className="object-cover w-full h-full"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => removeImage(index)}
+                                        className="absolute top-1 right-1 bg-white/80 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <X className="h-4 w-4 text-red-500" />
+                                    </button>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>

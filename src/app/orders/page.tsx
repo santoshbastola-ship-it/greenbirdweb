@@ -169,7 +169,14 @@ function OrderCard({ order, onUpdate }: { order: TransactionRecord; onUpdate: ()
                         </div>
                         <div className="flex items-center space-x-4">
                             <StatusBadge status={order.status} />
-                            <span className="font-bold text-lg text-gray-900">Rs. {getGrandTotal(order)}</span>
+                            <div className="text-right">
+                                <span className="font-bold text-lg text-gray-900 block">Rs. {getGrandTotal(order).toLocaleString()}</span>
+                                {(getGrandTotal(order) - (order.paidAmount || 0)) > 0 && (order.paidAmount || 0) > 0 && (
+                                    <span className="text-xs font-semibold text-orange-600 block">
+                                        Remaining: Rs. {(getGrandTotal(order) - (order.paidAmount || 0)).toLocaleString()}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
 

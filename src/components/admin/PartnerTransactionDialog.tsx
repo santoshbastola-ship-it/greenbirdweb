@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { TransactionService } from "@/services/transaction.service";
+import { toNepali } from "@/lib/date-helper";
 import { TransactionRecord, TransactionType } from "@/types";
 
 interface PartnerTransactionDialogProps {
@@ -55,11 +56,7 @@ export default function PartnerTransactionDialog({
     }, 0);
 
     const formatDate = (date: Date | string) => {
-        return new Date(date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
+        return toNepali(date, "DD MMM YYYY");
     };
 
     const getItemsSummary = (transaction: TransactionRecord) => {

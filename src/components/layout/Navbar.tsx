@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Menu, ShoppingCart, User, X, Sprout } from "lucide-react";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -13,6 +13,8 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const profileRef = useRef<HTMLDivElement>(null);
     const pathname = usePathname();
     const { user, dbUser, logout } = useAuth();
 
@@ -25,6 +27,20 @@ export default function Navbar() {
     ];
 
     const isActive = (path: string) => pathname === path;
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent | TouchEvent) {
+            if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+                setIsProfileOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("touchstart", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("touchstart", handleClickOutside);
+        };
+    }, []);
 
     return (
         <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
@@ -83,8 +99,11 @@ export default function Navbar() {
                         )}
 
                         {user ? (
-                            <div className="relative group">
-                                <button className="flex items-center space-x-2 p-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                            <div className="relative" ref={profileRef}>
+                                <button
+                                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                                    className="flex items-center space-x-2 p-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                                >
                                     <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold overflow-hidden">
                                         {user.photoURL ? (
                                             <img src={user.photoURL} alt={user.displayName || "User"} className="h-full w-full object-cover" />
@@ -98,30 +117,47 @@ export default function Navbar() {
                                 </button>
 
                                 {/* Dropdown Menu */}
-                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all transform origin-top-right z-50">
-                                    <div className="px-4 py-3 border-b border-gray-50 md:hidden">
-                                        <p className="text-sm font-bold text-gray-900">{user.displayName || "User"}</p>
-                                        <p className="text-xs text-gray-500 truncate">{user.email}</p>
-                                    </div>
+                                {isProfileOpen && (
+                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 transition-all transform origin-top-right z-50">
+                                        <div className="px-4 py-3 border-b border-gray-50 md:hidden">
+                                            <p className="text-sm font-bold text-gray-900">{user.displayName || "User"}</p>
+                                            <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                        </div>
 
-                                    <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700">
-                                        My Profile
-                                    </Link>
-                                    <Link href="/orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700">
-                                        My Orders
-                                    </Link>
-                                    {(dbUser?.role === 'admin' || dbUser?.role === 'manager') && (
-                                        <Link href="/admin" className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700">
-                                            Admin Dashboard
+                                        <Link
+                                            href="/profile"
+                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700"
+                                            onClick={() => setIsProfileOpen(false)}
+                                        >
+                                            My Profile
                                         </Link>
-                                    )}
-                                    <button
-                                        onClick={() => logout()}
-                                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                                    >
-                                        Logout
-                                    </button>
-                                </div>
+                                        <Link
+                                            href="/orders"
+                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700"
+                                            onClick={() => setIsProfileOpen(false)}
+                                        >
+                                            My Orders
+                                        </Link>
+                                        {(dbUser?.role === 'admin' || dbUser?.role === 'manager') && (
+                                            <Link
+                                                href="/admin"
+                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700"
+                                                onClick={() => setIsProfileOpen(false)}
+                                            >
+                                                Admin Dashboard
+                                            </Link>
+                                        )}
+                                        <button
+                                            onClick={() => {
+                                                setIsProfileOpen(false);
+                                                logout();
+                                            }}
+                                            className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                        >
+                                            Logout
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <Link href="/login" className="flex items-center space-x-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-bold hover:bg-green-700 transition-colors">

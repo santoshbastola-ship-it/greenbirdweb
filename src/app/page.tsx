@@ -1,8 +1,13 @@
-import Link from "next/link";
-import { ArrowRight, Leaf, Utensils, Bird, Trees } from "lucide-react";
-import ProductCard from "@/components/ui/ProductCard";
+"use client";
 
+import Link from "next/link";
+import { ArrowRight, Leaf, Utensils, Bird, Trees, Calendar } from "lucide-react";
+import ProductCard from "@/components/ui/ProductCard";
 import { Product } from "@/types";
+import { FarmActivity } from "@/types/extra";
+import { getActivities } from "@/lib/services/activities";
+import { format } from "date-fns";
+import { useEffect, useState } from "react";
 
 // Mock Data for Display
 const FEATURED_PRODUCTS: Product[] = [
@@ -57,6 +62,23 @@ const FEATURED_PRODUCTS: Product[] = [
 ];
 
 export default function Home() {
+  const [activities, setActivities] = useState<FarmActivity[]>([]);
+  const [loadingActivities, setLoadingActivities] = useState(true);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const data = await getActivities(3); // Fetch latest 3
+        setActivities(data);
+      } catch (error) {
+        console.error("Failed to fetch activities:", error);
+      } finally {
+        setLoadingActivities(false);
+      }
+    };
+    fetchActivities();
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
@@ -133,6 +155,50 @@ export default function Home() {
               <p className="text-gray-600 text-sm">A "place to have fun" and connect with nature, perfect for escaping the city.</p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Farm Activities Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900">Farm Life & Activities</h2>
+            <p className="text-gray-600 mt-2">Catch a glimpse of daily life at Greenbird Homestead</p>
+          </div>
+
+          {loadingActivities ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2D5A27]"></div>
+            </div>
+          ) : activities.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {activities.map((activity) => (
+                <div key={activity.id} className="group overflow-hidden rounded-2xl bg-[#FCF9F1] shadow-sm hover:shadow-md transition-shadow">
+                  <div className="aspect-[4/3] overflow-hidden">
+                    <img
+                      src={activity.imageUrl}
+                      alt={activity.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center gap-2 text-[#2D5A27] text-sm font-medium mb-3">
+                      <Calendar className="h-4 w-4" />
+                      {format(new Date(activity.date), "MMM dd, yyyy")}
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">{activity.title}</h3>
+                    <p className="text-gray-600 text-sm line-clamp-3">
+                      {activity.description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-gray-500">
+              Check back soon for latest updates from the farm!
+            </div>
+          )}
         </div>
       </section>
 

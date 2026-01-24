@@ -95,8 +95,8 @@ export default function PartnersPage() {
                         <button
                             onClick={() => setActiveTab("customer")}
                             className={`flex-1 px-6 py-4 text-sm font-semibold transition-colors border-b-2 ${activeTab === "customer"
-                                    ? "border-green-600 text-green-600"
-                                    : "border-transparent text-gray-500 hover:text-gray-700"
+                                ? "border-green-600 text-green-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700"
                                 }`}
                         >
                             <div className="flex items-center justify-center space-x-2">
@@ -107,8 +107,8 @@ export default function PartnersPage() {
                         <button
                             onClick={() => setActiveTab("vendor")}
                             className={`flex-1 px-6 py-4 text-sm font-semibold transition-colors border-b-2 ${activeTab === "vendor"
-                                    ? "border-green-600 text-green-600"
-                                    : "border-transparent text-gray-500 hover:text-gray-700"
+                                ? "border-green-600 text-green-600"
+                                : "border-transparent text-gray-500 hover:text-gray-700"
                                 }`}
                         >
                             <div className="flex items-center justify-center space-x-2">

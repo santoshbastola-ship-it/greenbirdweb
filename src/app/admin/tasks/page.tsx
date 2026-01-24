@@ -9,34 +9,7 @@ export default function TasksPage() {
     const [filter, setFilter] = useState<'open' | 'done'>('open');
 
     // Mock Tasks
-    const tasks = [
-        // ... (truncated for brevity in search replacement content, but needs to be careful)
-        {
-            id: "1",
-            title: "Repair Fence at Sector 4",
-            assignedTo: "Ram Bahadur",
-            dueDate: "2026-01-25", // Future date
-            priority: "high",
-            status: "open",
-        },
-        {
-            id: "2",
-            title: "Vaccinate Goats",
-            assignedTo: "Sita Kumari",
-            dueDate: "2026-01-23",
-            priority: "urgent",
-            status: "open",
-        },
-        {
-            id: "3",
-            title: "Clean Water Tank",
-            assignedTo: "Hari Krishna",
-            dueDate: "2024-03-20",
-            priority: "medium",
-            status: "done",
-            completedDate: "2024-03-20"
-        }
-    ];
+    const tasks: any[] = [];
 
     const filteredTasks = tasks.filter(t => filter === 'open' ? t.status !== 'done' : t.status === 'done');
 
