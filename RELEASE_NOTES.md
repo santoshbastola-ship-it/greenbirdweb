@@ -5,6 +5,7 @@
 - **Admin Dashboard**: Resolved an issue where refreshing the admin dashboard would incorrectly redirect specific admin roles to the home page.
 - **Order Status Dropdown**: Fixed visibility issues where options were truncated or hidden.
 - **Customer Transactions**: Fixed bug where customer transaction history was not displaying correctly.
+- **Static Export**: Fixed build errors for dynamic routes (`/shop/[id]`, `/blog/[slug]`, `/admin/inventory/edit/[id]`) to support `output: export` configuration.
 
 ### Changed
 - **Date Formatting**: Adopted Nepali calendar with English numerals for all transaction dates.
