@@ -1,5 +1,14 @@
 # Release Notes
 
+## [0.1.7] - 2026-01-24
+### Added
+- **Manual Admin Setup Guide**: Added a detailed step-by-step guide for creating admin users via Firebase Console for improved security.
+
+### Changed
+- **Admin Setup**: Removed the temporary web-based admin setup page (`/temp-setup-admin`).
+- **Auth Flow**: Improved reliability of verification email resending on the admin login page.
+- **Login Feedback**: Added specific error messages for non-verified admin accounts.
+
 ## [0.1.6] - 2026-01-23
 - UI improvements and bug fixes
 

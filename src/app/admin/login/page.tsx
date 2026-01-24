@@ -59,7 +59,11 @@ export default function AdminLoginPage() {
             setVerificationSent(true);
         } catch (err: any) {
             console.error("Resend verification error:", err);
-            setError("Failed to resend verification email. Please try again.");
+            if (err.message === "USER_NOT_FOUND") {
+                setError("You must attempt to sign in first before we can resend the verification email.");
+            } else {
+                setError("Failed to resend verification email. Please try again.");
+            }
         } finally {
             setIsLoading(false);
         }

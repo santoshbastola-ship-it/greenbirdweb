@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { TransactionService } from "@/services/transaction.service";
 import { TransactionRecord, OrderStatus } from "@/types";
 import { useRouter } from "next/navigation";
-import { Package, Calendar, ChevronRight, X, AlertCircle } from "lucide-react";
+import { Package, Calendar, ChevronRight, X, AlertCircle, Clock, MessageSquare } from "lucide-react";
 import { toNepali } from "@/lib/date-helper";
 import Link from "next/link";
 
@@ -172,6 +172,38 @@ function OrderCard({ order, onUpdate }: { order: TransactionRecord; onUpdate: ()
                             <span className="font-bold text-lg text-gray-900">Rs. {getGrandTotal(order)}</span>
                         </div>
                     </div>
+
+                    {(order.expectedDeliveryTime || order.deliveryInstructions) && (
+                        <div className="border-t border-gray-100 pt-4 mb-4">
+                            <h4 className="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wider">Delivery Details</h4>
+                            <div className="space-y-3">
+                                {order.expectedDeliveryTime && (
+                                    <div className="flex items-center text-sm text-gray-700">
+                                        <Clock className="h-4 w-4 mr-2 text-green-600" />
+                                        <span className="font-medium mr-2">Expected Delivery:</span>
+                                        <span>
+                                            {typeof order.expectedDeliveryDate === 'string'
+                                                ? order.expectedDeliveryDate
+                                                : order.expectedDeliveryDate instanceof Date
+                                                    ? toNepali(order.expectedDeliveryDate, "DD MMM YYYY")
+                                                    : "Scheduled"} at {order.expectedDeliveryTime}
+                                        </span>
+                                    </div>
+                                )}
+                                {order.deliveryInstructions && (
+                                    <div className="flex items-start text-sm text-gray-700">
+                                        <MessageSquare className="h-4 w-4 mr-2 text-green-600 mt-0.5" />
+                                        <div className="flex-1">
+                                            <span className="font-medium mr-2">Delivery Note:</span>
+                                            <p className="mt-1 text-gray-600 bg-gray-50 p-2 rounded-lg border border-gray-100 italic">
+                                                "{order.deliveryInstructions}"
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     <div className="border-t border-gray-100 pt-4">
                         <h4 className="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wider">Items</h4>

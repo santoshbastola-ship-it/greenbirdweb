@@ -5,6 +5,15 @@ import { ReportType, BusinessType, PaymentStatus, Product, User } from "@/types"
 import { ProductService } from "@/services/product.service";
 import { Filter, Calendar, Package, DollarSign, User as UserIcon, Store } from "lucide-react";
 import { toNepali } from "@/lib/date-helper";
+import NepaliDate from "nepali-date-converter";
+import dynamic from 'next/dynamic';
+
+const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
+    ssr: false,
+    loading: () => <input type="text" placeholder="Loading Date..." className="flex-1 px-4 py-2 border border-gray-300 rounded-lg" />
+});
+
+import "nepali-datepicker-reactjs/dist/index.css";
 
 interface ReportFiltersProps {
     onGenerate: (filters: {
@@ -23,8 +32,8 @@ interface ReportFiltersProps {
 
 export default function ReportFilters({ onGenerate, isLoading, customers, vendors }: ReportFiltersProps) {
     const [reportType, setReportType] = useState<ReportType>(ReportType.Sales);
-    const [startDate, setStartDate] = useState<Date>(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
-    const [endDate, setEndDate] = useState<Date>(new Date());
+    const [startDateBS, setStartDateBS] = useState<string>(toNepali(new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)));
+    const [endDateBS, setEndDateBS] = useState<string>(toNepali(new Date()));
     const [businessType, setBusinessType] = useState<BusinessType | "">("");
     const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | "">("");
     const [productId, setProductId] = useState<string>("");
@@ -55,8 +64,8 @@ export default function ReportFilters({ onGenerate, isLoading, customers, vendor
     const handleGenerate = () => {
         onGenerate({
             reportType,
-            startDate,
-            endDate,
+            startDate: new NepaliDate(startDateBS).toJsDate(),
+            endDate: new NepaliDate(endDateBS).toJsDate(),
             businessType: businessType || undefined,
             paymentStatus: paymentStatus || undefined,
             productId: productId || undefined,
@@ -101,23 +110,24 @@ export default function ReportFilters({ onGenerate, isLoading, customers, vendor
                         Date Range
                     </label>
                     <div className="flex gap-2">
-                        <input
-                            type="date"
-                            value={formatDateForInput(startDate)}
-                            onChange={(e) => setStartDate(new Date(e.target.value))}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        />
+                        <div className="flex-1 nepali-datepicker-container">
+                            <NepaliDatePicker
+                                value={startDateBS}
+                                onChange={(date: string) => setStartDateBS(date)}
+                                options={{ calenderLocale: "en", valueLocale: "en" }}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                            />
+                        </div>
                         <span className="self-center text-gray-500">to</span>
-                        <input
-                            type="date"
-                            value={formatDateForInput(endDate)}
-                            onChange={(e) => setEndDate(new Date(e.target.value))}
-                            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                        />
+                        <div className="flex-1 nepali-datepicker-container">
+                            <NepaliDatePicker
+                                value={endDateBS}
+                                onChange={(date: string) => setEndDateBS(date)}
+                                options={{ calenderLocale: "en", valueLocale: "en" }}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                            />
+                        </div>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                        {toNepali(startDate, "DD MMM YYYY")} - {toNepali(endDate, "DD MMM YYYY")}
-                    </p>
                 </div>
 
                 {/* Business Type Filter (Not for Customer/Vendor reports) */}

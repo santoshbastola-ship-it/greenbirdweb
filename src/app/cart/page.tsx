@@ -1,7 +1,7 @@
 "use client";
 
 import { useCartStore } from "@/store/useCartStore";
-import { Minus, Plus, Trash2, ArrowRight, Phone, MapPin, PlusCircle, X, Check, Truck, CreditCard, Clock, Calendar } from "lucide-react";
+import { Minus, Plus, Trash2, ArrowRight, Phone, MapPin, PlusCircle, X, Check, Truck, CreditCard, Clock, Calendar, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -9,10 +9,25 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { TransactionService } from "@/services/transaction.service";
 import { UserService } from "@/services/user.service";
-import { TransactionType, PaymentStatus, OrderStatus } from "@/types";
+import { SettingsService } from "@/services/settings.service";
+import { TransactionType, PaymentStatus, OrderStatus, AppSettings } from "@/types";
 import { getTodayNepali } from "@/lib/date-helper";
+import dynamic from 'next/dynamic';
 
-const DELIVERY_FEE = 50;
+const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
+    ssr: false,
+    loading: () => <input type="text" placeholder="Loading Date..." className="w-full px-2 md:px-3 py-1.5 md:py-2 rounded-lg border border-gray-200 text-xs md:text-sm" />
+});
+
+import "nepali-datepicker-reactjs/dist/index.css";
+
+// Default settings as fallback
+const DEFAULT_SETTINGS: AppSettings = {
+    deliveryFee: 75,
+    freeDeliveryThreshold: 750,
+    appDiscountPercentage: 5,
+    minAppDiscount: 10
+};
 
 export default function CartPage() {
     const { items, updateQuantity, removeItem, clearCart } = useCartStore();
@@ -31,12 +46,24 @@ export default function CartPage() {
     const [expectedDate, setExpectedDate] = useState(getTodayNepali());
     const [expectedTime, setExpectedTime] = useState("");
 
+    const [appSettings, setAppSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
+
     const { user, dbUser, refreshDbUser } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
         setMounted(true);
+        loadAppSettings();
     }, []);
+
+    const loadAppSettings = async () => {
+        try {
+            const settings = await SettingsService.getSettings();
+            setAppSettings(settings);
+        } catch (error) {
+            console.error("Error loading app settings:", error);
+        }
+    };
 
     useEffect(() => {
         if (dbUser) {
@@ -115,8 +142,8 @@ export default function CartPage() {
                 customerId: user.uid,
                 partyName: activeProfile.name,
                 date: new Date(),
-                discount: 0,
-                deliveryFee: DELIVERY_FEE,
+                discount: appDiscount,
+                deliveryFee: deliveryFee,
                 soldBy: "Online",
                 enteredBy: user.uid,
                 entryTimestamp: new Date(),
@@ -143,6 +170,29 @@ export default function CartPage() {
 
     if (!mounted) return <div className="min-h-screen bg-gray-50 pt-20 text-center">Loading cart...</div>;
 
+    if (!user) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center max-w-md w-full text-center">
+                    <div className="h-20 w-20 bg-green-50 rounded-full flex items-center justify-center mb-6">
+                        <ShoppingBag className="h-10 w-10 text-green-600" />
+                    </div>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Login Required</h1>
+                    <p className="text-gray-500 mb-8">Please login to view your cart items and proceed to checkout.</p>
+                    <Link
+                        href="/login?redirect=/cart"
+                        className="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-colors mb-4"
+                    >
+                        Login to Checkout
+                    </Link>
+                    <Link href="/shop" className="text-gray-500 text-sm font-medium hover:text-green-600 transition-colors">
+                        Continue Shopping
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
     // Defensive check: Ensure items is an array and filter out invalid ones
     const validItems = Array.isArray(items) ? items.filter(item => item && item.productId) : [];
 
@@ -166,7 +216,10 @@ export default function CartPage() {
         const quantity = Number(item.quantity) || 0;
         return sum + (price * quantity);
     }, 0);
-    const total = subtotal + DELIVERY_FEE;
+
+    const deliveryFee = subtotal < appSettings.freeDeliveryThreshold ? appSettings.deliveryFee : 0;
+    const appDiscount = Math.max(appSettings.minAppDiscount, Math.floor(subtotal * (appSettings.appDiscountPercentage / 100)));
+    const total = subtotal + deliveryFee - appDiscount;
 
     return (
         <div className="min-h-screen bg-gray-50 py-12">
@@ -373,12 +426,14 @@ export default function CartPage() {
                                                 <label className="block text-xs font-medium text-gray-700 mb-1 flex items-center">
                                                     <Calendar className="h-3 w-3 mr-1 text-gray-400" /> Expected Date
                                                 </label>
-                                                <input
-                                                    type="date"
-                                                    value={expectedDate}
-                                                    onChange={(e) => setExpectedDate(e.target.value)}
-                                                    className="w-full px-2 md:px-3 py-1.5 md:py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-xs md:text-sm"
-                                                />
+                                                <div className="nepali-datepicker-container">
+                                                    <NepaliDatePicker
+                                                        value={expectedDate}
+                                                        onChange={(date: string) => setExpectedDate(date)}
+                                                        options={{ calenderLocale: "en", valueLocale: "en" }}
+                                                        className="w-full px-2 md:px-3 py-1.5 md:py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-xs md:text-sm"
+                                                    />
+                                                </div>
                                             </div>
                                             <div>
                                                 <label className="block text-xs font-medium text-gray-700 mb-1 flex items-center">
@@ -420,8 +475,12 @@ export default function CartPage() {
                                     <span>Rs. {subtotal}</span>
                                 </div>
                                 <div className="flex justify-between text-gray-600">
-                                    <span className="flex items-center"><Truck className="h-4 w-4 mr-1" /> Delivery Fee</span>
-                                    <span>Rs. {DELIVERY_FEE}</span>
+                                    <span className="flex items-center"><Truck className="h-4 w-4 mr-1" /> Delivery Fee {subtotal >= appSettings.freeDeliveryThreshold && <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">FREE</span>}</span>
+                                    <span className={subtotal >= appSettings.freeDeliveryThreshold ? "line-through opacity-50" : ""}>Rs. {deliveryFee}</span>
+                                </div>
+                                <div className="flex justify-between text-green-600 font-medium">
+                                    <span className="flex items-center">App Discount ({appSettings.appDiscountPercentage}% or Rs {appSettings.minAppDiscount})</span>
+                                    <span>- Rs. {appDiscount}</span>
                                 </div>
                                 <div className="border-t border-gray-100 pt-4 flex justify-between items-center">
                                     <span className="font-bold text-lg text-gray-900">Total Amount</span>

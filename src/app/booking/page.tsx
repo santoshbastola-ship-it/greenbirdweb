@@ -5,6 +5,14 @@ import { BookingService } from "@/services/booking.service";
 import { Calendar, Users, Phone, Mail, User, Info, Loader2, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { getTodayNepali } from "@/lib/date-helper";
+import dynamic from 'next/dynamic';
+
+const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
+    ssr: false,
+    loading: () => <input type="text" placeholder="Loading Date..." className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl" />
+});
+
+import "nepali-datepicker-reactjs/dist/index.css";
 
 export default function BookingPage() {
     const { user } = useAuth();
@@ -178,23 +186,25 @@ export default function BookingPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-2">Check-in Date</label>
-                                    <input
-                                        type="date"
-                                        required
-                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2D5A27] transition-all"
-                                        value={formData.checkInDate}
-                                        onChange={(e) => setFormData({ ...formData, checkInDate: e.target.value })}
-                                    />
+                                    <div className="nepali-datepicker-container">
+                                        <NepaliDatePicker
+                                            value={formData.checkInDate}
+                                            onChange={(date: string) => setFormData({ ...formData, checkInDate: date })}
+                                            options={{ calenderLocale: "en", valueLocale: "en" }}
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2D5A27] transition-all"
+                                        />
+                                    </div>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-2">Check-out Date</label>
-                                    <input
-                                        type="date"
-                                        required
-                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2D5A27] transition-all"
-                                        value={formData.checkOutDate}
-                                        onChange={(e) => setFormData({ ...formData, checkOutDate: e.target.value })}
-                                    />
+                                    <div className="nepali-datepicker-container">
+                                        <NepaliDatePicker
+                                            value={formData.checkOutDate}
+                                            onChange={(date: string) => setFormData({ ...formData, checkOutDate: date })}
+                                            options={{ calenderLocale: "en", valueLocale: "en" }}
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2D5A27] transition-all"
+                                        />
+                                    </div>
                                 </div>
                             </div>
 

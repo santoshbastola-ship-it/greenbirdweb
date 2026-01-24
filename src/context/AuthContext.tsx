@@ -64,13 +64,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const resendVerificationEmail = async () => {
-        if (user && !user.emailVerified) {
-            try {
-                await AuthService.sendEmailVerification(user);
-            } catch (error: any) {
-                console.error("Error resending verification email:", error);
-                throw error;
+        if (user) {
+            if (!user.emailVerified) {
+                try {
+                    await AuthService.sendEmailVerification(user);
+                } catch (error: any) {
+                    console.error("Error resending verification email:", error);
+                    throw error;
+                }
             }
+        } else {
+            throw new Error("USER_NOT_FOUND");
         }
     };
 

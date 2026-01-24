@@ -72,11 +72,15 @@ export default function Navbar() {
 
                     {/* Right Icons */}
                     <div className="flex items-center space-x-4">
-                        <CheckoutButton />
-                        <Link href="/cart" className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
-                            <ShoppingCart className="h-5 w-5" />
-                            <CartBadge />
-                        </Link>
+                        {user && (
+                            <>
+                                <CheckoutButton />
+                                <Link href="/cart" className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+                                    <ShoppingCart className="h-5 w-5" />
+                                    <CartBadge />
+                                </Link>
+                            </>
+                        )}
 
                         {user ? (
                             <div className="relative group">

@@ -19,10 +19,9 @@ export function toNepali(date: Date | string | number, format: string = "YYYY-MM
         const bsDate = new NepaliDate(jsDate);
 
         if (format === 'DD MMM YYYY') {
-            return bsDate.format('DD MMM YYYY');
+            return bsDate.format('DD MMM YYYY', 'en');
         }
-
-        return bsDate.format('YYYY-MM-DD');
+        return bsDate.format('YYYY-MM-DD', 'en');
     } catch (e) {
         console.error("Date conversion error", e);
         return "Error";
@@ -33,5 +32,5 @@ export function toNepali(date: Date | string | number, format: string = "YYYY-MM
  * Returns today's date in Nepali BS (YYYY-MM-DD)
  */
 export function getTodayNepali(): string {
-    return new NepaliDate().format('YYYY-MM-DD');
+    return new NepaliDate().format('YYYY-MM-DD', 'en');
 }

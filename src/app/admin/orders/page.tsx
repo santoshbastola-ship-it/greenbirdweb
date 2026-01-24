@@ -3,8 +3,17 @@
 import { useEffect, useState } from "react";
 import { TransactionService } from "@/services/transaction.service";
 import { TransactionRecord, OrderStatus, TransactionType, PaymentStatus, PaymentRecord } from "@/types";
-import { Package, Calendar, User, ShoppingBag, ChevronDown, X, CreditCard, Search } from "lucide-react";
+import { Package, Calendar, User, ShoppingBag, ChevronDown, X, CreditCard, Search, Clock, MessageSquare, MapPin } from "lucide-react";
 import { toNepali } from "@/lib/date-helper";
+import NepaliDate from "nepali-date-converter";
+import dynamic from 'next/dynamic';
+
+const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
+    ssr: false,
+    loading: () => <input type="text" placeholder="Loading Date..." className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm" />
+});
+
+import "nepali-datepicker-reactjs/dist/index.css";
 
 type TabStatus = OrderStatus;
 
@@ -41,8 +50,8 @@ export default function AdminOrdersPage() {
             order.partyName.toLowerCase().includes(searchQuery.toLowerCase());
 
         const orderDate = new Date(order.date);
-        const matchesStartDate = !startDate || orderDate >= new Date(startDate);
-        const matchesEndDate = !endDate || orderDate <= new Date(new Date(endDate).setHours(23, 59, 59, 999));
+        const matchesStartDate = !startDate || orderDate >= new NepaliDate(startDate).toJsDate();
+        const matchesEndDate = !endDate || orderDate <= new Date(new NepaliDate(endDate).toJsDate().setHours(23, 59, 59, 999));
 
         return matchesStatus && matchesSearch && matchesStartDate && matchesEndDate;
     });
@@ -74,21 +83,25 @@ export default function AdminOrdersPage() {
                         </div>
                         <div>
                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-1 ml-1">Start Date</label>
-                            <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all text-sm"
-                            />
+                            <div className="nepali-datepicker-container">
+                                <NepaliDatePicker
+                                    value={startDate}
+                                    onChange={(date: string) => setStartDate(date)}
+                                    options={{ calenderLocale: "en", valueLocale: "en" }}
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all text-sm"
+                                />
+                            </div>
                         </div>
                         <div>
                             <label className="block text-xs font-semibold text-gray-500 uppercase mb-1 ml-1">End Date</label>
-                            <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all text-sm"
-                            />
+                            <div className="nepali-datepicker-container">
+                                <NepaliDatePicker
+                                    value={endDate}
+                                    onChange={(date: string) => setEndDate(date)}
+                                    options={{ calenderLocale: "en", valueLocale: "en" }}
+                                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all text-sm"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -419,6 +432,48 @@ function OrderDetailsModal({
                 </div>
 
                 <div className="p-6 space-y-8">
+                    {/* Delivery Details */}
+                    {(order.expectedDeliveryTime || order.deliveryInstructions || order.deliveryAddress) && (
+                        <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4">
+                            <h4 className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-3">Delivery Information</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {order.deliveryAddress && (
+                                    <div className="flex items-start gap-2 text-sm text-gray-700">
+                                        <MapPin className="h-4 w-4 text-blue-500 mt-0.5" />
+                                        <div className="flex-1">
+                                            <span className="font-semibold text-gray-900">Address:</span>
+                                            <p className="mt-1 leading-relaxed">{order.deliveryAddress}</p>
+                                        </div>
+                                    </div>
+                                )}
+                                {order.expectedDeliveryTime && (
+                                    <div className="flex items-start gap-2 text-sm text-gray-700">
+                                        <Clock className="h-4 w-4 text-blue-500 mt-0.5" />
+                                        <div className="flex-1">
+                                            <span className="font-semibold text-gray-900">Expected Time:</span>
+                                            <p className="mt-1">
+                                                {typeof order.expectedDeliveryDate === 'string'
+                                                    ? order.expectedDeliveryDate
+                                                    : order.expectedDeliveryDate instanceof Date
+                                                        ? toNepali(order.expectedDeliveryDate, "DD MMM YYYY")
+                                                        : "Scheduled"} at {order.expectedDeliveryTime}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+                                {order.deliveryInstructions && (
+                                    <div className="flex items-start gap-2 text-sm text-gray-700">
+                                        <MessageSquare className="h-4 w-4 text-blue-500 mt-0.5" />
+                                        <div className="flex-1">
+                                            <span className="font-semibold text-gray-900">Delivery Note:</span>
+                                            <p className="mt-1 text-gray-600 italic">"{order.deliveryInstructions}"</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Customer & Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>

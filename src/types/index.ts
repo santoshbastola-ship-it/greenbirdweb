@@ -215,3 +215,10 @@ export interface EnergyBill {
     enteredBy: string;
     entryDate: Date;
 }
+
+export interface AppSettings {
+    deliveryFee: number;
+    freeDeliveryThreshold: number;
+    appDiscountPercentage: number;
+    minAppDiscount: number;
+}

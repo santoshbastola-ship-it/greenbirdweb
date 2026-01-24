@@ -4,8 +4,10 @@ import { useCartStore } from "@/store/useCartStore";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LogOut, ShoppingBag } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function CheckoutButton() {
+    const { user } = useAuth();
     const items = useCartStore((state) => state.items);
     const [mounted, setMounted] = useState(false);
 
@@ -13,7 +15,7 @@ export default function CheckoutButton() {
         setMounted(true);
     }, []);
 
-    if (!mounted || items.length === 0) return null;
+    if (!mounted || !user || items.length === 0) return null;
 
     const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
 

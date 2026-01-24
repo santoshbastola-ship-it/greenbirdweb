@@ -43,6 +43,7 @@ export default function AdminSidebar() {
         { href: "/admin/blog", label: "Blog", icon: FileText },
         { href: "/admin/bookings", label: "Bookings", icon: CalendarDays },
         { href: "/admin/users", label: "Users", icon: Users },
+        { href: "/admin/settings", label: "Settings", icon: Settings },
     ];
 
     const isActive = (path: string) => pathname === path || pathname.startsWith(`${path}/`);
