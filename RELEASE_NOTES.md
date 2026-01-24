@@ -2,12 +2,21 @@
 
 ## [0.1.7] - 2026-01-24
 ### Added
+- **Global App Settings**: Introduced a new Settings page for administrators to manage delivery fees, free delivery thresholds, and application-wide discounts.
+- **Admin Layout Engine**: Implemented `ConditionalNavbar` and `ConditionalFooter` to provide a clean, dedicated interface for admin and manager roles.
+- **Admin Navigation**: Updated Admin Sidebar with quick access to Orders and Settings.
 - **Manual Admin Setup Guide**: Added a detailed step-by-step guide for creating admin users via Firebase Console for improved security.
+- **Contact Integration**: Replaced legacy "My Orders" link in footer with "Contact Us" for better customer support access.
 
 ### Changed
-- **Admin Setup**: Removed the temporary web-based admin setup page (`/temp-setup-admin`).
-- **Auth Flow**: Improved reliability of verification email resending on the admin login page.
-- **Login Feedback**: Added specific error messages for non-verified admin accounts.
+- **Navigation Security**: Navbar icons (Cart, Checkout) are now contextual and only visible to authenticated users.
+- **Date Formatting**: Standardized Nepali date conversion to consistently use English numerals for better cross-browser compatibility.
+- **Auth Flow**: Improved reliability of verification email resending on the admin login page with better error handling.
+
+### Fixed
+- **Admin Setup**: Removed the temporary web-based admin setup page (`/temp-setup-admin`) to close security gaps.
+- **Logout Logic**: Refined logout state management to ensure clean redirection after session termination.
+- **Admin Feedback**: Added specific error messages for non-verified admin accounts during sign-in.
 
 ## [0.1.6] - 2026-01-23
 - UI improvements and bug fixes
