@@ -72,13 +72,17 @@ export const ProductService = {
 
     uploadProductImage: async (file: File): Promise<string> => {
         try {
+            console.log("Starting image upload for file:", file.name, "type:", file.type, "size:", file.size);
             const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
             const snapshot = await uploadBytes(storageRef, file);
             const downloadURL = await getDownloadURL(snapshot.ref);
+            console.log("Image upload successful. URL:", downloadURL);
             return downloadURL;
-        } catch (error) {
-            console.error("Error uploading image:", error);
-            throw error;
+        } catch (error: any) {
+            console.error("Error uploading image to Firebase Storage:", error);
+            // Re-throw with more context
+            const errorMessage = error.message || "Unknown error during upload";
+            throw new Error(`Upload failed: ${errorMessage}`);
         }
     },
 

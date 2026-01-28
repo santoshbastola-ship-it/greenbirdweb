@@ -79,9 +79,9 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                 ...prev,
                 images: [...(prev.images || []), downloadURL]
             }));
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error uploading image:", error);
-            alert("Failed to upload image");
+            alert(`Failed to upload image: ${error.message || 'Unknown error'}`);
         } finally {
             setUploadingImage(false);
             // Reset input so same file can be selected again if needed
@@ -108,7 +108,7 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                 </div>
                 <button
                     type="submit"
-                    disabled={loading}
+                    disabled={loading || uploadingImage}
                     className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center disabled:opacity-50"
                 >
                     <Save className="h-5 w-5 mr-2" />

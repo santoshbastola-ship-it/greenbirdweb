@@ -45,11 +45,32 @@ export const TransactionService = {
     // Create a new transaction (Sale or Purchase)
     createTransaction: async (transaction: Omit<TransactionRecord, "id">): Promise<string> => {
         try {
+            // 1. Create the transaction record
             const docRef = await addDoc(collection(db, COLLECTION_NAME), {
                 ...transaction,
                 entryTimestamp: new Date().toISOString(), // Ensure serializable date
                 date: new Date(transaction.date).toISOString()
             });
+
+            // 2. Update Product Stock based on Transaction Type
+            try {
+                const ProductServiceModule = await import("./product.service");
+                const ProductService = ProductServiceModule.ProductService;
+
+                await Promise.all(transaction.items.map(async (item) => {
+                    const action = transaction.type === TransactionType.Sale ? 'remove' : 'add';
+                    const note = `${transaction.type} - Bill: ${transaction.billNo}`;
+
+                    try {
+                        await ProductService.updateProductStock(item.productId, action, item.quantity, note);
+                    } catch (stockError) {
+                        console.error(`Failed to update stock for product ${item.productId}:`, stockError);
+                        // We don't throw here to avoid failing the whole transaction if stock update fails
+                    }
+                }));
+            } catch (serviceLoadError) {
+                console.error("Failed to load ProductService for stock update:", serviceLoadError);
+            }
 
             // NOTIFICATION LOGIC: Notify Admins about new transaction
             try {
