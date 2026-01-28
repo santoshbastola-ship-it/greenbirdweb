@@ -1,104 +1,332 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { Plus, CheckCircle, Calendar, AlertCircle, ArrowLeft } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, CheckCircle, Calendar, AlertCircle, Circle, User } from "lucide-react";
+
+import { TaskItem, TaskPriority, TaskStatus } from "@/types";
+import { TaskService } from "@/services/task.service";
 import { toNepali } from "@/lib/date-helper";
+import AddTaskModal from "@/components/admin/AddTaskModal";
+import TaskDetailsModal from "@/components/admin/TaskDetailsModal";
+import NepaliDate from "nepali-date-converter";
+import AdvancedSearch from "@/components/admin/AdvancedSearch";
+import { useAuth } from "@/context/AuthContext";
+
+type TabStatus = TaskStatus | 'All';
 
 export default function TasksPage() {
-    const [filter, setFilter] = useState<'open' | 'done'>('open');
+    const { dbUser } = useAuth();
+    const [tasks, setTasks] = useState<TaskItem[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState<TabStatus>(TaskStatus.Open);
 
-    // Mock Tasks
-    const tasks: any[] = [];
+    // Filters
+    const [searchQuery, setSearchQuery] = useState("");
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
+    const [showMyTasksOnly, setShowMyTasksOnly] = useState(false);
 
-    const filteredTasks = tasks.filter(t => filter === 'open' ? t.status !== 'done' : t.status === 'done');
+    // Modals
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
-    const getPriorityColor = (p: string) => {
-        switch (p) {
-            case 'urgent': return "bg-red-100 text-red-700";
-            case 'high': return "bg-orange-100 text-orange-700";
-            case 'medium': return "bg-blue-100 text-blue-700";
-            default: return "bg-gray-100 text-gray-700";
+    // Optimistic UI state for visual feedback
+    const [completingTaskIds, setCompletingTaskIds] = useState<Set<string>>(new Set());
+
+    const loadTasks = async () => {
+        setLoading(true);
+        try {
+            const fetchedTasks = await TaskService.getAllTasks();
+            setTasks(fetchedTasks);
+        } catch (error) {
+            console.error("Failed to load tasks", error);
+        } finally {
+            setLoading(false);
         }
     };
 
+    useEffect(() => {
+        loadTasks();
+    }, []);
+
+    const handleToggleStatus = async (task: TaskItem, e: React.MouseEvent) => {
+        e.stopPropagation(); // Prevent opening details modal
+
+        const newStatus = task.status === TaskStatus.Done ? TaskStatus.Open : TaskStatus.Done;
+
+        // Visual feedback logic
+        if (newStatus === TaskStatus.Done) {
+            // Show green tick immediately
+            setCompletingTaskIds(prev => {
+                const newSet = new Set(prev);
+                newSet.add(task.id);
+                return newSet;
+            });
+
+            // Delay the actual move/disappearance
+            setTimeout(async () => {
+                await updateTaskStatusSteps(task, newStatus);
+                setCompletingTaskIds(prev => {
+                    const newSet = new Set(prev);
+                    newSet.delete(task.id);
+                    return newSet;
+                });
+            }, 800); // 800ms delay for user to see the tick
+        } else {
+            // If marking as Open (undoing), do it immediately
+            await updateTaskStatusSteps(task, newStatus);
+        }
+    };
+
+    const updateTaskStatusSteps = async (task: TaskItem, newStatus: TaskStatus) => {
+        // Optimistic update
+        setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
+
+        try {
+            await TaskService.updateTask(task.id, { status: newStatus });
+        } catch (error) {
+            console.error("Failed to update status", error);
+            // Revert on error
+            loadTasks();
+        }
+    };
+
+    const filteredTasks = tasks.filter(task => {
+        // Status Filter
+        let matchesStatus = true;
+        if (activeTab !== 'All') {
+            matchesStatus = task.status === activeTab;
+        }
+
+        // Search Filter
+        const query = searchQuery.toLowerCase();
+        const matchesSearch = !searchQuery ||
+            task.title.toLowerCase().includes(query) ||
+            (task.assignedTo && task.assignedTo.toLowerCase().includes(query));
+
+        // Date Filter
+        const taskDate = typeof task.dueDate === 'string' ? new NepaliDate(task.dueDate).toJsDate() : new Date();
+        const matchesStartDate = !startDate || taskDate >= new NepaliDate(startDate).toJsDate();
+        const matchesEndDate = !endDate || taskDate <= new Date(new NepaliDate(endDate).toJsDate().setHours(23, 59, 59, 999));
+
+        // My Tasks Filter
+        let matchesMyTasks = true;
+        if (showMyTasksOnly && dbUser?.name) {
+            matchesMyTasks = !!task.assignedTo && task.assignedTo.toLowerCase().includes(dbUser.name.toLowerCase());
+        }
+
+        return matchesStatus && matchesSearch && matchesStartDate && matchesEndDate && matchesMyTasks;
+    }).sort((a, b) => {
+        // Sort: Done at bottom if in "All" view?? Or just standard sort?
+        // Let's keep standard sort: Priority -> Date
+
+        const priorityOrder = { urgent: 4, high: 3, medium: 2, low: 1 };
+        const pA = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
+        const pB = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
+
+        if (pA !== pB) return pB - pA; // Higher priority first
+
+        // Then by date (due date)
+        const dateA = typeof a.dueDate === 'string' ? new NepaliDate(a.dueDate).toJsDate().getTime() : 0;
+        const dateB = typeof b.dueDate === 'string' ? new NepaliDate(b.dueDate).toJsDate().getTime() : 0;
+        return dateB - dateA;
+    });
+
+    const getTabCount = (tab: TabStatus) => {
+        if (tab === 'All') return tasks.length;
+        return tasks.filter(t => t.status === tab).length;
+    };
+
+    const tabs: { label: string; status: TabStatus }[] = [
+        { label: "Open", status: TaskStatus.Open },
+        { label: "In Progress", status: TaskStatus.InProgress },
+        { label: "Done", status: TaskStatus.Done },
+        { label: "All", status: 'All' },
+    ];
+
+    const selectedTask = tasks.find(t => t.id === selectedTaskId) || null;
+
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link href="/admin" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                        <ArrowLeft className="h-6 w-6 text-gray-600" />
-                    </Link>
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Task Management</h1>
-                        <p className="text-gray-500">Assign and track farm activities</p>
+        <div className="min-h-screen bg-gray-50 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-4">
+
+                        <h1 className="text-3xl font-bold text-gray-900">Task Management</h1>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setShowMyTasksOnly(!showMyTasksOnly)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors border ${showMyTasksOnly
+                                ? "bg-green-100 text-green-700 border-green-200"
+                                : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                                }`}
+                        >
+                            <User className="h-5 w-5" />
+                            <span className="hidden sm:inline">My Tasks</span>
+                        </button>
+                        <button
+                            onClick={() => setIsAddModalOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm font-medium"
+                        >
+                            <Plus className="h-5 w-5" />
+                            <span className="hidden sm:inline">Create Task</span>
+                        </button>
                     </div>
                 </div>
-                <Link
-                    href="/admin/tasks/new"
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center"
-                >
-                    <Plus className="h-5 w-5 mr-2" />
-                    Assign Task
-                </Link>
-            </div>
 
-            {/* Tabs */}
-            <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl w-fit">
-                <button
-                    onClick={() => setFilter('open')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === 'open' ? 'bg-white shadow-sm text-green-700' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                    Pending Tasks
-                </button>
-                <button
-                    onClick={() => setFilter('done')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === 'done' ? 'bg-white shadow-sm text-green-700' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                    Completed
-                </button>
-            </div>
+                {/* Filters */}
+                <AdvancedSearch
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    startDate={startDate}
+                    onStartDateChange={setStartDate}
+                    endDate={endDate}
+                    onEndDateChange={setEndDate}
+                    placeholder="Search by Task Title or Assignee..."
+                />
 
-            {/* List */}
-            <div className="space-y-4">
-                {filteredTasks.map((task) => (
-                    <div key={task.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between hover:border-green-300 transition-colors cursor-pointer">
-                        <div className="flex items-start space-x-4">
-                            <div className={`mt-1 h-5 w-5 rounded-full border-2 flex items-center justify-center ${task.priority === 'urgent' ? 'border-red-400' : 'border-gray-300'}`}>
-                                {filter === 'done' && <div className="h-3 w-3 bg-green-500 rounded-full" />}
-                            </div>
-                            <div>
-                                <h3 className={`font-medium text-gray-900 ${filter === 'done' ? 'line-through text-gray-500' : ''}`}>
-                                    {task.title}
-                                </h3>
-                                <div className="flex items-center space-x-4 mt-1 text-sm text-gray-500">
-                                    <span className="flex items-center">
-                                        <AlertCircle className="h-3 w-3 mr-1" />
-                                        <span className={`${getPriorityColor(task.priority)} px-1.5 rounded text-xs uppercase font-bold tracking-wider`}>
-                                            {task.priority}
-                                        </span>
-                                    </span>
-                                    <span className="flex items-center">
-                                        <Calendar className="h-3 w-3 mr-1" />
-                                        {/* Apply Nepali Date Format */}
-                                        {task.dueDate.includes('-') ? toNepali(task.dueDate, 'DD MMM YYYY') : task.dueDate}
-                                    </span>
-                                    <span className="flex items-center">
-                                        <CheckCircle className="h-3 w-3 mr-1" />
-                                        Assigned to: <strong className="ml-1 text-gray-700">{task.assignedTo}</strong>
+                {/* Tabs */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
+                    <div className="flex border-b border-gray-200 overflow-x-auto">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.status}
+                                onClick={() => setActiveTab(tab.status)}
+                                className={`flex-1 min-w-[120px] px-6 py-4 text-sm font-medium transition-colors relative ${activeTab === tab.status
+                                    ? "text-green-600 border-b-2 border-green-600"
+                                    : "text-gray-500 hover:text-gray-700"
+                                    }`}
+                            >
+                                <div className="flex items-center justify-center gap-2">
+                                    <span>{tab.label}</span>
+                                    <span className={`px-2 py-0.5 rounded-full text-xs ${activeTab === tab.status
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-gray-100 text-gray-600"
+                                        }`}>
+                                        {getTabCount(tab.status)}
                                     </span>
                                 </div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Task List */}
+                {loading ? (
+                    <div className="flex items-center justify-center h-64">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+                    </div>
+                ) : filteredTasks.length === 0 ? (
+                    <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-100">
+                        <CheckCircle className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No {activeTab} tasks found</h3>
+                        <p className="text-gray-500">Tasks matching your criteria will appear here.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {filteredTasks.map((task) => (
+                            <TaskCard
+                                key={task.id}
+                                task={task}
+                                onClick={() => setSelectedTaskId(task.id)}
+                                onToggleStatus={(e) => handleToggleStatus(task, e)}
+                                isCompleting={completingTaskIds.has(task.id)}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Modals */}
+            {isAddModalOpen && (
+                <AddTaskModal
+                    onClose={() => setIsAddModalOpen(false)}
+                    onSuccess={loadTasks}
+                />
+            )}
+
+            {selectedTask && (
+                <TaskDetailsModal
+                    task={selectedTask}
+                    onClose={() => setSelectedTaskId(null)}
+                    onUpdate={loadTasks}
+                />
+            )}
+        </div>
+    );
+}
+
+function TaskCard({ task, onClick, onToggleStatus, isCompleting }: { task: TaskItem; onClick: () => void; onToggleStatus: (e: React.MouseEvent) => void; isCompleting?: boolean }) {
+    const getPriorityStyles = (p: string) => {
+        switch (p) {
+            case 'urgent': return { bg: "bg-red-50", text: "text-red-600", icon: AlertCircle };
+            case 'high': return { bg: "bg-orange-50", text: "text-orange-600", icon: AlertCircle };
+            case 'medium': return { bg: "bg-blue-50", text: "text-blue-600", icon: Circle };
+            default: return { bg: "bg-gray-50", text: "text-gray-600", icon: Circle };
+        }
+    };
+
+    const style = getPriorityStyles(task.priority);
+    const PriorityIcon = style.icon;
+
+    // Display Date
+    const displayDate = typeof task.dueDate === 'string' ? task.dueDate : "N/A";
+    const isDone = task.status === TaskStatus.Done || isCompleting; // Treat completing as done visually
+
+    return (
+        <div
+            onClick={onClick}
+            className={`bg-white rounded-xl shadow-sm border p-4 hover:shadow-md transition-all cursor-pointer border-l-4 ${task.priority === 'urgent' ? 'border-l-red-500' :
+                task.priority === 'high' ? 'border-l-orange-400' :
+                    task.priority === 'medium' ? 'border-l-blue-400' : 'border-l-gray-300'
+                } border-y-gray-100 border-r-gray-100 ${isCompleting ? 'bg-green-50' : ''}`} // Subtle background change for completing
+        >
+            <div className="flex items-center justify-between gap-4">
+                {/* Left: Checkbox & Title */}
+                <div className="min-w-0 flex items-start gap-4 flex-1">
+                    {/* Clickable Circle for Status Toggle */}
+                    <button
+                        onClick={onToggleStatus}
+                        className={`p-2 rounded-full flex-shrink-0 transition-colors ${isDone ? "bg-green-100 text-green-600" : style.bg + " " + style.text + " hover:bg-gray-200"
+                            } mt-1`}
+                        title={isDone ? "Mark as Open" : "Mark as Done"}
+                    >
+                        {isDone ? <CheckCircle className="h-5 w-5" /> : <PriorityIcon className="h-5 w-5" />}
+                    </button>
+
+                    <div>
+                        <h3 className={`font-bold text-gray-900 text-lg line-clamp-1 ${isDone ? 'line-through text-gray-500' : ''}`}>
+                            {task.title}
+                        </h3>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mt-1">
+                            <div className="flex items-center">
+                                <Calendar className="h-3.5 w-3.5 mr-1" />
+                                {displayDate}
+                            </div>
+                            <div className="flex items-center">
+                                <User className="h-3.5 w-3.5 mr-1" />
+                                {task.assignedTo || "Unassigned"}
                             </div>
                         </div>
                     </div>
-                ))}
+                </div>
 
-                {filteredTasks.length === 0 && (
-                    <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                        <p className="text-gray-500">No {filter} tasks found.</p>
-                    </div>
-                )}
+                {/* Right: Status Badge (Hidden on very small screens if crowded, but good for context) */}
+                <div className="flex-shrink-0 flex flex-col items-end gap-2">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        ${task.status === TaskStatus.Done ? "bg-green-100 text-green-800" :
+                            task.status === TaskStatus.InProgress ? "bg-blue-100 text-blue-800" :
+                                "bg-gray-100 text-gray-800"}`}>
+                        {task.status === TaskStatus.InProgress ? "In Progress" : task.status}
+                    </span>
+                    {/* Priority Text for clarity */}
+                    <span className={`text-[10px] uppercase font-bold tracking-wider ${style.text}`}>
+                        {task.priority}
+                    </span>
+                </div>
             </div>
         </div>
     );

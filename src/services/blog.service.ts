@@ -13,7 +13,7 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { BlogPost } from "@/types/extra";
-import { MOCK_BLOG_POSTS } from "@/lib/mock-data";
+
 
 const BLOG_COLLECTION = "blog_posts";
 
@@ -24,7 +24,7 @@ export const BlogService = {
     async getAllPosts(): Promise<BlogPost[]> {
         try {
             if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'replace_me') {
-                return MOCK_BLOG_POSTS;
+                return [];
             }
 
             const blogRef = collection(db, BLOG_COLLECTION);
@@ -40,12 +40,11 @@ export const BlogService = {
                 } as BlogPost;
             });
 
-            // Merge mock posts with real posts (mock posts first, but you can change order)
-            // Using a Map to deduplicate by ID if necessary, though IDs are likely different (post-1 vs auto-gen)
-            return [...MOCK_BLOG_POSTS, ...firestorePosts];
+            // Return only real posts
+            return firestorePosts;
         } catch (error) {
             console.error("Error fetching blog posts:", error);
-            return MOCK_BLOG_POSTS;
+            return [];
         }
     },
 
@@ -55,7 +54,7 @@ export const BlogService = {
     async getPostBySlug(slug: string): Promise<BlogPost | null> {
         try {
             if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'replace_me') {
-                return MOCK_BLOG_POSTS.find(p => p.slug === slug) || null;
+                return null;
             }
 
             const blogRef = collection(db, BLOG_COLLECTION);
@@ -63,7 +62,7 @@ export const BlogService = {
             const doc = snapshot.docs.find(d => d.data().slug === slug);
 
             if (!doc) {
-                return MOCK_BLOG_POSTS.find(p => p.slug === slug) || null;
+                return null;
             }
 
             const data = doc.data();
@@ -74,7 +73,7 @@ export const BlogService = {
             } as BlogPost;
         } catch (error) {
             console.error("Error fetching blog post by slug:", error);
-            return MOCK_BLOG_POSTS.find(p => p.slug === slug) || null;
+            return null;
         }
     },
 

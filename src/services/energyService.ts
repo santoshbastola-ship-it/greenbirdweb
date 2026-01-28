@@ -26,6 +26,10 @@ const convertToEnergyBill = (id: string, data: DocumentData): EnergyBill => {
         amount: data.amount || 0,
         paymentStatus: data.paymentStatus as PaymentStatus || PaymentStatus.Pending,
         paidAmount: data.paidAmount || 0,
+        payments: data.payments ? data.payments.map((p: any) => ({
+            ...p,
+            date: p.date?.toDate() || new Date()
+        })) : [],
         meterReadingDate: data.meterReadingDate?.toDate(),
         dueDate: data.dueDate?.toDate(),
         purchaseDate: data.purchaseDate?.toDate(),
@@ -37,16 +41,17 @@ const convertToEnergyBill = (id: string, data: DocumentData): EnergyBill => {
 
 // Helper to convert EnergyBill to Firestore data
 const convertToFirestoreData = (bill: Partial<EnergyBill>) => {
-    const data: any = {
-        type: bill.type,
-        month: bill.month,
-        year: bill.year,
-        amount: bill.amount,
-        paymentStatus: bill.paymentStatus,
-        paidAmount: bill.paidAmount || 0,
-        remarks: bill.remarks || null,
-        enteredBy: bill.enteredBy,
-    };
+    const data: any = {};
+
+    if (bill.type !== undefined) data.type = bill.type;
+    if (bill.month !== undefined) data.month = bill.month;
+    if (bill.year !== undefined) data.year = bill.year;
+    if (bill.amount !== undefined) data.amount = bill.amount;
+    if (bill.paymentStatus !== undefined) data.paymentStatus = bill.paymentStatus;
+    if (bill.paidAmount !== undefined) data.paidAmount = bill.paidAmount;
+    if (bill.payments !== undefined) data.payments = bill.payments;
+    if (bill.remarks !== undefined) data.remarks = bill.remarks;
+    if (bill.enteredBy !== undefined) data.enteredBy = bill.enteredBy;
 
     if (bill.meterReadingDate) {
         data.meterReadingDate = Timestamp.fromDate(bill.meterReadingDate);
@@ -150,7 +155,8 @@ export const deleteEnergyBill = async (id: string): Promise<void> => {
 export const updatePaymentStatus = async (
     id: string,
     paymentStatus: PaymentStatus,
-    paidAmount?: number
+    paidAmount?: number,
+    payments?: any[]
 ): Promise<void> => {
     try {
         const billRef = doc(db, COLLECTION_NAME, id);
@@ -158,6 +164,10 @@ export const updatePaymentStatus = async (
 
         if (paidAmount !== undefined) {
             updates.paidAmount = paidAmount;
+        }
+
+        if (payments !== undefined) {
+            updates.payments = payments;
         }
 
         await updateDoc(billRef, updates);

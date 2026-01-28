@@ -26,6 +26,7 @@ export interface PaymentRecord {
     amount: number;
     date: Date;
     note?: string;
+    enteredBy?: string;
 }
 
 export interface SalesItem {
@@ -65,6 +66,16 @@ export interface TransactionRecord {
     cancellationReason?: string;
     paidAmount: number;
     payments: PaymentRecord[];
+    logs?: OrderLog[];
+    updatedAt?: Date | string;
+}
+
+export interface OrderLog {
+    id: string; // unique id for key
+    date: Date | string;
+    action: string; // e.g., "Updated Quantity"
+    details?: string; // e.g., "Changed from 2 to 5"
+    changedBy: string; // Name of user
 }
 
 // Task Types
@@ -96,7 +107,7 @@ export interface TaskItem {
     taskId: string;
     title: string;
     description?: string;
-    dueDate?: Date;
+    dueDate?: string | Date;
     hasTime: boolean;
     status: TaskStatus;
     priority: TaskPriority;
@@ -144,6 +155,7 @@ export interface Product {
     images: string[];
     description?: string;
     isAvailableForSale: boolean;
+    isFeatured?: boolean;
 }
 
 export interface User {
@@ -208,6 +220,7 @@ export interface EnergyBill {
     amount: number;
     paymentStatus: PaymentStatus;
     paidAmount: number; // For partial payments
+    payments?: PaymentRecord[]; // History of payments
     meterReadingDate?: Date; // For electricity/water
     dueDate?: Date; // For electricity/water
     purchaseDate?: Date; // For gas
@@ -221,4 +234,22 @@ export interface AppSettings {
     freeDeliveryThreshold: number;
     appDiscountPercentage: number;
     minAppDiscount: number;
+}
+
+// Notifications
+export type NotificationType = 'info' | 'success' | 'warning' | 'error';
+export type NotificationChannel = 'in-app' | 'whatsapp' | 'email';
+
+export interface Notification {
+    id: string;
+    targetUserId: string; // The user who should receive this
+    title: string;
+    message: string;
+    type: NotificationType;
+    channels?: NotificationChannel[];
+    isRead: boolean;
+    createdAt: string | Date;
+    relatedEntityId?: string; // ID of Order, Task, etc.
+    relatedEntityType?: 'transaction' | 'task' | 'alert';
+    route?: string; // In-app route to navigate to
 }

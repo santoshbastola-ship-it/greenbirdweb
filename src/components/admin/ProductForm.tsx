@@ -29,6 +29,7 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
             description: "",
             images: [],
             isAvailableForSale: true,
+            isFeatured: false,
         }
     );
 
@@ -150,6 +151,9 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                 </select>
                             </div>
 
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Is for Sale?</label>
                                 <div className="flex items-center h-[42px]">
@@ -161,6 +165,20 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                         className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                                     />
                                     <span className="ml-2 text-sm text-gray-600">Available on Public Store</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Featured Product</label>
+                                <div className="flex items-center h-[42px]">
+                                    <input
+                                        type="checkbox"
+                                        name="isFeatured"
+                                        checked={formData.isFeatured || false}
+                                        onChange={handleCheckboxChange}
+                                        className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                                    />
+                                    <span className="ml-2 text-sm text-gray-600">Show on Home Page</span>
                                 </div>
                             </div>
                         </div>

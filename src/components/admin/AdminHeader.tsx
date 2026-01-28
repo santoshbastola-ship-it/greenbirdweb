@@ -12,8 +12,12 @@ export default function AdminHeader() {
 
     return (
         <header className="bg-white border-b border-gray-200 h-16 sticky top-0 z-30 flex items-center justify-between px-4 md:px-8">
-            <div className="flex-1">
-                {/* Search or Title can go here if needed */}
+            <div className="flex-1 hidden md:flex items-center space-x-6">
+                <a href="/" className="text-sm font-medium text-gray-600 hover:text-green-700 transition-colors">Home</a>
+                <a href="/shop" className="text-sm font-medium text-gray-600 hover:text-green-700 transition-colors">Shop</a>
+                <a href="/blog" className="text-sm font-medium text-gray-600 hover:text-green-700 transition-colors">Blog</a>
+                <a href="/contact" className="text-sm font-medium text-gray-600 hover:text-green-700 transition-colors">Contact</a>
+                <a href="/admin" className="text-sm font-medium text-green-700 bg-green-50 px-3 py-1.5 rounded-full">Dashboard</a>
             </div>
 
             <div className="flex items-center gap-4">
@@ -64,18 +68,20 @@ export default function AdminHeader() {
                                     My Profile
                                 </button>
 
-                                <button
-                                    onClick={() => {
-                                        setIsProfileModalOpen(true);
-                                        setIsMenuOpen(false);
-                                        // We'll pass a 'security' tab prop if we want to open it directly, 
-                                        // but for now the modal has tabs.
-                                    }}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
-                                >
-                                    <Key className="h-4 w-4" />
-                                    Change Password
-                                </button>
+                                {dbUser?.role !== 'admin' && (
+                                    <button
+                                        onClick={() => {
+                                            setIsProfileModalOpen(true);
+                                            setIsMenuOpen(false);
+                                            // We'll pass a 'security' tab prop if we want to open it directly, 
+                                            // but for now the modal has tabs.
+                                        }}
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors"
+                                    >
+                                        <Key className="h-4 w-4" />
+                                        Change Password
+                                    </button>
+                                )}
 
                                 <div className="border-t border-gray-50 mt-1 pt-1">
                                     <button

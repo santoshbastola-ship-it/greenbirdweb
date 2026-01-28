@@ -18,9 +18,10 @@ export function toNepali(date: Date | string | number, format: string = "YYYY-MM
 
         const bsDate = new NepaliDate(jsDate);
 
-        if (format === 'DD MMM YYYY') {
-            return bsDate.format('DD MMM YYYY', 'en');
-        }
+        // Global override: Always formatted as YYYY-MM-DD as per user request
+        // if (format === 'DD MMM YYYY') {
+        //    return bsDate.format('DD MMM YYYY', 'en');
+        // }
         return bsDate.format('YYYY-MM-DD', 'en');
     } catch (e) {
         console.error("Date conversion error", e);

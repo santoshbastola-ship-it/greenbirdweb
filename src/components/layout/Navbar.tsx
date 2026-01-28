@@ -131,13 +131,15 @@ export default function Navbar() {
                                         >
                                             My Profile
                                         </Link>
-                                        <Link
-                                            href="/orders"
-                                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700"
-                                            onClick={() => setIsProfileOpen(false)}
-                                        >
-                                            My Orders
-                                        </Link>
+                                        {dbUser?.role !== 'admin' && (
+                                            <Link
+                                                href="/orders"
+                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700"
+                                                onClick={() => setIsProfileOpen(false)}
+                                            >
+                                                My Orders
+                                            </Link>
+                                        )}
                                         {(dbUser?.role === 'admin' || dbUser?.role === 'manager') && (
                                             <Link
                                                 href="/admin"

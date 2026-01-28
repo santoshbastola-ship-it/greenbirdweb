@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Search, Zap, Droplet, Flame, UtensilsCrossed, X, Trash2, Edit } from "lucide-react";
+import { Plus, Search, Zap, Droplet, Flame, UtensilsCrossed, X, Trash2, Edit, Calendar, Clock, DollarSign } from "lucide-react";
 import { EnergyBill, EnergyType, PaymentStatus } from "@/types";
 import {
     subscribeToEnergyBills,
@@ -12,15 +12,40 @@ import {
     updatePaymentStatus
 } from "@/services/energyService";
 import AddEnergyBillModal from "@/components/admin/AddEnergyBillModal";
-import PartialPaymentDialog from "@/components/admin/PartialPaymentDialog";
+import EnergyBillDetailsModal from "@/components/admin/EnergyBillDetailsModal";
+import PaymentStatusDropdown from "@/components/admin/PaymentStatusDropdown";
+import AdvancedSearch from "@/components/admin/AdvancedSearch";
+import { toNepali } from "@/lib/date-helper";
+import NepaliDate from "nepali-date-converter";
+import dynamic from 'next/dynamic';
+
+const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
+    ssr: false,
+    loading: () => <input type="text" placeholder="Loading Date..." className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm" />
+});
+
+import "nepali-datepicker-reactjs/dist/index.css";
+
+type TabStatus = "Pending" | "Partial" | "Paid" | "All";
 
 export default function EnergyBillsPage() {
     const [bills, setBills] = useState<EnergyBill[]>([]);
+    const [activeTab, setActiveTab] = useState<TabStatus>("Pending");
     const [searchQuery, setSearchQuery] = useState("");
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [editingBill, setEditingBill] = useState<EnergyBill | null>(null);
-    const [partialPaymentBill, setPartialPaymentBill] = useState<EnergyBill | null>(null);
-    const [showPaidBills, setShowPaidBills] = useState(false);
+    // const [editingBill, setEditingBill] = useState<EnergyBill | null>(null); // We might move edit to inside the modal or keep it here
+    // For now let's keep the Edit flow simple: The AddEnergyBillModal handles both add and edit.
+    // However, the requested flow is to match Order flow where we view details first.
+    // Let's stick to the Plan: Click card -> Open Details Modal.
+    // If we need to edit fields (like amount, reading date), we can add an "Edit" button in the Details modal that opens the AddEnergyBillModal in edit mode.
+    // For this refactor, let's keep it simple: Click -> Details.
+
+    // Actually, allowing Edit from the card or details modal is good. Let's keep a state for it.
+    const [billToEdit, setBillToEdit] = useState<EnergyBill | null>(null);
+    const [selectedBill, setSelectedBill] = useState<EnergyBill | null>(null);
+
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -38,59 +63,73 @@ export default function EnergyBillsPage() {
         return () => unsubscribe();
     }, []);
 
-    const handleDelete = async (id: string) => {
-        if (confirm("Are you sure you want to delete this bill?")) {
-            try {
-                await deleteEnergyBill(id);
-            } catch (error) {
-                alert("Error deleting bill");
+    // Sync selectedBill with updated bills list
+    useEffect(() => {
+        if (selectedBill) {
+            const updated = bills.find(b => b.id === selectedBill.id);
+            if (updated) {
+                setSelectedBill(updated);
             }
         }
-    };
-
-    const handleStatusChange = async (bill: EnergyBill, newStatus: PaymentStatus) => {
-        if (newStatus === bill.paymentStatus) return;
-
-        // If changing to partial, show dialog
-        if (newStatus === PaymentStatus.PartialCash || newStatus === PaymentStatus.PartialOnline) {
-            setPartialPaymentBill(bill);
-            return;
-        }
-
-        // Otherwise update directly
-        try {
-            let paidAmount = 0;
-            if (newStatus === PaymentStatus.PaidCash || newStatus === PaymentStatus.PaidOnline) {
-                paidAmount = bill.amount;
+        if (billToEdit) {
+            const updated = bills.find(b => b.id === billToEdit.id);
+            if (updated) {
+                setBillToEdit(updated);
             }
-            await updatePaymentStatus(bill.id, newStatus, paidAmount);
-        } catch (error) {
-            alert("Error updating payment status");
         }
-    };
+    }, [bills]);
 
-    // Filter bills
     const filteredBills = bills.filter((bill) => {
-        if (!searchQuery) return true;
+        // Status Filtering
+        let matchesStatus = true;
+        if (activeTab === "Pending") {
+            matchesStatus = bill.paymentStatus === PaymentStatus.Pending;
+        } else if (activeTab === "Partial") {
+            matchesStatus = bill.paymentStatus === PaymentStatus.PartialCash || bill.paymentStatus === PaymentStatus.PartialOnline;
+        } else if (activeTab === "Paid") {
+            matchesStatus = bill.paymentStatus === PaymentStatus.PaidCash || bill.paymentStatus === PaymentStatus.PaidOnline;
+        }
+
+        // Search Filtering
         const query = searchQuery.toLowerCase();
-        return (
+        const matchesSearch = !searchQuery ||
             getEnergyTypeDisplayName(bill.type).toLowerCase().includes(query) ||
             bill.amount.toString().includes(query) ||
-            getPaymentStatusDisplayName(bill.paymentStatus).toLowerCase().includes(query) ||
-            (bill.remarks && bill.remarks.toLowerCase().includes(query))
-        );
+            (bill.remarks && bill.remarks.toLowerCase().includes(query));
+
+        // Date Filtering (Using Entry Date or maybe Due Date? Let's use Entry Date as default for chronological listing, similar to Orders)
+        // Or maybe Bill Date (Month/Year)? entryDate seems safest.
+        // Let's use entryDate if available, fallback to today?
+        const billDate = bill.entryDate || new Date();
+        // Note: bill.entryDate is a Date object from service conversion
+
+        const dateToCheck = new Date(billDate);
+        const matchesStartDate = !startDate || dateToCheck >= new NepaliDate(startDate).toJsDate();
+        const matchesEndDate = !endDate || dateToCheck <= new Date(new NepaliDate(endDate).toJsDate().setHours(23, 59, 59, 999));
+
+        return matchesStatus && matchesSearch && matchesStartDate && matchesEndDate;
+    }).sort((a, b) => {
+        // Sort by date descending
+        const dateA = a.entryDate ? new Date(a.entryDate).getTime() : 0;
+        const dateB = b.entryDate ? new Date(b.entryDate).getTime() : 0;
+        return dateB - dateA;
     });
 
-    // Separate pending and paid
-    const pendingBills = filteredBills.filter(
-        (b) => b.paymentStatus === PaymentStatus.Pending ||
-            b.paymentStatus === PaymentStatus.PartialCash ||
-            b.paymentStatus === PaymentStatus.PartialOnline
-    );
-    const paidBills = filteredBills.filter(
-        (b) => b.paymentStatus === PaymentStatus.PaidCash ||
-            b.paymentStatus === PaymentStatus.PaidOnline
-    );
+    const getTabCount = (tab: TabStatus) => {
+        return bills.filter(bill => {
+            if (tab === "Pending") return bill.paymentStatus === PaymentStatus.Pending;
+            if (tab === "Partial") return bill.paymentStatus === PaymentStatus.PartialCash || bill.paymentStatus === PaymentStatus.PartialOnline;
+            if (tab === "Paid") return bill.paymentStatus === PaymentStatus.PaidCash || bill.paymentStatus === PaymentStatus.PaidOnline;
+            return true;
+        }).length;
+    };
+
+    const tabs: { label: string; status: TabStatus }[] = [
+        { label: "Pending", status: "Pending" },
+        { label: "Partial", status: "Partial" },
+        { label: "Paid", status: "Paid" },
+        { label: "All", status: "All" },
+    ];
 
     if (loading) {
         return (
@@ -101,113 +140,76 @@ export default function EnergyBillsPage() {
     }
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Energy Bills</h1>
-                    <p className="text-gray-500">Manage electricity, water, gas, and food bills</p>
-                </div>
-                <button
-                    onClick={() => setIsAddModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                >
-                    <Plus className="h-5 w-5" />
-                    Add Bill
-                </button>
-            </div>
-
-            {/* Search Bar */}
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                    type="text"
-                    placeholder="Search by type, amount, status..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                />
-                {searchQuery && (
+        <div className="min-h-screen bg-gray-50 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex items-center justify-between mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900">Energy Bills</h1>
                     <button
-                        onClick={() => setSearchQuery("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2"
+                        onClick={() => setIsAddModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm font-medium"
                     >
-                        <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                        <Plus className="h-5 w-5" />
+                        Add Bill
                     </button>
-                )}
-            </div>
+                </div>
 
-            {/* Pending Bills Section */}
-            {pendingBills.length > 0 && (
-                <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                        <h2 className="text-lg font-bold text-orange-700">Pending / Partial</h2>
-                        <span className="px-2 py-1 bg-orange-100 text-orange-700 text-sm font-bold rounded-full">
-                            {pendingBills.length}
-                        </span>
-                    </div>
-                    <div className="grid gap-4">
-                        {pendingBills.map((bill) => (
-                            <BillCard
-                                key={bill.id}
-                                bill={bill}
-                                onEdit={() => setEditingBill(bill)}
-                                onDelete={() => handleDelete(bill.id)}
-                                onStatusChange={(status) => handleStatusChange(bill, status)}
-                            />
+                {/* Filters */}
+                <AdvancedSearch
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    startDate={startDate}
+                    onStartDateChange={setStartDate}
+                    endDate={endDate}
+                    onEndDateChange={setEndDate}
+                    placeholder="Search by Type, Amount, or Remarks..."
+                />
+
+                {/* Tabs */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
+                    <div className="flex border-b border-gray-200 overflow-x-auto">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.status}
+                                onClick={() => setActiveTab(tab.status)}
+                                className={`flex-1 min-w-[120px] px-6 py-4 text-sm font-medium transition-colors relative ${activeTab === tab.status
+                                    ? "text-green-600 border-b-2 border-green-600"
+                                    : "text-gray-500 hover:text-gray-700"
+                                    }`}
+                            >
+                                <div className="flex items-center justify-center gap-2">
+                                    <span>{tab.label}</span>
+                                    <span className={`px-2 py-0.5 rounded-full text-xs ${activeTab === tab.status
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-gray-100 text-gray-600"
+                                        }`}>
+                                        {getTabCount(tab.status)}
+                                    </span>
+                                </div>
+                            </button>
                         ))}
                     </div>
                 </div>
-            )}
 
-            {/* Paid Bills Section (Collapsible) */}
-            {paidBills.length > 0 && (
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                    <button
-                        onClick={() => setShowPaidBills(!showPaidBills)}
-                        className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
-                    >
-                        <div className="flex items-center gap-2">
-                            <h2 className="text-lg font-bold text-green-700">Paid Bills</h2>
-                            <span className="px-2 py-1 bg-green-100 text-green-700 text-sm font-bold rounded-full">
-                                {paidBills.length}
-                            </span>
-                        </div>
-                        <svg
-                            className={`h-5 w-5 text-gray-500 transition-transform ${showPaidBills ? "rotate-180" : ""
-                                }`}
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                        >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
-                    {showPaidBills && (
-                        <div className="p-4 pt-0 space-y-4">
-                            {paidBills.map((bill) => (
-                                <BillCard
-                                    key={bill.id}
-                                    bill={bill}
-                                    onEdit={() => setEditingBill(bill)}
-                                    onDelete={() => handleDelete(bill.id)}
-                                    onStatusChange={(status) => handleStatusChange(bill, status)}
-                                />
-                            ))}
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* Empty State */}
-            {filteredBills.length === 0 && (
-                <div className="text-center py-12">
-                    <Zap className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500">
-                        {searchQuery ? `No bills found for "${searchQuery}"` : "No energy bills recorded"}
-                    </p>
-                </div>
-            )}
+                {/* Bills List */}
+                {filteredBills.length === 0 ? (
+                    <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-100">
+                        <Zap className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No {activeTab === "All" ? "" : activeTab} bills found</h3>
+                        <p className="text-gray-500">Bills matching your criteria will appear here.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {filteredBills.map((bill) => (
+                            <BillCard
+                                key={bill.id}
+                                bill={bill}
+                                onSelect={() => setSelectedBill(bill)}
+                                onEdit={() => setBillToEdit(bill)}
+                            />
+                        ))}
+                    </div>
+                )}
+            </div>
 
             {/* Modals */}
             {isAddModalOpen && (
@@ -215,16 +217,25 @@ export default function EnergyBillsPage() {
                     onClose={() => setIsAddModalOpen(false)}
                 />
             )}
-            {editingBill && (
+
+            {billToEdit && (
                 <AddEnergyBillModal
-                    bill={editingBill}
-                    onClose={() => setEditingBill(null)}
+                    bill={billToEdit}
+                    onClose={() => setBillToEdit(null)}
                 />
             )}
-            {partialPaymentBill && (
-                <PartialPaymentDialog
-                    bill={partialPaymentBill}
-                    onClose={() => setPartialPaymentBill(null)}
+
+            {selectedBill && (
+                <EnergyBillDetailsModal
+                    bill={selectedBill}
+                    onClose={() => setSelectedBill(null)}
+                    onUpdate={() => {
+                        // The subscription will auto-update the list (see previous comments)
+                    }}
+                    onEdit={() => {
+                        setSelectedBill(null);
+                        setBillToEdit(selectedBill);
+                    }}
                 />
             )}
         </div>
@@ -233,194 +244,108 @@ export default function EnergyBillsPage() {
 
 function BillCard({
     bill,
-    onEdit,
-    onDelete,
-    onStatusChange,
+    onSelect,
+    onEdit
 }: {
     bill: EnergyBill;
+    onSelect: () => void;
     onEdit: () => void;
-    onDelete: () => void;
-    onStatusChange: (status: PaymentStatus) => void;
 }) {
-    const { icon: Icon, color } = getTypeIconAndColor(bill.type);
-    const isPending = bill.paymentStatus === PaymentStatus.Pending;
-    const isPartial = bill.paymentStatus === PaymentStatus.PartialCash ||
-        bill.paymentStatus === PaymentStatus.PartialOnline;
-    const isPaid = bill.paymentStatus === PaymentStatus.PaidCash ||
-        bill.paymentStatus === PaymentStatus.PaidOnline;
+    const styles = getTypeStyles(bill.type);
 
-    const statusColor = isPaid ? "green" : isPartial ? "orange" : "red";
+    // Status Logic
+    const isPaid = bill.paymentStatus === PaymentStatus.PaidCash || bill.paymentStatus === PaymentStatus.PaidOnline;
+    const isPartial = bill.paymentStatus === PaymentStatus.PartialCash || bill.paymentStatus === PaymentStatus.PartialOnline;
+    const amountColorClass = isPaid ? "text-green-600" : "text-red-600";
+
+    const remaining = calculateRemainingAmount(bill);
+
+    // Format Dates
+    const entryDateStr = bill.entryDate ? toNepali(bill.entryDate, "DD MMM YYYY") : "N/A";
+    const dueDateStr = bill.dueDate ? toNepali(bill.dueDate, "DD MMM YYYY") : null;
 
     return (
-        <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-            <div className="flex items-start gap-4">
-                {/* Icon */}
-                <div className={`p-3 rounded-lg bg-${color}-100`}>
-                    <Icon className={`h-6 w-6 text-${color}-600`} />
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-gray-900">
-                        {getEnergyTypeDisplayName(bill.type)} - {bill.month} {bill.year}
-                    </h3>
-                    <p className="text-sm text-gray-600 mt-1">
-                        Amount: Rs {bill.amount.toFixed(2)}
-                    </p>
-                    {isPartial && (
-                        <div className="text-xs mt-1 space-y-0.5">
-                            <p className="text-green-600 font-semibold">
-                                Paid: Rs {bill.paidAmount.toFixed(2)}
-                            </p>
-                            <p className="text-orange-600 font-semibold">
-                                Pending: Rs {calculateRemainingAmount(bill).toFixed(2)}
-                            </p>
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between gap-4">
+                {/* Left: Type and Date */}
+                <div className="min-w-0 flex items-center gap-4">
+                    <div className={`p-3 rounded-full flex-shrink-0 ${styles.bg}`}>
+                        <styles.icon className={`h-6 w-6 ${styles.text}`} />
+                    </div>
+                    <div>
+                        <button
+                            onClick={onSelect}
+                            className="font-bold text-gray-900 text-lg hover:text-green-600 hover:underline transition-colors block truncate"
+                        >
+                            {getEnergyTypeDisplayName(bill.type)}
+                        </button>
+                        <div className="flex items-center text-sm text-gray-500 mt-1">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            {bill.month} {bill.year}
+                            <span className="mx-2">•</span>
+                            {entryDateStr}
                         </div>
-                    )}
-                    {bill.remarks && (
-                        <p className="text-xs text-gray-500 italic mt-1 line-clamp-2">
-                            Note: {bill.remarks}
-                        </p>
-                    )}
-
-                    {/* Status and Date */}
-                    <div className="flex items-center gap-2 mt-2">
-                        <PaymentStatusDropdown
-                            currentStatus={bill.paymentStatus}
-                            onChange={onStatusChange}
-                            color={statusColor}
-                        />
-                        {bill.type === EnergyType.Gas && bill.purchaseDate && (
-                            <span className="text-xs text-gray-500">
-                                Purchased: {new Date(bill.purchaseDate).toLocaleDateString()}
-                            </span>
-                        )}
-                        {bill.dueDate && bill.type !== EnergyType.Gas && (
-                            <span className="text-xs text-gray-500">
-                                Due: {new Date(bill.dueDate).toLocaleDateString()}
-                            </span>
-                        )}
                     </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex gap-2">
-                    <button
-                        onClick={onEdit}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        title="Edit"
-                    >
-                        <Edit className="h-4 w-4" />
-                    </button>
-                    <button
-                        onClick={onDelete}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete"
-                    >
-                        <Trash2 className="h-4 w-4" />
-                    </button>
+                {/* Middle: Details (Hidden on small mobile) */}
+                <div className="hidden sm:block flex-1 px-4">
+                    {dueDateStr && (
+                        <div className="flex items-center text-gray-600 text-sm mb-1">
+                            <Clock className="h-3 w-3 mr-1 text-orange-500" />
+                            Due: {dueDateStr}
+                        </div>
+                    )}
+                    {bill.remarks && (
+                        <div className="text-xs text-gray-500 italic line-clamp-1">
+                            "{bill.remarks}"
+                        </div>
+                    )}
                 </div>
+
+                {/* Right: Amount */}
+                <div className="text-right whitespace-nowrap">
+                    <div className={`text-lg font-bold ${amountColorClass}`}>Rs. {bill.amount.toLocaleString()}</div>
+                    {isPartial && remaining > 0 && (
+                        <div className="text-xs font-semibold text-orange-600">
+                            Due: {remaining.toLocaleString()}
+                        </div>
+                    )}
+                    <div className="mt-1">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-${isPaid ? "green" : isPartial ? "orange" : "red"
+                            }-100 text-${isPaid ? "green" : isPartial ? "orange" : "red"
+                            }-800`}>
+                            {getPaymentStatusDisplayName(bill.paymentStatus)}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Mobile Actions/Details */}
+            <div className="sm:hidden mt-3 pt-3 border-t border-gray-50 flex justify-between items-center text-xs">
+                {dueDateStr && (
+                    <span className="text-orange-600 flex items-center">
+                        <Clock className="h-3 w-3 mr-1" />
+                        {dueDateStr}
+                    </span>
+                )}
+                {/* Only show Edit button on mobile if needed, or rely on Modal */}
             </div>
         </div>
     );
 }
 
-function PaymentStatusDropdown({
-    currentStatus,
-    onChange,
-    color,
-}: {
-    currentStatus: PaymentStatus;
-    onChange: (status: PaymentStatus) => void;
-    color: string;
-}) {
-    const [isOpen, setIsOpen] = useState(false);
-
-    const colorClasses = {
-        green: "bg-green-100 text-green-700 border-green-300",
-        orange: "bg-orange-100 text-orange-700 border-orange-300",
-        red: "bg-red-100 text-red-700 border-red-300",
-    };
-
-    return (
-        <div className="relative">
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={`px-2 py-1 text-xs font-bold rounded border ${colorClasses[color as keyof typeof colorClasses]} flex items-center gap-1`}
-            >
-                {getPaymentStatusDisplayName(currentStatus)}
-                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-            </button>
-            {isOpen && (
-                <>
-                    <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-                    <div className="absolute left-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
-                        <button
-                            onClick={() => {
-                                onChange(PaymentStatus.Pending);
-                                setIsOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
-                        >
-                            Pending
-                        </button>
-                        <button
-                            onClick={() => {
-                                onChange(PaymentStatus.PartialCash);
-                                setIsOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
-                        >
-                            Partially Paid - Cash
-                        </button>
-                        <button
-                            onClick={() => {
-                                onChange(PaymentStatus.PartialOnline);
-                                setIsOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
-                        >
-                            Partially Paid - Online
-                        </button>
-                        <hr className="my-1" />
-                        <button
-                            onClick={() => {
-                                onChange(PaymentStatus.PaidCash);
-                                setIsOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
-                        >
-                            Paid - Cash
-                        </button>
-                        <button
-                            onClick={() => {
-                                onChange(PaymentStatus.PaidOnline);
-                                setIsOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
-                        >
-                            Paid - Online
-                        </button>
-                    </div>
-                </>
-            )}
-        </div>
-    );
-}
-
-function getTypeIconAndColor(type: EnergyType) {
+function getTypeStyles(type: EnergyType) {
     switch (type) {
         case EnergyType.Electricity:
-            return { icon: Zap, color: "orange" };
+            return { icon: Zap, bg: "bg-orange-50", text: "text-orange-600" };
         case EnergyType.Water:
-            return { icon: Droplet, color: "blue" };
+            return { icon: Droplet, bg: "bg-blue-50", text: "text-blue-600" };
         case EnergyType.Gas:
-            return { icon: Flame, color: "red" };
+            return { icon: Flame, bg: "bg-red-50", text: "text-red-600" };
         case EnergyType.Food:
-            return { icon: UtensilsCrossed, color: "green" };
+            return { icon: UtensilsCrossed, bg: "bg-green-50", text: "text-green-600" };
         default:
-            return { icon: Zap, color: "gray" };
+            return { icon: Zap, bg: "bg-gray-50", text: "text-gray-600" };
     }
 }

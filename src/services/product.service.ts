@@ -146,5 +146,16 @@ export const ProductService = {
             console.error("Error deleting product:", error);
             throw error;
         }
+    },
+
+    getFeaturedProducts: async (): Promise<Product[]> => {
+        try {
+            const q = query(collection(db, COLLECTION_NAME), where("isFeatured", "==", true));
+            const querySnapshot = await getDocs(q);
+            return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+        } catch (error) {
+            console.error("Error fetching featured products:", error);
+            return [];
+        }
     }
 };

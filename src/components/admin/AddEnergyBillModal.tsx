@@ -11,6 +11,7 @@ import {
     NEPALI_MONTHS
 } from "@/services/energyService";
 import { toNepali } from "@/lib/date-helper";
+import { useAuth } from "@/context/AuthContext";
 import dynamic from 'next/dynamic';
 import NepaliDate from "nepali-date-converter";
 
@@ -30,6 +31,8 @@ interface AddEnergyBillModalProps {
 export default function AddEnergyBillModal({ bill, onClose }: AddEnergyBillModalProps) {
     const isEditing = !!bill;
     const currentNepaliYear = new Date().getFullYear() + 57; // Rough BS year
+
+    const { dbUser } = useAuth();
 
     // Helper function to convert AD Date to BS string
     const convertAdToBs = (date: Date | undefined): string => {
@@ -52,7 +55,7 @@ export default function AddEnergyBillModal({ bill, onClose }: AddEnergyBillModal
         dueDate: convertAdToBs(bill?.dueDate),
         purchaseDate: convertAdToBs(bill?.purchaseDate),
         remarks: bill?.remarks || "",
-        enteredBy: bill?.enteredBy || "Admin", // TODO: Get from auth context
+        enteredBy: bill?.enteredBy || dbUser?.name || "Admin",
     });
 
     const [loading, setLoading] = useState(false);
@@ -309,18 +312,7 @@ export default function AddEnergyBillModal({ bill, onClose }: AddEnergyBillModal
                         />
                     </div>
 
-                    {/* Entered By (read-only) */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Entered By
-                        </label>
-                        <input
-                            type="text"
-                            value={formData.enteredBy}
-                            readOnly
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                        />
-                    </div>
+
 
                     {/* Actions */}
                     <div className="flex gap-3 pt-4">

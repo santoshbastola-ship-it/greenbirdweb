@@ -56,76 +56,64 @@ export default function PaymentStatusDropdown({
 
     const selectedColorClass = colorClasses[color] || colorClasses.gray;
 
+    // Helper to get dot color classes based on status
+    const getStatusDotColor = (status: PaymentStatus) => {
+        switch (status) {
+            case PaymentStatus.PaidCash:
+            case PaymentStatus.PaidOnline:
+                return "bg-green-100 border-green-200 border";
+            case PaymentStatus.PartialCash:
+            case PaymentStatus.PartialOnline:
+                return "bg-orange-100 border-orange-200 border";
+            case PaymentStatus.Pending:
+                return "bg-red-100 border-red-200 border";
+            default:
+                return "bg-gray-100 border-gray-200 border";
+        }
+    };
+
+    const paymentOptions = [
+        { status: PaymentStatus.Pending, label: "Pending" },
+        { status: PaymentStatus.PartialCash, label: "Partially Paid - Cash" },
+        { status: PaymentStatus.PartialOnline, label: "Partially Paid - Online" },
+        { status: PaymentStatus.PaidCash, label: "Paid - Cash" },
+        { status: PaymentStatus.PaidOnline, label: "Paid - Online" },
+    ];
+
     return (
-        <div className="relative">
+        <div className={`relative ${isOpen ? 'z-40' : 'z-0'}`}>
             <button
                 onClick={(e) => {
                     e.stopPropagation();
                     if (!disabled) setIsOpen(!isOpen);
                 }}
                 disabled={disabled}
-                className={`px-2 py-1 text-xs font-bold rounded border ${selectedColorClass} flex items-center gap-1 ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                className={`flex items-center gap-2 px-3 py-1 rounded-full border font-semibold text-sm transition-all ${selectedColorClass} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
             >
-                {getPaymentStatusDisplayNameHelper(currentStatus)}
-                {!disabled && <ChevronDown className="h-3 w-3" />}
+                <span>{getPaymentStatusDisplayNameHelper(currentStatus)}</span>
+                {!disabled && <ChevronDown className="h-4 w-4" />}
             </button>
             {isOpen && (
                 <>
-                    <div className="fixed inset-0 z-10" onClick={(e) => {
+                    <div className="fixed inset-0 z-30" onClick={(e) => {
                         e.stopPropagation();
                         setIsOpen(false);
                     }} />
-                    <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20 overflow-hidden">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onChange(PaymentStatus.Pending);
-                                setIsOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 border-b border-gray-50"
-                        >
-                            Pending
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onChange(PaymentStatus.PartialCash);
-                                setIsOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
-                        >
-                            Partially Paid - Cash
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onChange(PaymentStatus.PartialOnline);
-                                setIsOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 border-b border-gray-50"
-                        >
-                            Partially Paid - Online
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onChange(PaymentStatus.PaidCash);
-                                setIsOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
-                        >
-                            Paid - Cash
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onChange(PaymentStatus.PaidOnline);
-                                setIsOpen(false);
-                            }}
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50"
-                        >
-                            Paid - Online
-                        </button>
+                    <div className="absolute left-0 md:left-auto right-auto md:right-0 bottom-full mb-1 md:bottom-auto md:top-full md:mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                        {paymentOptions.map((option) => (
+                            <button
+                                key={option.status}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onChange(option.status);
+                                    setIsOpen(false);
+                                }}
+                                className={`w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 ${option.status === currentStatus ? "bg-gray-50" : ""}`}
+                            >
+                                <div className={`h-3 w-3 rounded-full ${getStatusDotColor(option.status)}`} />
+                                <span className="text-sm font-medium text-gray-700">{option.label}</span>
+                            </button>
+                        ))}
                     </div>
                 </>
             )}

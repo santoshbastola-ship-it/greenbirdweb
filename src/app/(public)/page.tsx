@@ -6,77 +6,33 @@ import ProductCard from "@/components/ui/ProductCard";
 import { Product } from "@/types";
 import { FarmActivity } from "@/types/extra";
 import { getActivities } from "@/lib/services/activities";
+import { ProductService } from "@/services/product.service";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
 
-// Mock Data for Display
-const FEATURED_PRODUCTS: Product[] = [
-  {
-    id: "1",
-    name: "Fresh Organic Eggs",
-    businessType: "livestock",
-    unit: "pcs",
-    priceUnit: "pcs",
-    currentPrice: 350,
-    currentStock: 50,
-    stockHistory: [],
-    priceHistory: [],
-    createdAt: new Date(),
-    createdBy: "admin",
-    images: ["https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?auto=format&fit=crop&q=80&w=800"],
-    description: "Farm fresh organic eggs, collected daily from free-range chickens.",
-    isAvailableForSale: true,
-  },
-  {
-    id: "2",
-    name: "Premium Goat Meat",
-    businessType: "livestock",
-    unit: "kg",
-    priceUnit: "kg",
-    currentPrice: 1800,
-    currentStock: 10,
-    stockHistory: [],
-    priceHistory: [],
-    createdAt: new Date(),
-    createdBy: "admin",
-    images: ["https://images.unsplash.com/photo-1606211475515-534570dfba41?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"],
-    description: "Tender, fresh goat meat processed hygienically. Perfect for curries.",
-    isAvailableForSale: true,
-  },
-  {
-    id: "3",
-    name: "Seasonal Vegetables Mix",
-    businessType: "crop",
-    unit: "kg",
-    priceUnit: "kg",
-    currentPrice: 150,
-    currentStock: 0, // Out of stock
-    stockHistory: [],
-    priceHistory: [],
-    createdAt: new Date(),
-    createdBy: "admin",
-    images: ["https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&q=80&w=800"],
-    description: "A basket of freshly harvested seasonal vegetables including spinach.",
-    isAvailableForSale: true,
-  },
-];
-
 export default function Home() {
   const [activities, setActivities] = useState<FarmActivity[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   useEffect(() => {
-    const fetchActivities = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getActivities(3); // Fetch latest 3
-        setActivities(data);
+        const [activitiesData, productsData] = await Promise.all([
+          getActivities(3),
+          ProductService.getFeaturedProducts()
+        ]);
+        setActivities(activitiesData);
+        setFeaturedProducts(productsData);
       } catch (error) {
-        console.error("Failed to fetch activities:", error);
+        console.error("Failed to fetch data:", error);
       } finally {
         setLoadingActivities(false);
+        setLoadingProducts(false);
       }
     };
-    fetchActivities();
+    fetchData();
   }, []);
 
   return (
@@ -215,11 +171,21 @@ export default function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {FEATURED_PRODUCTS.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
+          {loadingProducts ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2D5A27]"></div>
+            </div>
+          ) : featuredProducts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {featuredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12 text-gray-500 col-span-full">
+              No featured products available at the moment.
+            </div>
+          )}
         </div>
       </section>
     </div>
