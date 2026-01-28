@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { Product, StockHistoryEntry } from "@/types";
+import { toNepali } from "@/lib/date-helper";
 
 interface StockHistoryModalProps {
     product: Product;
@@ -40,55 +41,68 @@ export default function StockHistoryModal({ product, onClose }: StockHistoryModa
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] flex flex-col">
+            <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full mx-4 max-h-[80vh] flex flex-col">
                 <div className="flex items-center justify-between p-4 border-b shrink-0">
                     <div>
                         <h2 className="text-lg font-bold text-gray-900">Stock History</h2>
-                        <p className="text-sm text-gray-500">{product.name}</p>
+                        <p className="text-sm text-gray-500">{product.name} ({product.unit})</p>
                     </div>
                     <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
                         <X className="h-5 w-5 text-gray-500" />
                     </button>
                 </div>
 
-                <div className="overflow-y-auto p-4 flex-1">
+                <div className="overflow-auto p-0 flex-1">
                     {sortedHistory.length === 0 ? (
                         <div className="text-center py-10 text-gray-500">
                             No stock history available.
                         </div>
                     ) : (
-                        <div className="space-y-4">
-                            {sortedHistory.map((entry) => (
-                                <div key={entry.id} className="flex items-start p-3 bg-gray-50 rounded-lg border border-gray-100">
-                                    <div className={`p-2 rounded-lg mr-4 ${getActionColor(entry.actionType)}`}>
-                                        <span className="text-xs font-bold uppercase">{getActionLabel(entry.actionType)}</span>
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-900">
-                                                    {entry.note || "No details provided"}
-                                                </p>
-                                                <p className="text-xs text-gray-500 mt-0.5">
-                                                    {new Date(entry.date).toLocaleString()}
-                                                </p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className={`text-sm font-bold ${entry.changeAmount > 0 ? 'text-green-600' : entry.changeAmount < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                                                    {entry.changeAmount > 0 ? '+' : ''}{entry.changeAmount} {product.unit}
-                                                </p>
-                                                <div className="text-xs text-gray-500 mt-0.5 flex items-center justify-end space-x-1">
-                                                    <span>{entry.oldStock}</span>
-                                                    <span>→</span>
-                                                    <span className="font-semibold">{entry.newStock}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                        <div className="min-w-full inline-block align-middle">
+                            <table className="min-w-full border-separate border-spacing-0">
+                                <thead className="bg-gray-50 sticky top-0 z-10">
+                                    <tr>
+                                        <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Date</th>
+                                        <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Action</th>
+                                        <th scope="col" className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Change</th>
+                                        <th scope="col" className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Remaining</th>
+                                        <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Note</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-100">
+                                    {sortedHistory.map((entry) => (
+                                        <tr key={entry.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                                                {toNepali(entry.date)}
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap">
+                                                <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${getActionColor(entry.actionType)}`}>
+                                                    {getActionLabel(entry.actionType)}
+                                                </span>
+                                            </td>
+                                            <td className={`px-4 py-3 whitespace-nowrap text-sm text-right font-medium ${entry.changeAmount > 0 ? 'text-green-600' : entry.changeAmount < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                                                {entry.changeAmount > 0 ? '+' : ''}{entry.changeAmount}
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
+                                                {entry.newStock}
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate" title={entry.note || ""}>
+                                                {entry.note || "-"}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     )}
+                </div>
+                <div className="p-4 border-t bg-gray-50 shrink-0 text-right">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                        Close
+                    </button>
                 </div>
             </div>
         </div>

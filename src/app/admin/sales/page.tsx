@@ -81,27 +81,22 @@ export default function SalesListPage() {
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
-                    <div className="flex items-center gap-4">
-                        <Link href="/admin" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                            <ArrowLeft className="h-6 w-6 text-gray-600" />
-                        </Link>
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900">Sales & Purchase</h1>
-                            <p className="text-gray-500">Track your farm income and expenses</p>
-                        </div>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">Sales & Purchase</h1>
+                        <p className="text-gray-500">Track your farm income and expenses</p>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex flex-col sm:flex-row gap-3">
                         <Link
                             href="/admin/sales/new-purchase"
-                            className="bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition-colors flex items-center justify-center shadow-lg shadow-red-900/10"
+                            className="flex-1 sm:flex-none bg-red-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-red-700 transition-all flex items-center justify-center shadow-lg shadow-red-900/10 active:scale-95"
                         >
                             <Plus className="h-5 w-5 mr-2" />
                             New Purchase
                         </Link>
                         <Link
                             href="/admin/sales/new"
-                            className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center shadow-lg shadow-green-900/10"
+                            className="flex-1 sm:flex-none bg-green-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-green-700 transition-all flex items-center justify-center shadow-lg shadow-green-900/10 active:scale-95"
                         >
                             <Plus className="h-5 w-5 mr-2" />
                             New Sale

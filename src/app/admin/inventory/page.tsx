@@ -15,8 +15,7 @@ import {
     Sprout,
     Tractor,
     Bird,
-    Box,
-    ArrowLeft
+    Box
 } from "lucide-react";
 import StockUpdateModal from "@/components/admin/StockUpdateModal";
 import StockHistoryModal from "@/components/admin/StockHistoryModal";
@@ -126,14 +125,9 @@ export default function InventoryPage() {
         <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                    <Link href="/admin" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                        <ArrowLeft className="h-6 w-6 text-gray-600" />
-                    </Link>
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Product & Price</h1>
-                        <p className="text-gray-500">Manage your farm products, crops, and assets</p>
-                    </div>
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900">Product & Price</h1>
+                    <p className="text-gray-500">Manage your farm products, crops, and assets</p>
                 </div>
                 <Link
                     href="/admin/inventory/add"
@@ -252,15 +246,22 @@ function ProductCard({
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between gap-4">
                 {/* Left: Image and Info */}
-                <div className="min-w-0 flex items-center gap-4">
-                    <div className="h-16 w-16 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden shadow-inner border border-gray-50">
-                        <img
-                            className="h-16 w-16 object-cover"
-                            src={product.images[0] || "/placeholder.png"}
-                            alt={product.name}
-                        />
+                <Link
+                    href={`/admin/inventory/edit/${product.id}`}
+                    className="min-w-0 flex items-center gap-4 flex-1"
+                >
+                    <div className="h-16 w-16 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden shadow-inner border border-gray-50 text-center flex items-center justify-center">
+                        {product.images?.[0] ? (
+                            <img
+                                className="h-16 w-16 object-cover"
+                                src={product.images[0]}
+                                alt={product.name}
+                            />
+                        ) : (
+                            <Package className="h-8 w-8 text-gray-300" />
+                        )}
                     </div>
-                    <div>
+                    <div className="flex-1">
                         <div className="flex items-center gap-2">
                             <h3 className="font-bold text-gray-900 text-lg block truncate">
                                 {product.name}
@@ -269,17 +270,13 @@ function ProductCard({
                                 {icon}
                             </div>
                         </div>
-                        <div className="flex items-center text-sm text-gray-500 mt-1">
-                            <Calendar className="h-3.5 w-3.5 mr-1" />
-                            {formattedDate}
-                        </div>
                         {product.description && (
                             <p className="text-xs text-gray-400 mt-1 line-clamp-1 max-w-[200px]">
                                 {product.description}
                             </p>
                         )}
                     </div>
-                </div>
+                </Link>
 
                 {/* Middle: Stock (Hidden on small mobile) */}
                 <div className="hidden sm:block flex-1 px-4 text-center">
@@ -294,7 +291,7 @@ function ProductCard({
                     </div>
                 </div>
 
-                {/* Right: Price & Actions */}
+                {/* Right: Price */}
                 <div className="flex items-center gap-6">
                     <div className="text-right whitespace-nowrap">
                         <div className="text-lg font-bold text-green-600">
@@ -303,30 +300,6 @@ function ProductCard({
                         <div className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
                             Per {product.unit}
                         </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={onStockHistory}
-                            className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            title="Stock History"
-                        >
-                            <Package className="h-5 w-5" />
-                        </button>
-                        <Link
-                            href={`/admin/inventory/edit/${product.id}`}
-                            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Edit Product"
-                        >
-                            <Edit className="h-5 w-5" />
-                        </Link>
-                        <button
-                            onClick={onDelete}
-                            className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Delete Product"
-                        >
-                            <Trash2 className="h-5 w-5" />
-                        </button>
                     </div>
                 </div>
             </div>

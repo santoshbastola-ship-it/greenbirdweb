@@ -7,6 +7,7 @@ import { Package, Clock, Edit } from "lucide-react";
 import StockUpdateModal from "@/components/admin/StockUpdateModal";
 import StockHistoryModal from "@/components/admin/StockHistoryModal";
 import AdvancedSearch from "@/components/admin/AdvancedSearch";
+import { toNepali } from "@/lib/date-helper";
 import NepaliDate from "nepali-date-converter";
 
 export default function QuickStockUpdatePage() {
@@ -153,46 +154,45 @@ export default function QuickStockUpdatePage() {
                     <div className="space-y-4">
                         {filteredProducts.map(product => (
                             <div key={product.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between hover:shadow-md transition-shadow gap-4">
-                                <div className="flex items-center space-x-4">
-                                    <div className="h-12 w-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                <div
+                                    className="flex items-center space-x-4 cursor-pointer flex-1"
+                                    onClick={() => handleUpdateClick(product)}
+                                >
+                                    <div className="h-14 w-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
                                         <img
                                             src={product.images[0] || "/placeholder.png"}
                                             alt={product.name}
                                             className="h-full w-full object-cover"
                                         />
                                     </div>
-                                    <div>
-                                        <h3 className="font-bold text-gray-900 text-lg">{product.name}</h3>
+                                    <div className="min-w-0">
+                                        <h3 className="font-bold text-gray-900 text-lg truncate">{product.name}</h3>
                                         <p className="text-sm text-gray-500 capitalize">{product.businessType}</p>
                                     </div>
                                 </div>
 
                                 <div className="flex items-center justify-between sm:justify-end sm:space-x-8 w-full sm:w-auto">
-                                    <div className="text-left sm:text-right min-w-[100px]">
-                                        <p className={`font-bold text-lg ${product.currentStock < 10 ? 'text-red-600' : 'text-green-600'}`}>
+                                    <div
+                                        className="text-left sm:text-right min-w-[100px] cursor-pointer"
+                                        onClick={() => handleUpdateClick(product)}
+                                    >
+                                        <p className={`font-bold text-xl ${product.currentStock < 10 ? 'text-red-600' : 'text-green-600'}`}>
                                             {product.currentStock} {product.unit}
                                         </p>
                                         <p className="text-xs text-gray-400">
                                             Last: {product.stockHistory && product.stockHistory.length > 0
-                                                ? new Date(product.stockHistory[0].date).toLocaleDateString()
+                                                ? toNepali(product.stockHistory[0].date)
                                                 : "-"}
                                         </p>
                                     </div>
                                     <div className="flex space-x-2">
                                         <button
                                             onClick={() => handleHistoryClick(product)}
-                                            className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                            className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium text-sm border border-gray-200"
                                             title="View History"
                                         >
-                                            <Clock className="h-5 w-5" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleUpdateClick(product)}
-                                            className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors font-medium text-sm"
-                                            title="Update Stock"
-                                        >
-                                            <Edit className="h-4 w-4" />
-                                            Update
+                                            <Clock className="h-4 w-4" />
+                                            <span>Stock History</span>
                                         </button>
                                     </div>
                                 </div>

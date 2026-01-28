@@ -8,6 +8,16 @@ import { Product, StockUnit, TransactionType, PaymentStatus, OrderStatus, User }
 import { ArrowLeft, Plus, Trash2, Save, Search, Calendar, User as UserIcon, Tag, CreditCard, ShoppingBag, Info } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import dynamic from 'next/dynamic';
+import { SettingsService } from "@/services/settings.service";
+import NepaliDate from "nepali-date-converter";
+
+const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
+    ssr: false,
+    loading: () => <input type="text" placeholder="Loading Date..." className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm" />
+});
+
+import "nepali-datepicker-reactjs/dist/index.css";
 
 // Local interface for line items in the POS
 interface POSItem {
@@ -38,6 +48,7 @@ export default function NewSalePage() {
     const [paidAmount, setPaidAmount] = useState<number>(0);
     const [soldBy, setSoldBy] = useState("");
     const [admins, setAdmins] = useState<User[]>([]);
+    const [deliveryFee, setDeliveryFee] = useState(0);
 
     useEffect(() => {
         loadData();
@@ -53,6 +64,9 @@ export default function NewSalePage() {
             setProducts(productsData);
             setCustomers(customersData);
             setAdmins(adminsData);
+
+            const settings = await SettingsService.getSettings();
+            setDeliveryFee(settings.deliveryFee || 0);
 
             if (adminsData.length > 0) {
                 setSoldBy(adminsData[0].name);
@@ -109,7 +123,7 @@ export default function NewSalePage() {
     };
 
     const totalAmount = cart.reduce((sum, item) => sum + item.total, 0);
-    const totalPayable = Math.max(0, totalAmount - (discount || 0));
+    const totalPayable = Math.max(0, totalAmount + deliveryFee - (discount || 0));
 
     useEffect(() => {
         if (paymentStatus === PaymentStatus.PaidCash || paymentStatus === PaymentStatus.PaidOnline) {
@@ -146,7 +160,7 @@ export default function NewSalePage() {
                 })),
                 ...(customerId ? { customerId } : {}),
                 partyName: partyName,
-                date: new Date(date),
+                date: new NepaliDate(date).toJsDate(),
                 discount: Number(discount),
                 soldBy: soldBy || "Admin",
                 enteredBy: "admin",
@@ -154,6 +168,7 @@ export default function NewSalePage() {
                 paymentStatus: paymentStatus,
                 status: orderStatus,
                 paidAmount: Number(paidAmount),
+                deliveryFee: deliveryFee,
                 payments: [{
                     amount: Number(paidAmount),
                     date: new Date(),
@@ -246,11 +261,11 @@ export default function NewSalePage() {
                                 <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-2">
                                     <Calendar className="h-4 w-4 text-gray-400" /> Sale Date
                                 </label>
-                                <input
-                                    type="date"
-                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all"
+                                <NepaliDatePicker
+                                    inputClassName="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all"
                                     value={date}
-                                    onChange={(e) => setDate(e.target.value)}
+                                    onChange={(value: string) => setDate(value)}
+                                    options={{ calenderLocale: "en", valueLocale: "en" }}
                                 />
                             </div>
                             <div>
@@ -452,12 +467,29 @@ export default function NewSalePage() {
                                 <span>Discount</span>
                                 <span>- Rs {discount.toLocaleString()}</span>
                             </div>
+                            <div className="flex justify-between items-center text-sm text-gray-500">
+                                <span>Delivery Fee</span>
+                                <span className={deliveryFee === 0 ? "text-green-600 font-bold" : ""}>
+                                    {deliveryFee === 0 ? "Free Delivery" : `Rs ${deliveryFee.toLocaleString()}`}
+                                </span>
+                            </div>
                             <div className="flex justify-between items-center pt-2 mt-2 border-t border-gray-100">
                                 <span className="text-gray-900 font-bold">Total Payable</span>
                                 <span className="text-2xl font-black text-green-600">Rs {totalPayable.toLocaleString()}</span>
                             </div>
                         </div>
                     </div>
+                </div>
+
+                {/* Bottom Save Button */}
+                <div className="flex justify-end pt-4">
+                    <button
+                        onClick={handleSave}
+                        disabled={loading}
+                        className="w-full md:w-auto flex items-center justify-center gap-2 px-12 py-4 bg-green-600 text-white rounded-2xl font-black text-lg hover:bg-green-700 transition-all shadow-xl shadow-green-900/10 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+                    >
+                        {loading ? "Processing..." : <><Save className="h-6 w-6" /> Save Transaction</>}
+                    </button>
                 </div>
             </div>
         </div>
