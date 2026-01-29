@@ -5,13 +5,15 @@ import { ProductService } from "@/services/product.service";
 import { UserService } from "@/services/user.service";
 import { TransactionService } from "@/services/transaction.service";
 import { Product, StockUnit, TransactionType, PaymentStatus, OrderStatus, User } from "@/types";
-import { ArrowLeft, Plus, Trash2, Save, Search, Calendar, User as UserIcon, Tag, CreditCard, ShoppingBag, Info } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Save, Search, Calendar, User as UserIcon, Tag, CreditCard, ShoppingBag, Info, Edit } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import dynamic from 'next/dynamic';
 import { SettingsService } from "@/services/settings.service";
 import NepaliDate from "nepali-date-converter";
 import { Toast, ToastType } from "@/components/ui/Toast";
+import EditCustomerModal from "@/components/admin/EditCustomerModal";
+import { UserRole } from "@/types";
 
 const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
     ssr: false,
@@ -43,6 +45,7 @@ export default function NewSalePage() {
     const [loading, setLoading] = useState(false);
     const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
     const [filteredCustomers, setFilteredCustomers] = useState<User[]>([]);
+    const [showEditCustomerModal, setShowEditCustomerModal] = useState(false);
 
     // Form state
     const [date, setDate] = useState(() => {
@@ -166,6 +169,33 @@ export default function NewSalePage() {
 
     const currentDeliveryFee = customDeliveryFee !== "" ? parseFloat(customDeliveryFee) : deliveryFee;
     const totalAmount = cart.reduce((sum, item) => sum + item.total, 0);
+
+    // Online order discount for verified users (also applying to POS for consistency if customer is verified)
+    const selectedCustomer = customerId ? customers.find(c => c.id === customerId) : null;
+    const isVerified = selectedCustomer && selectedCustomer.email && !selectedCustomer.email.endsWith('@manual.entry');
+
+    // Calculate auto discount for verified users
+    const [autoDiscount, setAutoDiscount] = useState(0);
+
+    useEffect(() => {
+        const loadSettings = async () => {
+            try {
+                const settings = await SettingsService.getSettings();
+                if (isVerified && totalAmount > 0) {
+                    const calculated = Math.max(settings.minAppDiscount || 0, Math.floor(totalAmount * ((settings.appDiscountPercentage || 0) / 100)));
+                    setAutoDiscount(calculated);
+                    setDiscount(calculated);
+                } else if (!isVerified) {
+                    setAutoDiscount(0);
+                    // We don't necessarily reset 'discount' to 0 because admin might have entered it manually
+                }
+            } catch (err) {
+                console.error("Failed to load settings for auto-discount", err);
+            }
+        };
+        loadSettings();
+    }, [isVerified, totalAmount]);
+
     const totalPayable = Math.max(0, totalAmount + currentDeliveryFee - (discount || 0));
 
     // Removed auto-update of paidAmount based on totalPayable as per user request
@@ -250,6 +280,26 @@ export default function NewSalePage() {
         }
     };
 
+    const handleUpdateCustomer = async (userId: string, data: Partial<User>) => {
+        try {
+            await UserService.updateUser(userId, data);
+
+            // Update local state
+            setCustomers(prev => prev.map(c => c.id === userId ? { ...c, ...data } : c));
+            setFilteredCustomers(prev => prev.map(c => c.id === userId ? { ...c, ...data } : c));
+
+            // Update selected customer name if it changed
+            if (userId === customerId && data.name) {
+                setPartyName(data.name);
+            }
+
+            showToast("Customer updated successfully");
+        } catch (error: any) {
+            console.error("Error updating customer:", error);
+            showToast("Failed to update customer", "error");
+        }
+    };
+
     return (
         <div className="max-w-3xl mx-auto pt-4 pb-20 px-4">
             {toast && (
@@ -311,10 +361,17 @@ export default function NewSalePage() {
                                         }}
                                     />
                                     {customerId && (
-                                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
                                             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-100 text-green-700 text-xs font-bold">
                                                 <UserIcon className="h-3 w-3" /> Existing
                                             </span>
+                                            <button
+                                                onClick={() => setShowEditCustomerModal(true)}
+                                                className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
+                                                title="Edit Customer Details"
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </button>
                                         </div>
                                     )}
 
@@ -515,12 +572,19 @@ export default function NewSalePage() {
                                 <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-2">
                                     <Tag className="h-4 w-4 text-gray-400" /> Discount (Rs)
                                 </label>
-                                <input
-                                    type="number"
-                                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all"
-                                    value={discount}
-                                    onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                                />
+                                <div className="relative">
+                                    <input
+                                        type="number"
+                                        className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all ${isVerified ? 'border-green-200 bg-green-50/30' : ''}`}
+                                        value={discount}
+                                        onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                                    />
+                                    {isVerified && (
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider">
+                                            Auto Verified
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-2">
@@ -601,6 +665,13 @@ export default function NewSalePage() {
                     </button>
                 </div>
             </div>
+
+            <EditCustomerModal
+                isOpen={showEditCustomerModal}
+                user={customerId ? customers.find(c => c.id === customerId) || null : null}
+                onClose={() => setShowEditCustomerModal(false)}
+                onSubmit={handleUpdateCustomer}
+            />
         </div>
 
     );

@@ -60,6 +60,26 @@ export const BookingService = {
     },
 
     /**
+     * Update a booking
+     */
+    async updateBooking(id: string, booking: Partial<Booking>): Promise<void> {
+        const bookingRef = doc(db, BOOKING_COLLECTION, id);
+        const updateData: any = { ...booking };
+
+        if (booking.checkInDate) {
+            updateData.checkInDate = Timestamp.fromDate(new Date(booking.checkInDate));
+        }
+        if (booking.checkOutDate) {
+            updateData.checkOutDate = Timestamp.fromDate(new Date(booking.checkOutDate));
+        }
+
+        delete updateData.id;
+        delete updateData.createdAt;
+
+        await updateDoc(bookingRef, updateData);
+    },
+
+    /**
      * Delete a booking
      */
     async deleteBooking(id: string): Promise<void> {

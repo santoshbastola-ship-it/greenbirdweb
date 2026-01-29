@@ -20,7 +20,8 @@ import {
     CalendarDays,
     ChevronLeft,
     ChevronRight,
-    ShoppingBag
+    ShoppingBag,
+    MessageSquare,
 } from "lucide-react";
 import clsx from "clsx";
 import { useState } from "react";
@@ -45,6 +46,7 @@ export default function AdminSidebar() {
         { href: "/admin/blog", label: "Blog", icon: FileText },
         { href: "/admin/activities", label: "Farm Activities", icon: Activity },
         { href: "/admin/bookings", label: "Bookings", icon: CalendarDays },
+        { href: "/admin/testimonials", label: "Testimonials", icon: MessageSquare },
         { href: "/admin/users", label: "Users", icon: Users },
         { href: "/admin/settings", label: "Settings", icon: Settings },
     ];

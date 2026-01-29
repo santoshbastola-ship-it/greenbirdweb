@@ -12,6 +12,7 @@ import dynamic from 'next/dynamic';
 import AddPartnerModal from "@/components/admin/AddPartnerModal";
 import NepaliDate from "nepali-date-converter";
 import { toNepali } from "@/lib/date-helper";
+import { Toast, ToastType } from "@/components/ui/Toast";
 
 // Dynamic import for NepaliDatePicker to avoid SSR issues
 const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
@@ -27,6 +28,11 @@ export default function NewPurchasePage() {
     const [availableUsers, setAvailableUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(false);
     const [showAddVendor, setShowAddVendor] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+
+    const showToast = (message: string, type: ToastType = 'success') => {
+        setToast({ message, type });
+    };
 
     // Form State
     const [purchaseDate, setPurchaseDate] = useState(toNepali(new Date(), "YYYY-MM-DD"));
@@ -70,7 +76,7 @@ export default function NewPurchasePage() {
 
     const handleAddItem = () => {
         if (!entryItem.name || !entryItem.quantity || !entryItem.totalPrice) {
-            alert("Please fill in all required item fields (Name, Quantity, Total Price)");
+            showToast("Please fill in all required item fields (Name, Quantity, Total Price)", "error");
             return;
         }
 
@@ -141,11 +147,11 @@ export default function NewPurchasePage() {
 
     const handleSave = async () => {
         if (!selectedVendor) {
-            alert("Please select or add a Vendor");
+            showToast("Please select or add a Vendor", "error");
             return;
         }
         if (items.length === 0) {
-            alert("Please add at least one item to the purchase");
+            showToast("Please add at least one item to the purchase", "error");
             return;
         }
 
@@ -175,11 +181,13 @@ export default function NewPurchasePage() {
                 }] : []
             });
 
-            alert("Purchase recorded successfully");
-            router.push("/admin/sales");
+            showToast("Purchase recorded successfully");
+            setTimeout(() => {
+                router.push("/admin/sales");
+            }, 1000);
         } catch (error) {
             console.error("Error saving purchase:", error);
-            alert("Failed to record purchase. Please try again.");
+            showToast("Failed to record purchase. Please try again.", "error");
         } finally {
             setLoading(false);
         }
@@ -202,14 +210,22 @@ export default function NewPurchasePage() {
             setVendors([newVendor, ...vendors]);
             setSelectedVendor(newVendor);
             setShowAddVendor(false);
+            showToast("Vendor added successfully");
         } catch (error) {
             console.error("Error adding vendor:", error);
-            alert("Failed to add vendor");
+            showToast("Failed to add vendor", "error");
         }
     };
 
     return (
         <div className="max-w-3xl mx-auto py-6 pb-20 px-4">
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
@@ -309,7 +325,7 @@ export default function NewPurchasePage() {
                                 value={entryItem.name}
                                 onChange={e => setEntryItem({ ...entryItem, name: e.target.value })}
                             />
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="flex gap-2">
                                     <input
                                         type="number"
@@ -319,7 +335,7 @@ export default function NewPurchasePage() {
                                         onChange={e => setEntryItem({ ...entryItem, quantity: e.target.value })}
                                     />
                                     <select
-                                        className="w-24 px-2 py-2.5 bg-white border border-gray-200 rounded-xl outline-none text-sm"
+                                        className="w-28 px-4 py-2.5 bg-white border border-gray-200 rounded-xl outline-none text-sm transition-all focus:ring-2 focus:ring-red-500"
                                         value={entryItem.unit}
                                         onChange={e => setEntryItem({ ...entryItem, unit: e.target.value as StockUnit })}
                                     >

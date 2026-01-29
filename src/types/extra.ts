@@ -15,6 +15,8 @@ export interface BlogPost {
     categories: string[];
     imageUrl: string;
     readTime: number;
+    published: boolean;
+    views: number;
 }
 
 export type BookingStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
@@ -59,6 +61,22 @@ export interface FarmActivity {
     title: string;
     description: string;
     imageUrl: string;
+    media?: {
+        url: string;
+        type: 'image' | 'video';
+    }[];
     date: Date | string;
     createdAt: Date | string;
+    isPublished: boolean;
+}
+
+export interface Testimonial {
+    id: string;
+    name: string;
+    photoUrl: string;
+    content: string;
+    customerProfileUrl?: string;
+    date: Date | string;
+    createdAt: Date | string;
+    isPublished: boolean;
 }

@@ -217,8 +217,11 @@ export default function CartPage() {
         return sum + (price * quantity);
     }, 0);
 
+    const isVerified = user && dbUser && !dbUser.email?.endsWith('@manual.entry');
     const deliveryFee = subtotal < appSettings.freeDeliveryThreshold ? appSettings.deliveryFee : 0;
-    const appDiscount = Math.max(appSettings.minAppDiscount, Math.floor(subtotal * (appSettings.appDiscountPercentage / 100)));
+    const appDiscount = isVerified
+        ? Math.max(appSettings.minAppDiscount, Math.floor(subtotal * (appSettings.appDiscountPercentage / 100)))
+        : 0;
     const total = subtotal + deliveryFee - appDiscount;
 
     return (
@@ -479,7 +482,14 @@ export default function CartPage() {
                                     <span className={subtotal >= appSettings.freeDeliveryThreshold ? "line-through opacity-50" : ""}>Rs. {deliveryFee}</span>
                                 </div>
                                 <div className="flex justify-between text-green-600 font-medium">
-                                    <span className="flex items-center">App Discount ({appSettings.appDiscountPercentage}% or Rs {appSettings.minAppDiscount})</span>
+                                    <span className="flex items-center">
+                                        App Discount ({appSettings.appDiscountPercentage}% or Rs {appSettings.minAppDiscount})
+                                        {!isVerified && (
+                                            <span className="ml-2 text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                                                Verified Only
+                                            </span>
+                                        )}
+                                    </span>
                                     <span>- Rs. {appDiscount}</span>
                                 </div>
                                 <div className="border-t border-gray-100 pt-4 flex justify-between items-center">

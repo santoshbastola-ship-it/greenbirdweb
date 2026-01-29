@@ -1,12 +1,26 @@
 import { BlogService } from "@/services/blog.service";
 import { notFound } from "next/navigation";
-import { Calendar, User, Clock, ArrowLeft } from "lucide-react";
+import { Calendar, User, Clock, ArrowLeft, Eye } from "lucide-react";
 import Link from "next/link";
+import ViewCounter from "@/components/blog/ViewCounter";
 
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
-    return [{ slug: 'welcome' }];
+    console.log("Generating static params for blog posts...");
+    // Retrieve all published posts to pre-render their pages
+    const posts = await BlogService.getPublishedPosts();
+
+    // Always include 'welcome' if needed, or just map actual posts
+    const params = posts.map((post) => ({
+        slug: post.slug,
+    }));
+
+    if (params.length === 0) {
+        return [{ slug: 'welcome' }];
+    }
+
+    return params;
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -25,6 +39,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
     return (
         <article className="min-h-screen bg-[#FCF9F1] pb-20">
+            <ViewCounter postId={post.id} />
+
             {/* Post Header with Image */}
             <div className="relative h-[40vh] md:h-[60vh] w-full">
                 <img
@@ -53,6 +69,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                             </span>
                             <span className="flex items-center gap-2">
                                 <Clock className="h-4 w-4" /> {post.readTime} min read
+                            </span>
+                            <span className="flex items-center gap-2">
+                                <Eye className="h-4 w-4" /> {post.views} views
                             </span>
                         </div>
                     </div>

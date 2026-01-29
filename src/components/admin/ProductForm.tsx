@@ -82,19 +82,22 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
 
         setUploadingImage(true);
         try {
-            const downloadURL = await ProductService.uploadProductImage(file);
+            const uploadPromises = Array.from(files).map(file => ProductService.uploadProductImage(file));
+            const downloadURLs = await Promise.all(uploadPromises);
+
             setFormData(prev => ({
                 ...prev,
-                images: [...(prev.images || []), downloadURL]
+                images: [...(prev.images || []), ...downloadURLs]
             }));
+            showToast(`Successfully uploaded ${files.length} image(s)`);
         } catch (error: any) {
-            console.error("Error uploading image:", error);
-            showToast(`Failed to upload image: ${error.message || 'Unknown error'}`, "error");
+            console.error("Error uploading images:", error);
+            showToast(`Failed to upload images: ${error.message || 'Unknown error'}`, "error");
         } finally {
             setUploadingImage(false);
             // Reset input so same file can be selected again if needed
@@ -316,6 +319,7 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                             ref={fileInputRef}
                             className="hidden"
                             accept="image/*"
+                            multiple
                             onChange={handleImageUpload}
                         />
 

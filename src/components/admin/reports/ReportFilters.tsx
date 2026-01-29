@@ -109,7 +109,7 @@ export default function ReportFilters({ onGenerate, isLoading, customers, vendor
                         <Calendar className="h-4 w-4" />
                         Date Range
                     </label>
-                    <div className="flex gap-2">
+                    <div className="flex flex-col md:flex-row gap-2">
                         <div className="flex-1 nepali-datepicker-container">
                             <NepaliDatePicker
                                 value={startDateBS}
@@ -118,7 +118,8 @@ export default function ReportFilters({ onGenerate, isLoading, customers, vendor
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                             />
                         </div>
-                        <span className="self-center text-gray-500">to</span>
+                        <span className="self-center text-gray-500 hidden md:block">to</span>
+                        <span className="self-center text-gray-500 md:hidden text-center">to</span>
                         <div className="flex-1 nepali-datepicker-container">
                             <NepaliDatePicker
                                 value={endDateBS}

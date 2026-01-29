@@ -25,10 +25,10 @@ import { ProductService } from "@/services/product.service";
 import AdvancedSearch from "@/components/admin/AdvancedSearch";
 import LogoLoader from "@/components/ui/LogoLoader";
 
-type TabType = "All" | TransactionType.Sale | TransactionType.Purchase;
+type TabType = "All" | "Pending" | TransactionType.Sale | TransactionType.Purchase;
 
 export default function SalesListPage() {
-    const [activeTab, setActiveTab] = useState<TabType>("All");
+    const [activeTab, setActiveTab] = useState<TabType>("Pending");
     const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
@@ -53,7 +53,12 @@ export default function SalesListPage() {
     };
 
     const filteredTransactions = transactions.filter(t => {
-        const matchesTab = activeTab === "All" || t.type === activeTab;
+        let matchesTab = true;
+        if (activeTab === "Pending") {
+            matchesTab = t.paymentStatus !== PaymentStatus.PaidCash && t.paymentStatus !== PaymentStatus.PaidOnline;
+        } else if (activeTab !== "All") {
+            matchesTab = t.type === activeTab;
+        }
 
         // Show all transactions (removed Delivered-only filter for Sales)
         const isDeliveredSale = true;
@@ -71,6 +76,11 @@ export default function SalesListPage() {
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     const tabs: { label: string; value: TabType; count: number }[] = [
+        {
+            label: "Pending",
+            value: "Pending",
+            count: transactions.filter(t => t.paymentStatus !== PaymentStatus.PaidCash && t.paymentStatus !== PaymentStatus.PaidOnline).length
+        },
         { label: "All", value: "All", count: transactions.length },
         { label: "Sales", value: TransactionType.Sale, count: transactions.filter(t => t.type === TransactionType.Sale).length },
         { label: "Purchases", value: TransactionType.Purchase, count: transactions.filter(t => t.type === TransactionType.Purchase).length },
@@ -86,17 +96,17 @@ export default function SalesListPage() {
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">Sales & Purchase</h1>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex flex-row gap-3 w-full sm:w-auto">
                         <Link
                             href="/admin/sales/new-purchase"
-                            className="flex-1 sm:flex-none bg-red-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-red-700 transition-all flex items-center justify-center shadow-lg shadow-red-900/10 active:scale-95"
+                            className="flex-1 sm:flex-none bg-gradient-to-r from-red-600 to-red-500 text-white px-6 py-2.5 rounded-xl font-bold hover:from-red-700 hover:to-red-600 transition-all flex items-center justify-center shadow-lg shadow-red-900/20 active:scale-95 hover:-translate-y-0.5"
                         >
                             <Plus className="h-5 w-5 mr-2" />
                             New Purchase
                         </Link>
                         <Link
                             href="/admin/sales/new"
-                            className="flex-1 sm:flex-none bg-green-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-green-700 transition-all flex items-center justify-center shadow-lg shadow-green-900/10 active:scale-95"
+                            className="flex-1 sm:flex-none bg-gradient-to-r from-green-600 to-green-500 text-white px-6 py-2.5 rounded-xl font-bold hover:from-green-700 hover:to-green-600 transition-all flex items-center justify-center shadow-lg shadow-green-900/20 active:scale-95 hover:-translate-y-0.5"
                         >
                             <Plus className="h-5 w-5 mr-2" />
                             New Sale

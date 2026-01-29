@@ -46,19 +46,23 @@ export const getBlogPosts = async (): Promise<BlogPost[]> => {
             date: new Date("2024-01-15"),
             categories: ["Health", "Farm Life"],
             imageUrl: "https://images.unsplash.com/photo-1516733725897-1aa73b87c8e8?q=80&w=2070&auto=format&fit=crop",
-            readTime: 5
+            readTime: 5,
+            published: true,
+            views: 0
         },
         {
             id: "2",
-            title: "Sustainable Goat Farming in Nepal",
-            slug: "sustainable-goat-farming",
-            excerpt: "Learn about our commitment to ethical animal husbandry and sustainable practices.",
-            content: "Full content about goat farming...",
-            author: "Lead Shepherd",
-            date: new Date("2024-01-10"),
-            categories: ["Farm Life", "Sustainability"],
-            imageUrl: "https://images.unsplash.com/photo-1524024973431-2970a2b63b4f?q=80&w=2070&auto=format&fit=crop",
-            readTime: 8
+            title: "Our Sustainable Farming Practices",
+            slug: "sustainable-farming-practices",
+            excerpt: "How we ensure the highest quality produce while caring for the environment.",
+            content: "Full content here...",
+            author: "Greenbird Team",
+            date: new Date('2024-01-10'),
+            categories: ["Sustainability", "Farm Life"],
+            imageUrl: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854",
+            readTime: 4,
+            published: true,
+            views: 0
         }
     ];
 };

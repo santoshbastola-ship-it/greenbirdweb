@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, Download, BarChart3 } from "lucide-react";
-import Link from "next/link";
+import { Download, BarChart3 } from "lucide-react";
 import { ReportType, TransactionRecord, TransactionType, StockHistoryEntry, User, BusinessType } from "@/types";
 import { TransactionService } from "@/services/transaction.service";
 import { ProductService } from "@/services/product.service";
 import { UserService } from "@/services/user.service";
 import ReportFilters from "@/components/admin/reports/ReportFilters";
 import ReportDisplay from "@/components/admin/reports/ReportDisplay";
+import { toNepali } from "@/lib/date-helper";
 
 export default function ReportsPage() {
     const [isLoading, setIsLoading] = useState(false);
@@ -99,6 +99,15 @@ export default function ReportsPage() {
         });
 
         const total = filtered.reduce((sum, t) => {
+            // If filtering by product, sum only that product's items
+            if (filters.productId) {
+                const productItemsTotal = t.items
+                    .filter(i => i.productId === filters.productId)
+                    .reduce((s, item) => s + item.totalPrice, 0);
+                return sum + productItemsTotal;
+            }
+
+            // Otherwise sum all items and subtract discount
             const itemsTotal = t.items.reduce((s, item) => s + item.totalPrice, 0);
             return sum + (itemsTotal - t.discount);
         }, 0);
@@ -221,17 +230,30 @@ export default function ReportsPage() {
                 // Stock Report CSV
                 csvContent = "Date,Product,Action Type,Change,New Stock,Note\n";
                 stockEntries.forEach(entry => {
-                    const date = new Date(entry.date).toLocaleDateString();
+                    const date = toNepali(entry.date);
                     csvContent += `${date},${entry.productId},${entry.actionType},${entry.changeAmount},${entry.newStock},"${entry.note || ""}"\n`;
                 });
             } else {
                 // Transaction Report CSV
                 csvContent = "Date,Bill No,Party,Items,Amount,Status\n";
                 transactions.forEach(t => {
-                    const date = new Date(t.date).toLocaleDateString();
-                    const items = t.items.map(i => i.productName).join("; ");
-                    const total = t.items.reduce((s, i) => s + i.totalPrice, 0) - t.discount;
-                    csvContent += `${date},${t.billNo},${t.partyName},"${items}",${total},${t.paymentStatus}\n`;
+                    const date = toNepali(t.date);
+
+                    let itemsStr = "";
+                    let total = 0;
+
+                    if (currentFilters.productId) {
+                        // Filter for specific product
+                        const relevantItems = t.items.filter(i => i.productId === currentFilters.productId);
+                        itemsStr = relevantItems.map(i => i.productName).join("; ");
+                        total = relevantItems.reduce((s, i) => s + i.totalPrice, 0);
+                    } else {
+                        // All items
+                        itemsStr = t.items.map(i => i.productName).join("; ");
+                        total = t.items.reduce((s, i) => s + i.totalPrice, 0) - t.discount;
+                    }
+
+                    csvContent += `${date},${t.billNo},${t.partyName},"${itemsStr}",${total},${t.paymentStatus}\n`;
                 });
             }
 
@@ -252,67 +274,50 @@ export default function ReportsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="space-y-6">
             {/* Header */}
-            <div className="bg-white shadow-sm border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <Link
-                                href="/admin"
-                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
-                                <ArrowLeft className="h-5 w-5 text-gray-600" />
-                            </Link>
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-green-100 rounded-lg">
-                                    <BarChart3 className="h-6 w-6 text-green-600" />
-                                </div>
-                                <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
-                            </div>
-                        </div>
-
-                        {reportGenerated && (
-                            <button
-                                onClick={handleExportCSV}
-                                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                            >
-                                <Download className="h-4 w-4" />
-                                Export CSV
-                            </button>
-                        )}
-                    </div>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
                 </div>
+                {reportGenerated && (
+                    <button
+                        onClick={handleExportCSV}
+                        className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center shadow-sm"
+                    >
+                        <Download className="h-5 w-5 mr-2" />
+                        Export CSV
+                    </button>
+                )}
             </div>
 
-            {/* Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-8">
-                <ReportFilters
-                    onGenerate={handleGenerateReport}
-                    isLoading={isLoading}
-                    customers={customers}
-                    vendors={vendors}
+            {/* Filters */}
+            <ReportFilters
+                onGenerate={handleGenerateReport}
+                isLoading={isLoading}
+                customers={customers}
+                vendors={vendors}
+            />
+
+            {/* Results */}
+            {reportGenerated && !isLoading && currentFilters && (
+                <ReportDisplay
+                    reportType={currentFilters.reportType}
+                    transactions={transactions}
+                    stockEntries={stockEntries}
+                    totalCount={totalCount}
+                    totalValue={totalValue}
+                    totalLabel={totalLabel}
+                    stockSoldQty={stockSoldQty}
                 />
+            )}
 
-                {reportGenerated && !isLoading && currentFilters && (
-                    <ReportDisplay
-                        reportType={currentFilters.reportType}
-                        transactions={transactions}
-                        stockEntries={stockEntries}
-                        totalCount={totalCount}
-                        totalValue={totalValue}
-                        totalLabel={totalLabel}
-                        stockSoldQty={stockSoldQty}
-                    />
-                )}
-
-                {!reportGenerated && !isLoading && (
-                    <div className="bg-white rounded-lg shadow-md p-12 text-center">
-                        <BarChart3 className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-500 text-lg">Select filters and click "Generate Report" to view data</p>
-                    </div>
-                )}
-            </div>
+            {!reportGenerated && !isLoading && (
+                <div className="bg-white rounded-lg shadow-md p-12 text-center">
+                    <BarChart3 className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg">Select filters and click "Generate Report" to view data</p>
+                </div>
+            )}
         </div>
     );
 }

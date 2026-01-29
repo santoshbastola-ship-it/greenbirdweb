@@ -9,9 +9,20 @@ interface EditUserModalProps {
     user: User | null;
     onClose: () => void;
     onSubmit: (userId: string, name: string, role: UserRole) => Promise<void>;
+    onDelete: (userId: string) => Promise<void>;
+    onResendInvite: (email: string) => Promise<void>;
+    onToggleStatus: (userId: string, currentStatus: boolean) => Promise<void>;
 }
 
-export default function EditUserModal({ isOpen, user, onClose, onSubmit }: EditUserModalProps) {
+export default function EditUserModal({
+    isOpen,
+    user,
+    onClose,
+    onSubmit,
+    onDelete,
+    onResendInvite,
+    onToggleStatus
+}: EditUserModalProps) {
     const [name, setName] = useState("");
     const [role, setRole] = useState<UserRole>("manager");
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,18 +57,22 @@ export default function EditUserModal({ isOpen, user, onClose, onSubmit }: EditU
         }
     };
 
+    const handleAction = async (action: () => Promise<void>) => {
+        setIsSubmitting(true);
+        setError("");
+        try {
+            await action();
+            onClose();
+        } catch (err: any) {
+            setError(err.message || "Action failed");
+            setIsSubmitting(false);
+        }
+    };
+
     const handleClose = () => {
         if (!isSubmitting) {
             setError("");
             onClose();
-        }
-    };
-
-    const getRoleDisplayName = (role: UserRole) => {
-        switch (role) {
-            case "admin": return "Administrator";
-            case "manager": return "Farm Manager";
-            case "customer": return "Customer";
         }
     };
 
@@ -110,7 +125,6 @@ export default function EditUserModal({ isOpen, user, onClose, onSubmit }: EditU
                             disabled
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
                         />
-                        <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
                     </div>
 
                     <div>
@@ -130,23 +144,57 @@ export default function EditUserModal({ isOpen, user, onClose, onSubmit }: EditU
                         </select>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex gap-3 pt-4">
+                    <div className="flex gap-3 pt-2">
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                        >
+                            {isSubmitting ? "Saving..." : "Save Changes"}
+                        </button>
                         <button
                             type="button"
                             onClick={handleClose}
                             disabled={isSubmitting}
-                            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 text-sm font-medium"
                         >
                             Cancel
                         </button>
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isSubmitting ? "Saving..." : "Save Changes"}
-                        </button>
+                    </div>
+
+                    <div className="pt-4 border-t space-y-3">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500">More Actions</h4>
+                        <div className="grid grid-cols-1 gap-2">
+                            {user.email && (
+                                <button
+                                    type="button"
+                                    onClick={() => handleAction(() => onResendInvite(user.email!))}
+                                    disabled={isSubmitting}
+                                    className="w-full px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100"
+                                >
+                                    Resend Invitation
+                                </button>
+                            )}
+                            <button
+                                type="button"
+                                onClick={() => handleAction(() => onToggleStatus(user.id, user.isActive))}
+                                disabled={isSubmitting}
+                                className={`w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors border ${user.isActive
+                                    ? "text-orange-600 bg-orange-50 hover:bg-orange-100 border-orange-100"
+                                    : "text-green-600 bg-green-50 hover:bg-green-100 border-green-100"
+                                    }`}
+                            >
+                                {user.isActive ? "Deactivate User" : "Activate User"}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleAction(() => onDelete(user.id))}
+                                disabled={isSubmitting}
+                                className="w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-100"
+                            >
+                                Delete User
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

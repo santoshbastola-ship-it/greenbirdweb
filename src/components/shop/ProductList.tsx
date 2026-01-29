@@ -6,6 +6,7 @@ import OrderSuccessMessage from "@/components/ui/OrderSuccessMessage";
 import Link from "next/link";
 import { Product } from "@/types";
 import { Suspense } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 interface ProductListContentProps {
     initialProducts: Product[];
@@ -13,11 +14,20 @@ interface ProductListContentProps {
 
 function ProductListContent({ initialProducts }: ProductListContentProps) {
     const searchParams = useSearchParams();
+    const { dbUser } = useAuth();
     const category = searchParams.get('category');
 
-    const products = category
-        ? initialProducts.filter(p => p.businessType === category)
-        : initialProducts;
+    const isAdminOrManager = dbUser?.role === 'admin' || dbUser?.role === 'manager';
+
+    const products = initialProducts.filter(p => {
+        // First filter by category if present
+        if (category && p.businessType !== category) return false;
+
+        // Then hide assets from customers
+        if (p.businessType === 'asset' && !isAdminOrManager) return false;
+
+        return true;
+    });
 
     return (
         <div className="flex-1">

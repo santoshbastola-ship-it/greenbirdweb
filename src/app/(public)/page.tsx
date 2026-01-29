@@ -4,33 +4,42 @@ import Link from "next/link";
 import { ArrowRight, Leaf, Utensils, Bird, Trees, Calendar } from "lucide-react";
 import ProductCard from "@/components/ui/ProductCard";
 import { Product } from "@/types";
-import { FarmActivity } from "@/types/extra";
+import { FarmActivity, Testimonial } from "@/types/extra";
 import { getActivities } from "@/lib/services/activities";
+import { getTestimonials } from "@/lib/services/testimonials";
 import { ProductService } from "@/services/product.service";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import LogoLoader from "@/components/ui/LogoLoader";
+import MediaCarousel from "@/components/ui/MediaCarousel";
+import { Quote, ExternalLink, User } from "lucide-react";
+
 
 export default function Home() {
   const [activities, setActivities] = useState<FarmActivity[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [loadingTestimonials, setLoadingTestimonials] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [activitiesData, productsData] = await Promise.all([
+        const [activitiesData, productsData, testimonialsData] = await Promise.all([
           getActivities(3),
-          ProductService.getFeaturedProducts()
+          ProductService.getFeaturedProducts(),
+          getTestimonials(6)
         ]);
         setActivities(activitiesData);
         setFeaturedProducts(productsData);
+        setTestimonials(testimonialsData.filter(t => t.isPublished));
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
         setLoadingActivities(false);
         setLoadingProducts(false);
+        setLoadingTestimonials(false);
       }
     };
     fetchData();
@@ -41,23 +50,23 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative bg-[#2D5A27] text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=2940&auto=format&fit=crop')] bg-cover bg-center opacity-30"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 md:py-48 text-center">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 md:py-56 text-center animate-fadeIn">
+          <h1 className="text-4xl md:text-7xl font-bold tracking-tight mb-8 leading-tight">
             Farm Fresh, <span className="text-[#FCF9F1]">Straight to You</span>
           </h1>
-          <p className="text-xl md:text-2xl text-gray-100 mb-10 max-w-2xl mx-auto">
+          <p className="text-xl md:text-2xl text-gray-100 mb-12 max-w-3xl mx-auto leading-relaxed">
             Experience the taste of nature with our organically raised livestock and extensive crop selection.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-6">
             <Link
               href="/shop"
-              className="bg-white text-[#2D5A27] hover:bg-[#FCF9F1] font-bold py-4 px-8 rounded-full transition-colors flex items-center justify-center shadow-lg"
+              className="bg-white text-[#2D5A27] hover:bg-[#FCF9F1] font-bold py-4 px-10 rounded-full transition-all duration-300 flex items-center justify-center shadow-xl hover:-translate-y-1"
             >
               Shop Fresh <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
             <Link
               href="/booking"
-              className="bg-[#5C4033] hover:bg-[#3d2a22] text-white font-bold py-4 px-8 rounded-full transition-colors shadow-lg"
+              className="bg-[#5C4033] hover:bg-[#3d2a22] text-white font-bold py-4 px-10 rounded-full transition-all duration-300 shadow-xl hover:-translate-y-1"
             >
               Book Homestead
             </Link>
@@ -65,126 +74,190 @@ export default function Home() {
         </div>
       </section>
 
-
-
-      {/* Core Offerings & Products */}
-      <section className="py-16 bg-white">
+      {/* Core Offerings Section */}
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">Core Offerings & Products</h2>
-            <p className="text-gray-600 mt-2">Experience the best of what Greenbird Homestead has to offer</p>
+          <div className="text-center mb-16 max-w-3xl mx-auto">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight">
+              Our <span className="text-[#2D5A27]">Core Offerings</span>
+            </h2>
+            <p className="text-gray-600 mt-4 text-lg">
+              Experience the best of what Greenbird Homestead has to offer, from fresh produce to nature retreats.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Farm-to-Table Dining */}
-            <div className="p-6 bg-[#2D5A27]/5 rounded-2xl text-center hover:shadow-lg transition-shadow group">
-              <div className="bg-[#2D5A27]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[#2D5A27] transition-colors">
-                <Utensils className="h-8 w-8 text-[#2D5A27] group-hover:text-white transition-colors" />
+            <div className="p-8 bg-white border border-gray-100 rounded-3xl text-center hover:shadow-2xl hover:border-green-100 transition-all duration-300 group">
+              <div className="bg-[#2D5A27]/5 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-[#2D5A27] transition-all duration-300 group-hover:rotate-6">
+                <Utensils className="h-10 w-10 text-[#2D5A27] group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Farm-to-Table Dining</h3>
-              <p className="text-gray-600 text-sm">Dining experience where meals are prepared using fresh ingredients harvested directly from the farm.</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Farm-to-Table</h3>
+              <p className="text-gray-600 leading-relaxed">Meals prepared using fresh ingredients harvested directly from our fields.</p>
             </div>
 
             {/* Organic Produce */}
-            <div className="p-6 bg-[#2D5A27]/5 rounded-2xl text-center hover:shadow-lg transition-shadow group">
-              <div className="bg-[#2D5A27]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[#2D5A27] transition-colors">
-                <Leaf className="h-8 w-8 text-[#2D5A27] group-hover:text-white transition-colors" />
+            <div className="p-8 bg-white border border-gray-100 rounded-3xl text-center hover:shadow-2xl hover:border-green-100 transition-all duration-300 group">
+              <div className="bg-[#2D5A27]/5 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-[#2D5A27] transition-all duration-300 group-hover:rotate-6">
+                <Leaf className="h-10 w-10 text-[#2D5A27] group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Organic Produce</h3>
-              <p className="text-gray-600 text-sm">The farm grows a variety of organic vegetables without the use of synthetic chemicals.</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Organic Produce</h3>
+              <p className="text-gray-600 leading-relaxed">Pure, chemical-free vegetables grown with care and respect for the land.</p>
             </div>
 
             {/* Free-Range Livestock */}
-            <div className="p-6 bg-[#2D5A27]/5 rounded-2xl text-center hover:shadow-lg transition-shadow group">
-              <div className="bg-[#2D5A27]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[#2D5A27] transition-colors">
-                <Bird className="h-8 w-8 text-[#2D5A27] group-hover:text-white transition-colors" />
+            <div className="p-8 bg-white border border-gray-100 rounded-3xl text-center hover:shadow-2xl hover:border-green-100 transition-all duration-300 group">
+              <div className="bg-[#2D5A27]/5 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-[#2D5A27] transition-all duration-300 group-hover:rotate-6">
+                <Bird className="h-10 w-10 text-[#2D5A27] group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Free-Range Livestock</h3>
-              <p className="text-gray-600 text-sm">Specializing in local free-range chicken and fresh farm eggs.</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Free-Range</h3>
+              <p className="text-gray-600 leading-relaxed">Specializing in local free-range chicken and fresh farm-fresh eggs.</p>
             </div>
 
             {/* Nature Experience */}
-            <div className="p-6 bg-[#2D5A27]/5 rounded-2xl text-center hover:shadow-lg transition-shadow group">
-              <div className="bg-[#2D5A27]/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-[#2D5A27] transition-colors">
-                <Trees className="h-8 w-8 text-[#2D5A27] group-hover:text-white transition-colors" />
+            <div className="p-8 bg-white border border-gray-100 rounded-3xl text-center hover:shadow-2xl hover:border-green-100 transition-all duration-300 group">
+              <div className="bg-[#2D5A27]/5 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-[#2D5A27] transition-all duration-300 group-hover:rotate-6">
+                <Trees className="h-10 w-10 text-[#2D5A27] group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Nature Experience</h3>
-              <p className="text-gray-600 text-sm">A "place to have fun" and connect with nature, perfect for escaping the city.</p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-3">Nature Retreat</h3>
+              <p className="text-gray-600 leading-relaxed">A sanctuary to reconnect with nature and escape the city bustle.</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Farm Activities Section */}
-      <section className="py-16 bg-white">
+      <section className="py-24 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">Farm Life & Activities</h2>
-            <p className="text-gray-600 mt-2">Catch a glimpse of daily life at Greenbird Homestead</p>
+          <div className="text-center mb-16 max-w-3xl mx-auto relative">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight">
+              Farm Life & <span className="text-[#2D5A27]">Activities</span>
+            </h2>
+            <p className="text-gray-600 mt-4 text-lg">
+              Experience the rhythm of nature. From dawn till dusk, there's always something beautiful happening at Greenbird Homestead.
+            </p>
+            <div className="mt-6 flex justify-center">
+              <Link href="/activities" className="flex items-center gap-2 text-[#2D5A27] font-semibold group cursor-pointer hover:text-[#1f3e1b] transition-colors">
+                View All Moments <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </div>
           </div>
 
           {loadingActivities ? (
-            <div className="flex justify-center items-center py-12">
+            <div className="flex justify-center items-center py-20 bg-gray-50 rounded-[2.5rem]">
               <LogoLoader size="sm" />
             </div>
           ) : activities.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {activities.map((activity) => (
-                <div key={activity.id} className="group overflow-hidden rounded-2xl bg-[#FCF9F1] shadow-sm hover:shadow-md transition-shadow">
-                  <div className="aspect-[4/3] overflow-hidden">
-                    <img
-                      src={activity.imageUrl}
-                      alt={activity.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center gap-2 text-[#2D5A27] text-sm font-medium mb-3">
-                      <Calendar className="h-4 w-4" />
-                      {format(new Date(activity.date), "MMM dd, yyyy")}
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{activity.title}</h3>
-                    <p className="text-gray-600 text-sm line-clamp-3">
-                      {activity.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <MediaCarousel activities={activities} />
           ) : (
-            <div className="text-center py-12 text-gray-500">
-              Check back soon for latest updates from the farm!
+            <div className="text-center py-24 bg-gray-50 rounded-[2.5rem] text-gray-400 font-medium border border-dashed border-gray-200">
+              Check back soon for latest moments from the farm!
             </div>
           )}
         </div>
       </section>
 
+
       {/* Featured Products */}
-      <section className="py-16 bg-[#FCF9F1]">
+      <section className="py-24 bg-[#FCF9F1]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-end mb-12">
-            <div>
-              <h2 className="text-3xl font-bold text-gray-900">Featured Products</h2>
-              <p className="text-gray-600 mt-2">Bestsellers from our farm this week</p>
+          <div className="text-center mb-16 max-w-3xl mx-auto">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight">
+              Featured <span className="text-[#2D5A27]">Products</span>
+            </h2>
+            <p className="text-gray-600 mt-4 text-lg">
+              Bestsellers from our farm this week. Freshly harvested and ready for your kitchen.
+            </p>
+            <div className="mt-6 flex justify-center">
+              <Link href="/shop" className="text-[#2D5A27] font-semibold hover:text-[#1f3e1b] flex items-center transition-colors">
+                Shop All Products <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
             </div>
-            <Link href="/shop" className="text-[#2D5A27] font-semibold hover:text-[#1f3e1b] flex items-center">
-              View All <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
           </div>
 
           {loadingProducts ? (
-            <div className="flex justify-center items-center py-12">
+            <div className="flex justify-center items-center py-20">
               <LogoLoader size="sm" />
             </div>
           ) : featuredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {featuredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 text-gray-500 col-span-full">
+            <div className="text-center py-24 text-gray-500 bg-white/50 rounded-[2.5rem] border border-dashed border-gray-200">
               No featured products available at the moment.
+            </div>
+          )}
+        </div>
+      </section>
+      {/* Testimonials Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16 max-w-3xl mx-auto">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight">
+              Customer <span className="text-[#2D5A27]">Stories</span>
+            </h2>
+            <p className="text-gray-600 mt-4 text-lg">
+              Hear what our visitors and customers have to say about their experience at Greenbird Homestead.
+            </p>
+          </div>
+
+          {loadingTestimonials ? (
+            <div className="flex justify-center items-center py-20">
+              <LogoLoader size="sm" />
+            </div>
+          ) : testimonials.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {testimonials.map((testimonial) => (
+                <div
+                  key={testimonial.id}
+                  className="bg-white border border-gray-100 p-8 rounded-[2rem] hover:shadow-2xl hover:border-green-100 transition-all duration-300 flex flex-col group relative"
+                >
+                  <Quote className="absolute top-8 right-8 h-12 w-12 text-green-50/50 group-hover:text-green-50 transition-colors" />
+                  <div className="flex-1 space-y-6">
+                    <p className="text-gray-700 text-lg italic leading-relaxed relative z-10">
+                      "{testimonial.content}"
+                    </p>
+                    <div className="flex items-center gap-4">
+                      <div className="h-14 w-14 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm transition-transform duration-500 group-hover:scale-110">
+                        {testimonial.photoUrl ? (
+                          <img
+                            src={testimonial.photoUrl}
+                            alt={testimonial.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-full w-full flex items-center justify-center bg-gray-100">
+                            <User className="h-6 w-6 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-900">{testimonial.name}</h4>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-400">Verified Customer</span>
+                          {testimonial.customerProfileUrl && (
+                            <a
+                              href={testimonial.customerProfileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-500 hover:text-blue-600 transition-colors"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-24 bg-gray-50 rounded-[2.5rem] text-gray-400 font-medium border border-dashed border-gray-200">
+              Be the first to share your experience!
             </div>
           )}
         </div>

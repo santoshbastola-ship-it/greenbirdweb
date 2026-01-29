@@ -3,43 +3,96 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { UserService } from "@/services/user.service";
-import { User } from "@/types";
+import { TransactionService } from "@/services/transaction.service";
+import { User, TransactionRecord } from "@/types";
 import {
     Plus,
     Search,
     Users,
     ArrowLeft,
-    Phone,
-    MapPin,
-    Mail,
     Receipt,
-    Store
+    Store,
+    UserCheck,
+    Globe
 } from "lucide-react";
 import AddPartnerModal from "@/components/admin/AddPartnerModal";
-import PartnerTransactionDialog from "@/components/admin/PartnerTransactionDialog";
+import { toNepali } from "@/lib/date-helper";
 
 export default function PartnersPage() {
     const [partners, setPartners] = useState<User[]>([]);
+    const [transactions, setTransactions] = useState<TransactionRecord[]>([]); // Store all transactions for metrics
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [activeTab, setActiveTab] = useState<"customer" | "vendor">("customer");
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [selectedPartner, setSelectedPartner] = useState<User | null>(null);
 
     useEffect(() => {
-        loadPartners();
+        loadData();
     }, []);
 
-    const loadPartners = async () => {
+    const loadData = async () => {
         setLoading(true);
-        const allPartners = await UserService.getAllPartners();
-        setPartners(allPartners);
-        setLoading(false);
+        try {
+            const [allPartners, allTransactions] = await Promise.all([
+                UserService.getAllPartners(),
+                TransactionService.getAllTransactions()
+            ]);
+            setPartners(allPartners);
+            setTransactions(allTransactions);
+        } catch (error) {
+            console.error("Error loading data:", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleAddPartner = async (data: any) => {
         await UserService.createCustomer(data);
-        await loadPartners(); // Reload list after adding
+        await loadData(); // Reload list after adding
+    };
+
+    // Helper: Get transactions for a specific partner
+    const getPartnerTransactions = (partnerId: string) => {
+        return transactions.filter(t =>
+            t.customerId === partnerId &&
+            t.status !== 'cancelled' &&
+            // Filter by type based on partner role (though usually we want all relevant interaction)
+            // For customers, we care about Sales. For vendors, Purchases.
+            (activeTab === 'customer' ? t.type === 'Sale' : t.type === 'Purchase')
+        ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    };
+
+    // Helper: Calculate Last Order Date
+    const getLastOrderInfo = (partnerTxns: TransactionRecord[]) => {
+        if (partnerTxns.length === 0) return null;
+        const lastTxnDate = new Date(partnerTxns[0].date);
+        const diffTime = Math.abs(new Date().getTime() - lastTxnDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return { date: lastTxnDate, daysAgo: diffDays };
+    };
+
+    // Helper: Calculate Predicted Next Order
+    const getPredictedNextOrder = (partnerTxns: TransactionRecord[]) => {
+        if (partnerTxns.length < 2) return null; // Need at least 2 orders to calculate frequency
+
+        // Calculate average days between orders
+        let totalDiffDays = 0;
+        for (let i = 0; i < partnerTxns.length - 1; i++) {
+            const d1 = new Date(partnerTxns[i].date); // Most recent
+            const d2 = new Date(partnerTxns[i + 1].date); // Previous
+            const diffTime = Math.abs(d1.getTime() - d2.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            totalDiffDays += diffDays;
+        }
+
+        const avgFrequency = totalDiffDays / (partnerTxns.length - 1);
+
+        // Predict next date: Last Order Date + Avg Frequency
+        const lastOrderDate = new Date(partnerTxns[0].date);
+        const nextOrderDate = new Date(lastOrderDate);
+        nextOrderDate.setDate(lastOrderDate.getDate() + avgFrequency);
+
+        return { date: nextOrderDate, frequency: Math.round(avgFrequency) };
     };
 
     const filteredPartners = partners
@@ -71,19 +124,15 @@ export default function PartnersPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex items-center gap-4">
-                    <Link href="/admin" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                        <ArrowLeft className="h-6 w-6 text-gray-600" />
-                    </Link>
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Partners</h1>
-                        <p className="text-gray-500">Manage your customers and vendors</p>
                     </div>
                 </div>
                 <button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center shadow-sm"
+                    className="bg-green-600 text-white px-3 py-1.5 text-sm rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center shadow-sm"
                 >
-                    <Plus className="h-5 w-5 mr-2" />
+                    <Plus className="h-4 w-4 mr-2" />
                     Add {activeTab === "customer" ? "Customer" : "Vendor"}
                 </button>
             </div>
@@ -141,7 +190,7 @@ export default function PartnersPage() {
                         <div className="h-4 bg-gray-200 rounded w-1/4 mx-auto"></div>
                         <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto"></div>
                     </div>
-                    <p className="mt-4">Loading partners...</p>
+                    <p className="mt-4">Loading data...</p>
                 </div>
             ) : filteredPartners.length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-xl border border-gray-100">
@@ -161,106 +210,85 @@ export default function PartnersPage() {
                     </p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {filteredPartners.map((partner) => (
-                        <div
-                            key={partner.id}
-                            className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 hover:border-green-200"
-                        >
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="flex items-center flex-1 min-w-0">
-                                    <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold text-lg border-2 border-green-50 flex-shrink-0">
+                <div className="space-y-4">
+                    {filteredPartners.map((partner) => {
+                        const partnerTxns = getPartnerTransactions(partner.id);
+                        const lastOrder = getLastOrderInfo(partnerTxns);
+                        const prediction = getPredictedNextOrder(partnerTxns);
+
+                        return (
+                            <Link
+                                href={`/admin/partner-details?id=${partner.id}`}
+                                key={partner.id}
+                                className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between hover:shadow-md transition-shadow gap-4 group cursor-pointer"
+                            >
+                                <div className="flex items-center gap-4 min-w-0 flex-1">
+                                    <div className="h-12 w-12 flex-shrink-0 bg-green-100 rounded-full border border-green-200 flex items-center justify-center text-green-700 font-bold text-lg">
                                         {partner.name.charAt(0).toUpperCase()}
                                     </div>
-                                    <div className="ml-3 min-w-0 flex-1">
-                                        <h3 className="font-semibold text-gray-900 truncate" title={partner.name}>
-                                            {partner.name}
-                                        </h3>
-                                        {partner.totalTransactionAmount && partner.totalTransactionAmount > 0 ? (
-                                            <p className="text-sm font-medium text-green-600">
-                                                Rs {partner.totalTransactionAmount.toFixed(2)}
-                                            </p>
-                                        ) : (
-                                            <p className="text-xs text-gray-400">No transactions</p>
-                                        )}
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="font-bold text-gray-900 text-lg truncate">
+                                                {partner.name}
+                                            </h3>
+                                            <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">
+                                                {partner.partnerType || "customer"}
+                                            </span>
+                                        </div>
+                                        <span>{partner.phoneNumber || "No phone"}</span>
+                                        {/* Status Icon */}
+                                        <span className="flex items-center gap-1">
+                                            {partner.email && !partner.email.endsWith('@manual.entry') ? (
+                                                <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100" title="Registered User">
+                                                    <UserCheck className="h-3 w-3" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Verified</span>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-1 text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-200" title="Manually Created">
+                                                    <Users className="h-3 w-3" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Manual</span>
+                                                </div>
+                                            )}
+                                        </span>
+
+
+                                        {/* Activity Metrics */}
+                                        <div className="flex flex-wrap gap-3 mt-2 text-xs">
+                                            {lastOrder ? (
+                                                <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-medium border border-blue-100">
+                                                    Ordered {lastOrder.daysAgo} {lastOrder.daysAgo === 1 ? 'day' : 'days'} ago
+                                                </span>
+                                            ) : (
+                                                <span className="bg-gray-50 text-gray-500 px-2 py-1 rounded-md border border-gray-100">
+                                                    No orders yet
+                                                </span>
+                                            )}
+
+                                            {prediction && (
+                                                <span className="bg-purple-50 text-purple-700 px-2 py-1 rounded-md font-medium border border-purple-100">
+                                                    Next predicted: {toNepali(prediction.date, "DD MMM YYYY")}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="space-y-2.5 text-sm text-gray-600 mb-4">
-                                {partner.phoneNumber ? (
-                                    <div className="flex items-center">
-                                        <Phone className="h-4 w-4 mr-2.5 text-green-600 flex-shrink-0" />
-                                        <span className="font-medium truncate">{partner.phoneNumber}</span>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center text-gray-400">
-                                        <Phone className="h-4 w-4 mr-2.5 flex-shrink-0" />
-                                        <span className="italic">No phone number</span>
-                                    </div>
-                                )}
-
-                                {partner.email && !partner.email.includes("@manual.entry") ? (
-                                    <div className="flex items-center">
-                                        <Mail className="h-4 w-4 mr-2.5 text-green-600 flex-shrink-0" />
-                                        <span className="truncate" title={partner.email}>{partner.email}</span>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center text-gray-400">
-                                        <Mail className="h-4 w-4 mr-2.5 flex-shrink-0" />
-                                        <span className="italic">No email</span>
-                                    </div>
-                                )}
-
-                                {partner.address ? (
-                                    <div className="flex items-start">
-                                        <MapPin className="h-4 w-4 mr-2.5 text-green-600 mt-0.5 flex-shrink-0" />
-                                        <span className="line-clamp-2">{partner.address}</span>
-                                    </div>
-                                ) : (
-                                    <div className="flex items-start text-gray-400">
-                                        <MapPin className="h-4 w-4 mr-2.5 mt-0.5 flex-shrink-0" />
-                                        <span className="italic">No address</span>
-                                    </div>
-                                )}
-
-                                {partner.remarks && (
-                                    <div className="pt-2 border-t border-gray-100">
-                                        <p className="text-xs text-gray-500 italic line-clamp-2">
-                                            {partner.remarks}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-
-                            <button
-                                onClick={() => setSelectedPartner(partner)}
-                                className="w-full mt-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg font-medium hover:bg-green-100 transition-colors flex items-center justify-center text-sm"
-                            >
-                                <Receipt className="h-4 w-4 mr-2" />
-                                View Transactions
-                            </button>
-                        </div>
-                    ))}
+                            </Link>
+                        );
+                    })}
                 </div>
-            )}
+            )
+            }
 
-            {isAddModalOpen && (
-                <AddPartnerModal
-                    partnerType={activeTab}
-                    onClose={() => setIsAddModalOpen(false)}
-                    onAdd={handleAddPartner}
-                />
-            )}
-
-            {selectedPartner && (
-                <PartnerTransactionDialog
-                    partnerId={selectedPartner.id}
-                    partnerName={selectedPartner.name}
-                    partnerType={selectedPartner.partnerType || "customer"}
-                    onClose={() => setSelectedPartner(null)}
-                />
-            )}
-        </div>
+            {
+                isAddModalOpen && (
+                    <AddPartnerModal
+                        partnerType={activeTab}
+                        onClose={() => setIsAddModalOpen(false)}
+                        onAdd={handleAddPartner}
+                    />
+                )
+            }
+        </div >
     );
 }

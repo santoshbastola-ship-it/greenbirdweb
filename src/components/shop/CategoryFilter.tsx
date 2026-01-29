@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Filter } from "lucide-react";
 import { BusinessType } from "@/types";
+import { useAuth } from "@/context/AuthContext";
 
 const CATEGORIES: { label: string; value: BusinessType | "all" }[] = [
     { label: "All", value: "all" },
@@ -16,7 +17,17 @@ const CATEGORIES: { label: string; value: BusinessType | "all" }[] = [
 function CategoryFilterContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { dbUser } = useAuth();
     const currentCategory = searchParams.get("category") || "all";
+
+    const isAdminOrManager = dbUser?.role === 'admin' || dbUser?.role === 'manager';
+
+    const visibleCategories = CATEGORIES.filter(cat => {
+        if (cat.value === 'asset') {
+            return isAdminOrManager;
+        }
+        return true;
+    });
 
     const handleCategoryClick = (categoryValue: string) => {
         const params = new URLSearchParams(searchParams);
@@ -38,7 +49,7 @@ function CategoryFilterContent() {
 
                 <div className="flex md:flex-col overflow-x-auto md:overflow-visible gap-2 pb-2 md:pb-0 no-scrollbar">
                     <h3 className="hidden md:block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Categories</h3>
-                    {CATEGORIES.map((cat) => {
+                    {visibleCategories.map((cat) => {
                         const isActive = currentCategory === cat.value;
                         return (
                             <button
