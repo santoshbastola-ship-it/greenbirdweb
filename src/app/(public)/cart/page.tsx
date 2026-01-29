@@ -106,8 +106,6 @@ export default function CartPage() {
             return;
         }
 
-        if (!confirm("Confirm your order?")) return;
-
         setPlacingOrder(true);
         try {
             // Update profile info if changed
@@ -170,29 +168,6 @@ export default function CartPage() {
 
     if (!mounted) return <div className="min-h-screen bg-gray-50 pt-20 text-center">Loading cart...</div>;
 
-    if (!user) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center max-w-md w-full text-center">
-                    <div className="h-20 w-20 bg-green-50 rounded-full flex items-center justify-center mb-6">
-                        <ShoppingBag className="h-10 w-10 text-green-600" />
-                    </div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Login Required</h1>
-                    <p className="text-gray-500 mb-8">Please login to view your cart items and proceed to checkout.</p>
-                    <Link
-                        href="/login?redirect=/cart"
-                        className="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition-colors mb-4"
-                    >
-                        Login to Checkout
-                    </Link>
-                    <Link href="/shop" className="text-gray-500 text-sm font-medium hover:text-green-600 transition-colors">
-                        Continue Shopping
-                    </Link>
-                </div>
-            </div>
-        );
-    }
-
     // Defensive check: Ensure items is an array and filter out invalid ones
     const validItems = Array.isArray(items) ? items.filter(item => item && item.productId) : [];
 
@@ -225,7 +200,7 @@ export default function CartPage() {
     const total = subtotal + deliveryFee - appDiscount;
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12">
+        <div className="min-h-screen bg-gray-50 py-12 pb-32 md:pb-36">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
 
@@ -260,28 +235,45 @@ export default function CartPage() {
                                                 <p className="text-sm md:text-base font-bold text-gray-900 whitespace-nowrap">Rs. {item.price * item.quantity}</p>
                                             </div>
 
-                                            {/* Quantity Controls and Remove - Compact on mobile */}
-                                            <div className="flex items-center justify-between gap-2">
-                                                <div className="flex items-center border border-gray-200 rounded-lg">
+                                            {/* Quantity Controls and Remove - Mobile Optimized */}
+                                            <div className="flex items-center justify-between gap-2 md:gap-3">
+                                                {/* Quantity Controls with larger touch targets */}
+                                                <div className="flex items-center bg-gray-50 border-2 border-gray-200 rounded-xl overflow-hidden">
                                                     <button
                                                         onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                                                        className="p-1 md:p-1.5 hover:bg-gray-50 text-gray-500"
+                                                        className="p-3 md:p-2.5 hover:bg-gray-100 active:bg-gray-200 text-gray-700 transition-colors touch-manipulation"
+                                                        aria-label="Decrease quantity"
                                                     >
-                                                        <Minus className="h-3 w-3" />
+                                                        <Minus className="h-5 w-5 md:h-4 md:w-4" />
                                                     </button>
-                                                    <span className="w-7 md:w-8 text-center font-medium text-xs md:text-sm">{item.quantity}</span>
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        value={item.quantity}
+                                                        onChange={(e) => {
+                                                            const newQty = parseInt(e.target.value) || 1;
+                                                            if (newQty > 0) {
+                                                                updateQuantity(item.productId, newQty);
+                                                            }
+                                                        }}
+                                                        className="w-14 md:w-12 text-center font-bold text-base md:text-sm bg-transparent border-0 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-inset rounded-none appearance-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                        aria-label="Quantity"
+                                                    />
                                                     <button
                                                         onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                                                        className="p-1 md:p-1.5 hover:bg-gray-50 text-gray-500"
+                                                        className="p-3 md:p-2.5 hover:bg-gray-100 active:bg-gray-200 text-gray-700 transition-colors touch-manipulation"
+                                                        aria-label="Increase quantity"
                                                     >
-                                                        <Plus className="h-3 w-3" />
+                                                        <Plus className="h-5 w-5 md:h-4 md:w-4" />
                                                     </button>
                                                 </div>
                                                 <button
                                                     onClick={() => removeItem(item.productId)}
-                                                    className="text-red-500 hover:text-red-700 text-xs md:text-sm font-medium transition-colors"
+                                                    className="p-2.5 md:p-2 text-red-500 hover:text-red-700 hover:bg-red-50 active:bg-red-100 rounded-lg transition-colors touch-manipulation flex items-center gap-1.5"
+                                                    aria-label="Remove item"
                                                 >
-                                                    Remove
+                                                    <Trash2 className="h-5 w-5 md:h-4 md:w-4" />
+                                                    <span className="text-xs md:text-sm font-medium hidden sm:inline">Remove</span>
                                                 </button>
                                             </div>
                                         </div>
@@ -302,10 +294,17 @@ export default function CartPage() {
                             </h2>
 
                             {!user ? (
-                                <div className="text-center py-8 bg-gray-50 rounded-xl">
-                                    <p className="text-gray-600 mb-4">Please login to enter shipping details</p>
-                                    <Link href="/login?redirect=/cart" className="bg-green-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-green-700 transition-colors inline-block">
-                                        Login to Checkout
+                                <div className="text-center py-8 bg-gradient-to-br from-green-50 to-blue-50 rounded-xl border-2 border-dashed border-green-200">
+                                    <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                                        <ShoppingBag className="h-8 w-8 text-green-600" />
+                                    </div>
+                                    <h3 className="font-bold text-gray-900 mb-2">Ready to checkout?</h3>
+                                    <p className="text-gray-600 mb-4 text-sm">Please login to complete your order</p>
+                                    <Link
+                                        href="/login?redirect=/cart"
+                                        className="inline-block bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition-colors shadow-md hover:shadow-lg"
+                                    >
+                                        Login to Continue
                                     </Link>
                                 </div>
                             ) : (
@@ -498,33 +497,48 @@ export default function CartPage() {
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
-                                <div className="bg-blue-50 p-3 rounded-lg flex items-start gap-3">
-                                    <CreditCard className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                                    <div>
-                                        <p className="text-sm font-bold text-blue-800">Payment Method</p>
-                                        <p className="text-xs text-blue-600">Cash on Delivery (Standard)</p>
-                                    </div>
+                            <div className="bg-blue-50 p-3 rounded-lg flex items-start gap-3">
+                                <CreditCard className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                                <div>
+                                    <p className="text-sm font-bold text-blue-800">Payment Method</p>
+                                    <p className="text-xs text-blue-600">Cash on Delivery (Standard)</p>
                                 </div>
-
-                                <button
-                                    onClick={handleCheckout}
-                                    disabled={placingOrder || !user || addresses.length === 0 || !phoneNumber}
-                                    className="w-full bg-[#2D5A27] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#1e3d1a] transition-all shadow-lg shadow-green-900/10 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed group"
-                                >
-                                    {placingOrder ? "Placing Order..." : (
-                                        <>
-                                            Place Order <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                                        </>
-                                    )}
-                                </button>
-
-                                <p className="text-xs text-gray-400 text-center">
-                                    By placing this order, you agree to our Terms of Service.
-                                </p>
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* Floating Checkout Button */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-2xl z-50 safe-area-bottom">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
+                    <div className="flex items-center justify-between gap-3 md:gap-4">
+                        {/* Total Amount */}
+                        <div className="flex flex-col">
+                            <span className="text-xs text-gray-500 font-medium">Total Amount</span>
+                            <span className="text-xl md:text-2xl font-bold text-green-700">Rs. {total}</span>
+                        </div>
+
+                        {/* Checkout Button */}
+                        <button
+                            onClick={handleCheckout}
+                            disabled={placingOrder || !user || addresses.length === 0 || !phoneNumber}
+                            className="bg-[#2D5A27] text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg hover:bg-[#1e3d1a] transition-all shadow-lg shadow-green-900/20 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed group min-w-[160px] md:min-w-[200px]"
+                        >
+                            {placingOrder ? (
+                                "Placing Order..."
+                            ) : (
+                                <>
+                                    Place Order <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                </>
+                            )}
+                        </button>
+                    </div>
+
+                    {/* Terms text - only show on larger screens */}
+                    <p className="text-xs text-gray-400 text-center mt-2 hidden md:block">
+                        By placing this order, you agree to our Terms of Service.
+                    </p>
                 </div>
             </div>
         </div>

@@ -86,9 +86,9 @@ export default function TaskDetailsModal({ task, onClose, onUpdate }: TaskDetail
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto flex flex-col">
                 {/* Header */}
-                <div className="p-6 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
-                    <div>
-                        <h3 className="text-xl font-bold text-gray-900 line-clamp-1 pr-4">{task.title}</h3>
+                <div className="p-6 border-b border-gray-100 flex items-start justify-between sticky top-0 bg-white z-10 gap-3">
+                    <div className="flex-1 min-w-0">
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 break-words">{task.title}</h3>
                         <div className="flex flex-wrap items-center gap-2 mt-2">
                             <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${getPriorityColor(task.priority)}`}>
                                 {task.priority} Priority

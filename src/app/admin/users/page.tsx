@@ -8,8 +8,13 @@ import { AuthService } from "@/services/auth.service";
 import AddUserModal from "@/components/admin/AddUserModal";
 import EditUserModal from "@/components/admin/EditUserModal";
 import LogoLoader from "@/components/ui/LogoLoader";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function UserManagementPage() {
+    const { dbUser, loading: authLoading } = useAuth();
+    const router = useRouter();
+
     const [users, setUsers] = useState<User[]>([]);
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
@@ -19,8 +24,16 @@ export default function UserManagementPage() {
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
     useEffect(() => {
-        loadUsers();
-    }, []);
+        if (!authLoading && dbUser && dbUser.role !== 'admin') {
+            router.push("/admin");
+        }
+    }, [dbUser, authLoading, router]);
+
+    useEffect(() => {
+        if (dbUser?.role === 'admin') {
+            loadUsers();
+        }
+    }, [dbUser]);
 
     useEffect(() => {
         // Filter users based on search query

@@ -18,9 +18,20 @@ import {
 import Link from "next/link";
 import LogoLoader from "@/components/ui/LogoLoader";
 import BlogPostModal from "@/components/admin/BlogPostModal";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
-export default function AdminBlogPage() {
-    const [posts, setPosts] = useState<BlogPost[]>([]);
+export default function BlogManagementPage() {
+    const { dbUser, loading: authLoading } = useAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!authLoading && dbUser && dbUser.role !== 'admin') {
+            router.push("/admin");
+        }
+    }, [dbUser, authLoading, router]);
+
+    const [posts, setPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [showModal, setShowModal] = useState(false);
@@ -67,7 +78,7 @@ export default function AdminBlogPage() {
 
     const filteredPosts = posts.filter(p =>
         p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.categories.some(c => c.toLowerCase().includes(searchQuery.toLowerCase()))
+        p.categories.some((c: string) => c.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     if (loading) {

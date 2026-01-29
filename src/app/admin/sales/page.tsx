@@ -28,6 +28,7 @@ import LogoLoader from "@/components/ui/LogoLoader";
 type TabType = "All" | "Pending" | TransactionType.Sale | TransactionType.Purchase;
 
 export default function SalesListPage() {
+    const { dbUser } = useAuth();
     const [activeTab, setActiveTab] = useState<TabType>("Pending");
     const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
     const [loading, setLoading] = useState(true);
@@ -52,6 +53,8 @@ export default function SalesListPage() {
         }
     };
 
+    const isManager = dbUser?.role === 'manager';
+
     const filteredTransactions = transactions.filter(t => {
         let matchesTab = true;
         if (activeTab === "Pending") {
@@ -62,6 +65,13 @@ export default function SalesListPage() {
 
         // Show all transactions (removed Delivered-only filter for Sales)
         const isDeliveredSale = true;
+
+        // Manager restrictions: only show pending and undelivered
+        if (isManager) {
+            const isFinished = (t.paymentStatus === PaymentStatus.PaidCash || t.paymentStatus === PaymentStatus.PaidOnline) &&
+                (t.status === OrderStatus.Delivered || t.status === OrderStatus.Cancelled);
+            if (isFinished) return false;
+        }
 
         const matchesSearch = searchQuery === "" ||
             t.billNo.toLowerCase().includes(searchQuery.toLowerCase()) ||

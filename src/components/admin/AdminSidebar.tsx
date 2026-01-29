@@ -12,7 +12,6 @@ import {
     BarChart3,
     Settings,
     LogOut,
-    Sprout,
     Menu,
     X,
     Zap,
@@ -27,11 +26,13 @@ import clsx from "clsx";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 
-
 export default function AdminSidebar() {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const { logout, dbUser } = useAuth();
+
+    const isManager = dbUser?.role === 'manager';
 
     const links = [
         { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -53,7 +54,22 @@ export default function AdminSidebar() {
 
     const isActive = (path: string) => pathname === path || pathname.startsWith(`${path}/`);
 
-    const { logout } = useAuth();
+    const visibleLinks = links.filter(link => {
+        // Restricted for Farm Managers
+        const restrictedForManager = [
+            "/admin/reports",
+            "/admin/blog",
+            "/admin/activities",
+            "/admin/users",
+            "/admin/settings"
+        ];
+
+        if (isManager && restrictedForManager.includes(link.href)) {
+            return false;
+        }
+
+        return true;
+    });
 
     return (
         <>
@@ -105,7 +121,7 @@ export default function AdminSidebar() {
 
                     {/* Nav Links */}
                     <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                        {links.map((link) => {
+                        {visibleLinks.map((link) => {
                             const Icon = link.icon;
                             return (
                                 <Link

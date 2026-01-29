@@ -1,63 +1,307 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
-    ArrowUp,
-    ArrowDown,
     DollarSign,
     ShoppingBag,
-    ClipboardList,
-    Activity,
     Package,
-    Users,
     TrendingUp,
-    Zap
+    Users,
+    Calendar,
+    RefreshCw,
+    Zap,
+    ClipboardList
 } from "lucide-react";
 import Link from "next/link";
+import { DashboardService, DashboardData } from "@/services/dashboard.service";
+import DashboardMetricCard from "@/components/admin/DashboardMetricCard";
+import InventoryAlerts from "@/components/admin/InventoryAlerts";
+import OrderStatusWidget from "@/components/admin/OrderStatusWidget";
+import RevenueChart from "@/components/admin/RevenueChart";
+import { formatMetricValue } from "@/lib/dashboard-utils";
+import { toNepali } from "@/lib/date-helper";
+import { TransactionType } from "@/types";
 
 export default function AdminDashboard() {
+    const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+    const [revenueTrend, setRevenueTrend] = useState<{ date: string; revenue: number }[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+
+    useEffect(() => {
+        loadDashboardData();
+
+        // Auto-refresh every 30 seconds
+        const interval = setInterval(() => {
+            loadDashboardData(true);
+        }, 30000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    const loadDashboardData = async (isRefresh: boolean = false) => {
+        if (isRefresh) {
+            setRefreshing(true);
+        } else {
+            setLoading(true);
+        }
+
+        try {
+            const [data, trend] = await Promise.all([
+                DashboardService.getDashboardData(isRefresh),
+                DashboardService.getRevenueTrend(7)
+            ]);
+            setDashboardData(data);
+            setRevenueTrend(trend);
+            setLastUpdate(new Date());
+        } catch (error) {
+            console.error("Error loading dashboard:", error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    const handleRefresh = () => {
+        DashboardService.clearCache();
+        loadDashboardData(true);
+    };
+
     return (
         <div className="space-y-8 pt-4">
             {/* Header */}
-            <div>
-                <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-gray-500">Welcome back to Greenbird Farm Manager</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Greenbird Dashboard</h1>
+                </div>
+                <div className="flex items-center gap-4">
+                    <div className="text-sm text-gray-500">
+                        Last updated: {lastUpdate.toLocaleTimeString()}
+                    </div>
+                    <button
+                        onClick={handleRefresh}
+                        disabled={refreshing}
+                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    >
+                        <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                        <span className="text-sm font-medium">Refresh</span>
+                    </button>
+                </div>
             </div>
 
-            {/* Financial Overview Cards */}
+            {/* Revenue Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard
+                <DashboardMetricCard
                     title="Today's Sales"
-                    value="Rs 12,500"
-                    change="+15%"
-                    isPositive={true}
+                    value={`Rs ${dashboardData?.todayRevenue.total.toLocaleString() || '0'}`}
+                    change={dashboardData?.todayRevenue.changePercent}
+                    changeLabel="vs yesterday"
                     icon={TrendingUp}
                     color="bg-green-500"
+                    loading={loading}
                 />
-                <StatCard
-                    title="Today's Purchase"
-                    value="Rs 3,200"
-                    change="-5%"
-                    isPositive={true} // Less purchase is technically good? or just neutral.
-                    icon={ArrowDown}
+                <DashboardMetricCard
+                    title="Weekly Revenue"
+                    value={`Rs ${formatMetricValue(dashboardData?.weekRevenue.total || 0)}`}
+                    change={dashboardData?.weekRevenue.changePercent}
+                    changeLabel="vs last week"
+                    icon={DollarSign}
                     color="bg-blue-500"
+                    loading={loading}
                 />
-                <StatCard
+                <DashboardMetricCard
+                    title="Monthly Revenue"
+                    value={`Rs ${formatMetricValue(dashboardData?.monthRevenue.total || 0)}`}
+                    change={dashboardData?.monthRevenue.changePercent}
+                    changeLabel="vs last month"
+                    icon={DollarSign}
+                    color="bg-purple-500"
+                    loading={loading}
+                />
+                <DashboardMetricCard
+                    title="Avg Order Value"
+                    value={`Rs ${Math.round(dashboardData?.monthRevenue.averageOrderValue || 0).toLocaleString()}`}
+                    subtitle="This month"
+                    icon={ShoppingBag}
+                    color="bg-indigo-500"
+                    loading={loading}
+                />
+            </div>
+
+            {/* Actionable Alerts */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <DashboardMetricCard
                     title="Pending Orders"
-                    value="8"
-                    change="Needs Action"
-                    isPositive={false}
+                    value={dashboardData?.orderStats.open || 0}
+                    subtitle="Needs action"
                     icon={ShoppingBag}
                     color="bg-orange-500"
                     href="/admin/orders"
+                    loading={loading}
                 />
-                <StatCard
+                <DashboardMetricCard
                     title="Low Stock Items"
-                    value="3"
-                    change="Restock"
-                    isPositive={false}
+                    value={dashboardData?.lowStock || 0}
+                    subtitle="Restock needed"
                     icon={Package}
                     color="bg-red-500"
+                    href="/admin/inventory"
+                    loading={loading}
                 />
+                <DashboardMetricCard
+                    title="Receivable"
+                    value={`Rs ${Math.round(dashboardData?.orderStats.pendingReceivable || 0).toLocaleString()}`}
+                    subtitle={`${dashboardData?.orderStats.pendingPayment || 0} pending orders`}
+                    icon={DollarSign}
+                    color="bg-green-500"
+                    href="/admin/orders"
+                    loading={loading}
+                />
+                <DashboardMetricCard
+                    title="Payable"
+                    value={`Rs ${Math.round(dashboardData?.orderStats.pendingPayable || 0).toLocaleString()}`}
+                    subtitle="Pending purchases"
+                    icon={DollarSign}
+                    color="bg-red-500"
+                    href="/admin/purchases"
+                    loading={loading}
+                />
+                <DashboardMetricCard
+                    title="Due Today"
+                    value={dashboardData?.orderStats.dueToday || 0}
+                    subtitle="Delivery scheduled"
+                    icon={Calendar}
+                    color="bg-cyan-500"
+                    href="/admin/orders"
+                    loading={loading}
+                />
+            </div>
+
+            {/* Revenue Chart */}
+            <RevenueChart data={revenueTrend} loading={loading} />
+
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Order Status Widget */}
+                <OrderStatusWidget
+                    stats={dashboardData?.orderStats || {
+                        total: 0,
+                        open: 0,
+                        accepted: 0,
+                        delivered: 0,
+                        cancelled: 0,
+                        pendingPayment: 0,
+                        pendingReceivable: 0,
+                        pendingPayable: 0,
+                        dueToday: 0
+                    }}
+                    loading={loading}
+                />
+
+                {/* Inventory Alerts */}
+                <InventoryAlerts
+                    alerts={dashboardData?.inventoryAlerts || []}
+                    loading={loading}
+                />
+            </div>
+
+            {/* Top Products & Recent Activity */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Top Products */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="flex items-center gap-2">
+                            <TrendingUp className="h-5 w-5 text-gray-400" />
+                            <h3 className="font-bold text-gray-900">Top Products (This Month)</h3>
+                        </div>
+                        <Link href="/admin/reports" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                            View Report
+                        </Link>
+                    </div>
+                    {loading ? (
+                        <div className="space-y-4">
+                            {[1, 2, 3, 4, 5].map(i => (
+                                <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse"></div>
+                            ))}
+                        </div>
+                    ) : dashboardData?.topProducts && dashboardData.topProducts.length > 0 ? (
+                        <div className="space-y-4">
+                            {dashboardData.topProducts.map((product, index) => (
+                                <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center justify-center w-8 h-8 bg-green-100 text-green-700 rounded-full font-bold text-sm">
+                                            {index + 1}
+                                        </div>
+                                        <div>
+                                            <p className="font-medium text-gray-900">{product.productName}</p>
+                                            <p className="text-xs text-gray-500">{product.quantitySold} units sold</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-bold text-green-600">Rs {product.revenue.toLocaleString()}</p>
+                                        <p className="text-xs text-gray-500">{product.orderCount} orders</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-12 text-gray-500">
+                            <Package className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                            <p>No sales data available</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Recent Transactions */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="flex items-center gap-2">
+                            <ShoppingBag className="h-5 w-5 text-gray-400" />
+                            <h3 className="font-bold text-gray-900">Recent Transactions</h3>
+                        </div>
+                        <Link href="/admin/sales" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                            View All
+                        </Link>
+                    </div>
+                    {loading ? (
+                        <div className="space-y-4">
+                            {[1, 2, 3, 4, 5].map(i => (
+                                <div key={i} className="h-16 bg-gray-100 rounded-lg animate-pulse"></div>
+                            ))}
+                        </div>
+                    ) : dashboardData?.recentTransactions && dashboardData.recentTransactions.length > 0 ? (
+                        <div className="space-y-4">
+                            {dashboardData.recentTransactions.slice(0, 5).map((transaction) => {
+                                const total = transaction.items.reduce((sum, item) => sum + item.totalPrice, 0) - (transaction.discount || 0);
+                                const isSale = transaction.type === TransactionType.Sale;
+                                return (
+                                    <div key={transaction.id} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
+                                        <div className="flex items-center space-x-3">
+                                            <div className={`h-10 w-10 ${isSale ? 'bg-green-50' : 'bg-blue-50'} rounded-full flex items-center justify-center ${isSale ? 'text-green-600' : 'text-blue-600'} font-bold`}>
+                                                {isSale ? 'S' : 'P'}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-900">{transaction.billNo}</p>
+                                                <p className="text-xs text-gray-500">
+                                                    {transaction.partyName} • {toNepali(transaction.date, "DD MMM")}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span className={`font-bold ${isSale ? 'text-green-600' : 'text-blue-600'}`}>
+                                            {isSale ? '+' : '-'} Rs {total.toLocaleString()}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="text-center py-12 text-gray-500">
+                            <ShoppingBag className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                            <p>No recent transactions</p>
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Quick Access Grid */}
@@ -71,83 +315,11 @@ export default function AdminDashboard() {
                     <QuickLink href="/admin/sales" label="Sales" icon={DollarSign} color="bg-green-100 text-green-700" />
                     <QuickLink href="/admin/energy" label="Energy" icon={Zap} color="bg-yellow-100 text-yellow-700" />
                     <QuickLink href="/admin/partners" label="Partners" icon={Users} color="bg-indigo-100 text-indigo-700" />
-                </div>
-            </div>
-
-            {/* Recent Activity / Pending List Split */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Recent Sales Placeholder */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="font-bold text-gray-900">Recent Transactions</h3>
-                        <Link href="/admin/sales" className="text-sm text-blue-600 hover:text-blue-700">View All</Link>
-                    </div>
-                    <div className="space-y-4">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
-                                <div className="flex items-center space-x-3">
-                                    <div className="h-10 w-10 bg-green-50 rounded-full flex items-center justify-center text-green-600 font-bold">
-                                        S
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-900">Vegetable Box Sales</p>
-                                        <p className="text-xs text-gray-500">Today, 10:30 AM</p>
-                                    </div>
-                                </div>
-                                <span className="font-bold text-gray-900">+ Rs 450</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Pending Tasks Placeholder */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="font-bold text-gray-900">Pending Tasks</h3>
-                        <Link href="/admin/tasks" className="text-sm text-blue-600 hover:text-blue-700">View All</Link>
-                    </div>
-                    <div className="space-y-4">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div className="flex items-center space-x-3">
-                                    <div className={`h-2 w-2 rounded-full ${i === 1 ? 'bg-red-500' : 'bg-yellow-500'}`} />
-                                    <span className="text-sm text-gray-700">Feed the goats (Morning)</span>
-                                </div>
-                                <span className="text-xs px-2 py-1 bg-white rounded border border-gray-200 text-gray-500">Due Today</span>
-                            </div>
-                        ))}
-                    </div>
+                    <QuickLink href="/admin/reports" label="Reports" icon={TrendingUp} color="bg-pink-100 text-pink-700" />
                 </div>
             </div>
         </div>
     );
-}
-
-function StatCard({ title, value, change, isPositive, icon: Icon, color, href }: any) {
-    const content = (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-start justify-between h-full">
-            <div>
-                <p className="text-sm font-medium text-gray-500">{title}</p>
-                <h3 className="text-2xl font-bold text-gray-900 mt-2">{value}</h3>
-                <p className={`text-xs font-medium mt-1 ${isPositive ? 'text-green-600' : 'text-red-500'}`}>
-                    {change}
-                </p>
-            </div>
-            <div className={`p-3 rounded-lg ${color} text-white`}>
-                <Icon className="h-6 w-6" />
-            </div>
-        </div>
-    );
-
-    if (href) {
-        return (
-            <Link href={href} className="block transition-transform hover:-translate-y-1">
-                {content}
-            </Link>
-        );
-    }
-
-    return content;
 }
 
 function QuickLink({ href, label, icon: Icon, color }: any) {

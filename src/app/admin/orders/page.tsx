@@ -25,6 +25,7 @@ import LogoLoader from "@/components/ui/LogoLoader";
 type TabStatus = OrderStatus;
 
 export default function AdminOrdersPage() {
+    const { dbUser } = useAuth();
     const [activeTab, setActiveTab] = useState<TabStatus>(OrderStatus.Open);
     const [orders, setOrders] = useState<TransactionRecord[]>([]);
     const [loading, setLoading] = useState(true);
@@ -51,8 +52,16 @@ export default function AdminOrdersPage() {
         }
     };
 
+    const isManager = dbUser?.role === 'manager';
+
     const filteredOrders = orders.filter(order => {
         const matchesStatus = order.status === activeTab;
+
+        // Manager restrictions: only show undelivered
+        if (isManager && (order.status === OrderStatus.Delivered || order.status === OrderStatus.Cancelled)) {
+            return false;
+        }
+
         const matchesSearch = searchQuery === "" ||
             order.billNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
             order.partyName.toLowerCase().includes(searchQuery.toLowerCase());
@@ -86,12 +95,17 @@ export default function AdminOrdersPage() {
         return getDeiveryTime(a) - getDeiveryTime(b);
     });
 
-    const tabs: { label: string; status: TabStatus; count: number }[] = [
+    const tabs = [
         { label: "Open", status: OrderStatus.Open, count: orders.filter(o => o.status === OrderStatus.Open).length },
         { label: "Accepted", status: OrderStatus.Accepted, count: orders.filter(o => o.status === OrderStatus.Accepted).length },
         { label: "Delivered", status: OrderStatus.Delivered, count: orders.filter(o => o.status === OrderStatus.Delivered).length },
         { label: "Cancelled", status: OrderStatus.Cancelled, count: orders.filter(o => o.status === OrderStatus.Cancelled).length },
-    ];
+    ].filter(tab => {
+        if (isManager && (tab.status === OrderStatus.Delivered || tab.status === OrderStatus.Cancelled)) {
+            return false;
+        }
+        return true;
+    });
 
     const selectedOrder = orders.find(o => o.id === selectedOrderId);
 
@@ -334,6 +348,7 @@ function OrderDetailsModal({
     const [showPaymentDialog, setShowPaymentDialog] = useState(false);
     const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'Online'>('Cash');
     const { dbUser } = useAuth();
+    const isManager = dbUser?.role === 'manager';
 
     // Edit Mode State
     const [isEditing, setIsEditing] = useState(false);
@@ -532,13 +547,15 @@ function OrderDetailsModal({
                     </div>
                     <div className="flex items-center gap-2">
                         {!isEditing ? (
-                            <button
-                                onClick={() => setIsEditing(true)}
-                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg flex items-center gap-2 transition-colors"
-                            >
-                                <Edit2 className="h-4 w-4" />
-                                <span className="text-sm font-medium">Edit Order</span>
-                            </button>
+                            !isManager && (
+                                <button
+                                    onClick={() => setIsEditing(true)}
+                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg flex items-center gap-2 transition-colors"
+                                >
+                                    <Edit2 className="h-4 w-4" />
+                                    <span className="text-sm font-medium">Edit Order</span>
+                                </button>
+                            )
                         ) : (
                             <div className="flex items-center gap-2">
                                 <button
@@ -682,6 +699,7 @@ function OrderDetailsModal({
                                             onStatusChange={handleStatusChange}
                                             isUpdating={isUpdating}
                                             onCancelClick={() => setShowCancelDialog(true)}
+                                            disabled={isManager}
                                         />
                                     </div>
                                     <div>
@@ -693,6 +711,7 @@ function OrderDetailsModal({
                                                 (order.paymentStatus === PaymentStatus.PaidCash || order.paymentStatus === PaymentStatus.PaidOnline) ? "green" :
                                                     (order.paymentStatus === PaymentStatus.PartialCash || order.paymentStatus === PaymentStatus.PartialOnline) ? "orange" : "red"
                                             }
+                                            disabled={isManager}
                                         />
                                     </div>
                                 </div>
@@ -927,8 +946,8 @@ function OrderDetailsModal({
                         </div>
                     )}
 
-                    {/* Add Payment Section - Only show if not editing */}
-                    {!isEditing && order.paymentStatus !== PaymentStatus.PaidCash && order.paymentStatus !== PaymentStatus.PaidOnline && (
+                    {/* Add Payment Section - Only show if not editing and NOT a manager */}
+                    {!isEditing && !isManager && order.paymentStatus !== PaymentStatus.PaidCash && order.paymentStatus !== PaymentStatus.PaidOnline && (
                         <div className="bg-green-50 rounded-xl p-5 border border-green-100">
                             <div className="flex items-center gap-2 mb-4">
                                 <CreditCard className="h-5 w-5 text-green-700" />

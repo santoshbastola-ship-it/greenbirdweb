@@ -5,8 +5,12 @@ import { SettingsService } from "@/services/settings.service";
 import { AppSettings } from "@/types";
 import { Save, RefreshCcw, Truck, Percent, IndianRupee, AlertCircle } from "lucide-react";
 import LogoLoader from "@/components/ui/LogoLoader";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function AdminSettingsPage() {
+    const { dbUser, loading: authLoading } = useAuth();
+    const router = useRouter();
     const [settings, setSettings] = useState<AppSettings | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -14,8 +18,16 @@ export default function AdminSettingsPage() {
     const [success, setSuccess] = useState(false);
 
     useEffect(() => {
-        loadSettings();
-    }, []);
+        if (!authLoading && dbUser && dbUser.role !== 'admin') {
+            router.push("/admin");
+        }
+    }, [dbUser, authLoading, router]);
+
+    useEffect(() => {
+        if (dbUser?.role === 'admin') {
+            loadSettings();
+        }
+    }, [dbUser]);
 
     const loadSettings = async () => {
         setLoading(true);

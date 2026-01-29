@@ -111,12 +111,20 @@ export default function TasksPage() {
         const matchesEndDate = !endDate || taskDate <= new Date(new NepaliDate(endDate).toJsDate().setHours(23, 59, 59, 999));
 
         // My Tasks Filter
+        // Role-based filtering for Managers
+        const isManager = dbUser?.role === 'manager';
+        let matchesRole = true;
+        if (isManager && dbUser?.name) {
+            const isAssignedToMe = !!task.assignedTo && task.assignedTo.toLowerCase().includes(dbUser.name.toLowerCase());
+            const isCreatedByMe = !!task.createdBy && (task.createdBy.toLowerCase().includes(dbUser.name.toLowerCase()) || task.createdBy === dbUser.id);
+            matchesRole = isAssignedToMe || isCreatedByMe;
+        }
+
         let matchesMyTasks = true;
         if (showMyTasksOnly && dbUser?.name) {
             matchesMyTasks = !!task.assignedTo && task.assignedTo.toLowerCase().includes(dbUser.name.toLowerCase());
         }
-
-        return matchesStatus && matchesSearch && matchesStartDate && matchesEndDate && matchesMyTasks;
+        return matchesStatus && matchesSearch && matchesStartDate && matchesEndDate && matchesMyTasks && matchesRole;
     }).sort((a, b) => {
         // Sort: Done at bottom if in "All" view?? Or just standard sort?
         // Let's keep standard sort: Priority -> Date
@@ -298,8 +306,8 @@ function TaskCard({ task, onClick, onToggleStatus, isCompleting }: { task: TaskI
                         {isDone ? <CheckCircle className="h-5 w-5" /> : <PriorityIcon className="h-5 w-5" />}
                     </button>
 
-                    <div>
-                        <h3 className={`font-bold text-gray-900 text-lg line-clamp-1 ${isDone ? 'line-through text-gray-500' : ''}`}>
+                    <div className="flex-1 min-w-0">
+                        <h3 className={`font-bold text-gray-900 text-base sm:text-lg break-words ${isDone ? 'line-through text-gray-500' : ''}`}>
                             {task.title}
                         </h3>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 mt-1">

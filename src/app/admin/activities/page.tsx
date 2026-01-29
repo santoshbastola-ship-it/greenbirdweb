@@ -7,15 +7,33 @@ import { getActivities, deleteActivity, updateActivityStatus } from "@/lib/servi
 import LogoLoader from "@/components/ui/LogoLoader";
 import ActivityCard from "@/components/admin/ActivityCard";
 import AddActivityModal from "@/components/admin/AddActivityModal";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
-export default function ActivitiesAdminPage() {
-    const [activities, setActivities] = useState<FarmActivity[]>([]);
+export default function ActivitiesPage() {
+    const { dbUser, loading: authLoading } = useAuth();
+    const router = useRouter();
+
+    const [activities, setActivities] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     useEffect(() => {
-        loadActivities();
-    }, []);
+        if (!authLoading && dbUser && dbUser.role !== 'admin') {
+            router.push("/admin");
+        }
+    }, [dbUser, authLoading, router]);
+
+    useEffect(() => {
+        // Only load activities if authentication is resolved and user is an admin
+        if (!authLoading && dbUser && dbUser.role === 'admin') {
+            loadActivities();
+        } else if (!authLoading && !dbUser) {
+            // If auth is resolved and no user, or user is not admin, and redirect hasn't happened
+            // This case might be handled by the redirect useEffect, but good to consider.
+            // For now, rely on the redirect useEffect.
+        }
+    }, [authLoading, dbUser]); // Depend on authLoading and dbUser
 
     const loadActivities = async () => {
         try {

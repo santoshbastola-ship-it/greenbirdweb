@@ -7,8 +7,6 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import CartBadge from "./CartBadge";
 
-import CheckoutButton from "./CheckoutButton";
-
 import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
@@ -89,13 +87,10 @@ export default function Navbar() {
                     {/* Right Icons */}
                     <div className="flex items-center space-x-4">
                         {user && (
-                            <>
-                                <CheckoutButton />
-                                <Link href="/cart" className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
-                                    <ShoppingCart className="h-5 w-5" />
-                                    <CartBadge />
-                                </Link>
-                            </>
+                            <Link href="/cart" className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+                                <ShoppingCart className="h-5 w-5" />
+                                <CartBadge />
+                            </Link>
                         )}
 
                         {user ? (

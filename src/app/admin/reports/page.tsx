@@ -9,8 +9,12 @@ import { UserService } from "@/services/user.service";
 import ReportFilters from "@/components/admin/reports/ReportFilters";
 import ReportDisplay from "@/components/admin/reports/ReportDisplay";
 import { toNepali } from "@/lib/date-helper";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function ReportsPage() {
+    const { dbUser, loading: authLoading } = useAuth();
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     const [reportGenerated, setReportGenerated] = useState(false);
     const [currentFilters, setCurrentFilters] = useState<any>(null);
@@ -28,8 +32,16 @@ export default function ReportsPage() {
     const [vendors, setVendors] = useState<User[]>([]);
 
     useEffect(() => {
-        loadFilterData();
-    }, []);
+        if (!authLoading && dbUser && dbUser.role !== 'admin') {
+            router.push("/admin");
+        }
+    }, [dbUser, authLoading, router]);
+
+    useEffect(() => {
+        if (dbUser?.role === 'admin') {
+            loadFilterData();
+        }
+    }, [dbUser]);
 
     const loadFilterData = async () => {
         try {

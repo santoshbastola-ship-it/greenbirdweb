@@ -1,5 +1,6 @@
 import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import FooterWrapper from "@/components/layout/FooterWrapper";
+import FloatingCheckoutButton from "@/components/ui/FloatingCheckoutButton";
 
 export default function PublicLayout({
     children,
@@ -12,7 +13,10 @@ export default function PublicLayout({
             <main className="flex-grow">
                 {children}
             </main>
-            <Footer />
+            <FooterWrapper />
+
+            {/* Floating Checkout Button for Mobile - Persists across all pages */}
+            <FloatingCheckoutButton />
         </>
     );
 }

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { User, onAuthStateChanged } from "firebase/auth";
+import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase";
 import { UserService } from "@/services/user.service";
 import { AuthService } from "@/services/auth.service";
@@ -33,6 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [dbUser, setDbUser] = useState<AppUser | null>(null);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
 
     const refreshDbUser = async (uid?: string) => {
         const targetUid = uid || user?.uid;
@@ -86,6 +88,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             await AuthService.signOut();
             setUser(null);
             setDbUser(null);
+            router.push('/');
         } catch (error: any) {
             console.error("Logout error:", error);
             throw error;

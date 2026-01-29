@@ -7,6 +7,7 @@ interface OrderStatusDropdownProps {
     onStatusChange: (status: OrderStatus) => void;
     isUpdating: boolean;
     onCancelClick: () => void;
+    disabled?: boolean;
 }
 
 export default function OrderStatusDropdown({
@@ -14,6 +15,7 @@ export default function OrderStatusDropdown({
     onStatusChange,
     isUpdating,
     onCancelClick,
+    disabled = false,
 }: OrderStatusDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -34,16 +36,16 @@ export default function OrderStatusDropdown({
     return (
         <div className={`relative ${isOpen ? 'z-40' : 'z-0'}`}>
             <button
-                onClick={() => !isCancelled && setIsOpen(!isOpen)}
-                disabled={isUpdating || isCancelled}
-                className={`flex items-center gap-2 px-3 py-1 rounded-full border font-semibold text-sm transition-all ${colors.bg} ${colors.text} ${colors.border} ${isCancelled ? 'cursor-not-allowed opacity-75' : 'hover:opacity-80'} disabled:opacity-50`}
-                title={isCancelled ? "Cancelled orders cannot be modified" : ""}
+                onClick={() => !isCancelled && !disabled && setIsOpen(!isOpen)}
+                disabled={isUpdating || isCancelled || disabled}
+                className={`flex items-center gap-2 px-3 py-1 rounded-full border font-semibold text-sm transition-all ${colors.bg} ${colors.text} ${colors.border} ${(isCancelled || disabled) ? 'cursor-not-allowed opacity-75' : 'hover:opacity-80'} disabled:opacity-50`}
+                title={isCancelled ? "Cancelled orders cannot be modified" : disabled ? "You don't have permission to modify order status" : ""}
             >
                 <span>{currentStatus}</span>
-                {!isCancelled && <ChevronDown className="h-4 w-4" />}
+                {(!isCancelled && !disabled) && <ChevronDown className="h-4 w-4" />}
             </button>
 
-            {isOpen && !isCancelled && (
+            {isOpen && !isCancelled && !disabled && (
                 <>
                     <div className="fixed inset-0 z-30" onClick={() => setIsOpen(false)} />
                     <div className="absolute left-0 md:left-auto right-auto md:right-0 bottom-full mb-1 md:bottom-auto md:top-full md:mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
