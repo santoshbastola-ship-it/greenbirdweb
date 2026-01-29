@@ -25,6 +25,7 @@ const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(
 });
 
 import "nepali-datepicker-reactjs/dist/index.css";
+import LogoLoader from "@/components/ui/LogoLoader";
 
 type TabStatus = "Pending" | "Partial" | "Paid" | "All";
 
@@ -134,7 +135,7 @@ export default function EnergyBillsPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+                <LogoLoader />
             </div>
         );
     }

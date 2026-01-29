@@ -51,7 +51,7 @@ export default function AdminHeader() {
                                 className="fixed inset-0 z-10"
                                 onClick={() => setIsMenuOpen(false)}
                             />
-                            <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                            <div className="absolute left-0 md:left-auto md:right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
                                 <div className="px-4 py-2 border-b border-gray-50 mb-1">
                                     <p className="text-xs text-gray-400 font-medium">Signed in as</p>
                                     <p className="text-sm font-bold text-gray-900 truncate">{user?.email}</p>

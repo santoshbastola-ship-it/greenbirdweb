@@ -7,7 +7,9 @@ interface ShareableBillProps {
 }
 
 const ShareableBill = forwardRef<HTMLDivElement, ShareableBillProps>(({ transaction }, ref) => {
-    const totalAmount = transaction.items.reduce((sum, item) => sum + item.totalPrice, 0) - (transaction.discount || 0);
+    const subtotal = transaction.items.reduce((sum, item) => sum + item.totalPrice, 0);
+    const deliveryFee = transaction.deliveryFee || 0;
+    const totalAmount = subtotal - (transaction.discount || 0) + deliveryFee;
     const paidAmount = transaction.paidAmount || 0;
     const remaining = totalAmount - paidAmount;
 
@@ -81,7 +83,7 @@ const ShareableBill = forwardRef<HTMLDivElement, ShareableBillProps>(({ transact
             <div className="bg-gray-50 rounded-lg p-4 mb-8">
                 <div className="flex justify-between mb-2">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="font-medium">Rs. {(totalAmount + (transaction.discount || 0)).toLocaleString()}</span>
+                    <span className="font-medium">Rs. {subtotal.toLocaleString()}</span>
                 </div>
                 {transaction.discount > 0 && (
                     <div className="flex justify-between mb-2 text-green-600">
@@ -89,6 +91,16 @@ const ShareableBill = forwardRef<HTMLDivElement, ShareableBillProps>(({ transact
                         <span>- Rs. {transaction.discount.toLocaleString()}</span>
                     </div>
                 )}
+
+                <div className="flex justify-between mb-2">
+                    <span className="text-gray-600">Delivery Fee</span>
+                    {deliveryFee > 0 ? (
+                        <span className="font-medium">Rs. {deliveryFee.toLocaleString()}</span>
+                    ) : (
+                        <span className="font-bold text-green-600">Free</span>
+                    )}
+                </div>
+
                 <div className="border-t border-gray-200 my-2 pt-2 flex justify-between items-center">
                     <span className="font-bold text-gray-900 text-lg">Total Amount</span>
                     <span className="font-bold text-gray-900 text-xl">Rs. {totalAmount.toLocaleString()}</span>

@@ -15,7 +15,9 @@ import {
     Sprout,
     Tractor,
     Bird,
-    Box
+    Box,
+    Home,
+    ShoppingCart
 } from "lucide-react";
 import StockUpdateModal from "@/components/admin/StockUpdateModal";
 import StockHistoryModal from "@/components/admin/StockHistoryModal";
@@ -23,6 +25,7 @@ import AdvancedSearch from "@/components/admin/AdvancedSearch";
 import { toNepali } from "@/lib/date-helper";
 import NepaliDate from "nepali-date-converter";
 import { Calendar, Clock, DollarSign, ChevronRight } from "lucide-react";
+import LogoLoader from "@/components/ui/LogoLoader";
 
 type TabStatus = BusinessType | "ALL";
 
@@ -122,16 +125,15 @@ export default function InventoryPage() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8 pt-4">
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Product & Price</h1>
-                    <p className="text-gray-500">Manage your farm products, crops, and assets</p>
                 </div>
                 <Link
                     href="/admin/inventory/add"
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm font-medium"
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm font-medium whitespace-nowrap"
                 >
                     <Plus className="h-5 w-5" />
                     Add Product
@@ -178,7 +180,7 @@ export default function InventoryPage() {
             {/* Products List */}
             {loading ? (
                 <div className="flex items-center justify-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+                    <LogoLoader />
                 </div>
             ) : filteredProducts.length === 0 ? (
                 <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-100">
@@ -234,85 +236,74 @@ function ProductCard({
 }) {
     // Determine stock status color
     const isLowStock = product.currentStock <= 10;
-    const stockColorClass = isLowStock ? "text-red-600 bg-red-50" : "text-green-600 bg-green-50";
-
-    const lastUpdated = product.stockHistory && product.stockHistory.length > 0
-        ? new Date(product.stockHistory[0].date)
-        : (product.createdAt ? new Date(product.createdAt) : null);
-
-    const formattedDate = lastUpdated ? toNepali(lastUpdated, "DD MMM YYYY") : "N/A";
+    const stockColorClass = isLowStock
+        ? "text-red-700 bg-red-50 border border-red-200"
+        : "text-green-700 bg-green-50 border border-green-200";
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between gap-4">
-                {/* Left: Image and Info */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 hover:shadow-md transition-all duration-200">
+            <div className="flex items-center justify-between gap-3">
+                {/* Left Section: Image & Basic Info */}
                 <Link
                     href={`/admin/inventory/edit/${product.id}`}
-                    className="min-w-0 flex items-center gap-4 flex-1"
+                    className="flex items-center gap-3 flex-1 min-w-0 group"
                 >
-                    <div className="h-16 w-16 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden shadow-inner border border-gray-50 text-center flex items-center justify-center">
+                    <div className="h-10 w-10 flex-shrink-0 bg-gray-50 rounded-lg overflow-hidden border border-gray-100 flex items-center justify-center">
                         {product.images?.[0] ? (
                             <img
-                                className="h-16 w-16 object-cover"
+                                className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
                                 src={product.images[0]}
                                 alt={product.name}
                             />
                         ) : (
-                            <Package className="h-8 w-8 text-gray-300" />
+                            <Package className="h-5 w-5 text-gray-400" />
                         )}
                     </div>
-                    <div className="flex-1">
+                    <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                            <h3 className="font-bold text-gray-900 text-lg block truncate">
+                            <h3 className="font-semibold text-gray-900 text-sm truncate">
                                 {product.name}
                             </h3>
-                            <div className="p-1.5 rounded-lg bg-gray-50 border border-gray-100">
-                                {icon}
-                            </div>
                         </div>
                         {product.description && (
-                            <p className="text-xs text-gray-400 mt-1 line-clamp-1 max-w-[200px]">
+                            <div className="text-xs text-gray-500 truncate">
                                 {product.description}
-                            </p>
+                            </div>
                         )}
                     </div>
                 </Link>
 
-                {/* Middle: Stock (Hidden on small mobile) */}
-                <div className="hidden sm:block flex-1 px-4 text-center">
-                    <div className="inline-flex flex-col items-center">
-                        <button
-                            onClick={onStockUpdate}
-                            className={`px-3 py-1 rounded-full text-xs font-bold shadow-sm transition-all hover:scale-105 ${stockColorClass}`}
-                        >
-                            {product.currentStock} {product.unit}
-                        </button>
-                        <span className="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-semibold">Current Stock</span>
-                    </div>
-                </div>
-
-                {/* Right: Price */}
-                <div className="flex items-center gap-6">
-                    <div className="text-right whitespace-nowrap">
-                        <div className="text-lg font-bold text-green-600">
-                            Rs. {product.currentPrice.toLocaleString()}
-                        </div>
-                        <div className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
-                            Per {product.unit}
+                {/* Right Section: Price & Stock */}
+                <div className="flex items-center gap-3 flex-shrink-0">
+                    {/* Price */}
+                    <div className="text-right">
+                        <div className="text-sm font-bold text-gray-900">
+                            Rs. {product.currentPrice.toLocaleString()} <span className="text-xs text-gray-500 font-normal">/ {product.priceUnit}</span>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            {/* Mobile Stock Info */}
-            <div className="sm:hidden mt-3 pt-3 border-t border-gray-50 flex justify-between items-center text-xs">
-                <span className="text-gray-500">Stock:</span>
-                <button
-                    onClick={onStockUpdate}
-                    className={`px-2 py-0.5 rounded-full font-bold ${stockColorClass}`}
-                >
-                    {product.currentStock} {product.unit}
-                </button>
+                    {/* Status Icons */}
+                    <div className="flex items-center gap-1">
+                        <div title={product.isAvailableForSale ? "Available for Sale" : "Not for Sale"}>
+                            <ShoppingCart className={`h-4 w-4 ${product.isAvailableForSale ? "text-green-600" : "text-gray-300"}`} />
+                        </div>
+                        <div title={product.isFeatured ? "Featured on Home" : "Not Featured"}>
+                            <Home className={`h-4 w-4 ${product.isFeatured ? "text-blue-600" : "text-gray-300"}`} />
+                        </div>
+                    </div>
+
+                    {/* Stock Pill */}
+                    <button
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onStockUpdate();
+                        }}
+                        className={`px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap transition-transform active:scale-95 ${stockColorClass}`}
+                    >
+                        {product.currentStock} {product.unit}
+                    </button>
+                </div>
             </div>
         </div>
     );

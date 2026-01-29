@@ -8,6 +8,7 @@ import { UserService } from "@/services/user.service";
 import { AuthService } from "@/services/auth.service";
 import AddUserModal from "@/components/admin/AddUserModal";
 import EditUserModal from "@/components/admin/EditUserModal";
+import LogoLoader from "@/components/ui/LogoLoader";
 
 export default function UserManagementPage() {
     const [users, setUsers] = useState<User[]>([]);
@@ -163,11 +164,11 @@ export default function UserManagementPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="space-y-8">
             {/* Header */}
             <div className="bg-white border-b sticky top-0 z-10">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
+                    <div className="flex items-center justify-between h-14">
                         <div className="flex items-center gap-4">
                             <Link
                                 href="/admin"
@@ -182,7 +183,7 @@ export default function UserManagementPage() {
             </div>
 
             {/* Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-8">
                 {/* Search Bar */}
                 <div className="mb-6">
                     <div className="relative">
@@ -208,7 +209,7 @@ export default function UserManagementPage() {
                 {/* User List */}
                 {isLoading ? (
                     <div className="flex justify-center items-center py-12">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                        <LogoLoader />
                     </div>
                 ) : filteredUsers.length === 0 ? (
                     <div className="text-center py-12">

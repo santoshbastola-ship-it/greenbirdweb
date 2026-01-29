@@ -155,7 +155,7 @@ export default function NewPurchasePage() {
             const adDate = nepaliDate.toJsDate();
 
             await TransactionService.createTransaction({
-                billNo: "PUR-" + Math.floor(Math.random() * 1000000).toString().padStart(6, '0'),
+                billNo: "PR-" + Math.floor(Math.random() * 1000000).toString().padStart(6, '0'),
                 type: TransactionType.Purchase,
                 items: items,
                 customerId: selectedVendor.id,
@@ -218,7 +218,6 @@ export default function NewPurchasePage() {
                     </Link>
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">New Purchase</h1>
-                        <p className="text-sm text-gray-500">Record a new stock purchase entry</p>
                     </div>
                 </div>
                 <button
@@ -226,7 +225,7 @@ export default function NewPurchasePage() {
                     disabled={loading || items.length === 0}
                     className="flex items-center gap-2 px-6 py-2.5 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    {loading ? "Processing..." : <><Save className="h-5 w-5" /> Record Purchase</>}
+                    {loading ? "Processing..." : <><Save className="h-5 w-5" /> Save Purchase</>}
                 </button>
             </div>
 
@@ -373,7 +372,7 @@ export default function NewPurchasePage() {
                                             <div>
                                                 <h4 className="font-bold text-gray-900">{item.productName}</h4>
                                                 <p className="text-xs text-gray-500">
-                                                    {item.quantity} {item.unit} @ Rs {(item.totalPrice / item.quantity).toFixed(0)}
+                                                    {item.quantity} {item.unit}
                                                 </p>
                                             </div>
                                             <div className="flex items-center gap-3">
@@ -481,16 +480,27 @@ export default function NewPurchasePage() {
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Vendor Modal */}
-            {showAddVendor && (
-                <AddPartnerModal
-                    partnerType="vendor"
-                    onClose={() => setShowAddVendor(false)}
-                    onAdd={handleAddVendor}
-                />
-            )}
+                {/* Bottom Save Button */}
+                <div className="flex justify-end pt-4">
+                    <button
+                        onClick={handleSave}
+                        disabled={loading || items.length === 0}
+                        className="w-full md:w-auto flex items-center justify-center gap-2 px-12 py-4 bg-red-600 text-white rounded-2xl font-black text-lg hover:bg-red-700 transition-all shadow-xl shadow-red-900/10 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+                    >
+                        {loading ? "Processing..." : <><Save className="h-6 w-6" /> Save Purchase</>}
+                    </button>
+                </div>
+
+                {/* Vendor Modal */}
+                {showAddVendor && (
+                    <AddPartnerModal
+                        partnerType="vendor"
+                        onClose={() => setShowAddVendor(false)}
+                        onAdd={handleAddVendor}
+                    />
+                )}
+            </div>
         </div>
     );
 }

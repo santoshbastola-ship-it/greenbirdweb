@@ -20,6 +20,7 @@ import OrderPartialPaymentDialog from "@/components/admin/OrderPartialPaymentDia
 import { useAuth } from "@/context/AuthContext";
 import { ProductService } from "@/services/product.service";
 import AdvancedSearch from "@/components/admin/AdvancedSearch";
+import LogoLoader from "@/components/ui/LogoLoader";
 
 type TabStatus = OrderStatus;
 
@@ -95,7 +96,7 @@ export default function AdminOrdersPage() {
     const selectedOrder = orders.find(o => o.id === selectedOrderId);
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="space-y-8 pt-4">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-8">Order Management</h1>
 
@@ -139,7 +140,7 @@ export default function AdminOrdersPage() {
                 {/* Orders List */}
                 {loading ? (
                     <div className="text-center py-20">
-                        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-green-600 border-r-transparent"></div>
+                        <LogoLoader />
                         <p className="mt-4 text-gray-500">Loading orders...</p>
                     </div>
                 ) : filteredOrders.length === 0 ? (

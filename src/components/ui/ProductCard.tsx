@@ -51,7 +51,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                         <span className="text-sm font-bold text-[#2D5A27]">
                             Rs. {product.currentPrice}
                         </span>
-                        <span className="text-xs text-[#2D5A27]/70 ml-1">/{product.unit}</span>
+                        <span className="text-xs text-[#2D5A27]/70 ml-1">/{product.priceUnit}</span>
                     </div>
                 </div>
 

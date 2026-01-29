@@ -1,6 +1,6 @@
 import { collection, getDocs, doc, getDoc, query, where, updateDoc, deleteDoc, addDoc } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase";
-import { Product, StockHistoryEntry } from "@/types";
+import { Product, StockHistoryEntry, PriceHistoryEntry } from "@/types";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const COLLECTION_NAME = "products";
@@ -43,10 +43,17 @@ export const ProductService = {
         }
     },
 
-    createProduct: async (product: Partial<Product>): Promise<string> => {
+    createProduct: async (product: Partial<Product>, changedBy: string = "admin"): Promise<string> => {
         try {
+            const initialHistory: PriceHistoryEntry[] = product.currentPrice !== undefined ? [{
+                price: product.currentPrice,
+                date: new Date().toISOString(),
+                changedBy: changedBy
+            }] : [];
+
             const docRef = await addDoc(collection(db, COLLECTION_NAME), {
                 ...product,
+                priceHistory: initialHistory,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
             });
@@ -57,11 +64,29 @@ export const ProductService = {
         }
     },
 
-    updateProduct: async (id: string, product: Partial<Product>): Promise<void> => {
+    updateProduct: async (id: string, updates: Partial<Product>, changedBy: string = "admin"): Promise<void> => {
         try {
             const docRef = doc(db, COLLECTION_NAME, id);
+
+            // If currentPrice is being updated, we need to track it
+            if (updates.currentPrice !== undefined) {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const oldProduct = docSnap.data() as Product;
+                    if (oldProduct.currentPrice !== updates.currentPrice) {
+                        const historyEntry: PriceHistoryEntry = {
+                            price: updates.currentPrice,
+                            date: new Date().toISOString(),
+                            changedBy: changedBy
+                        };
+                        const currentHistory = oldProduct.priceHistory || [];
+                        updates.priceHistory = [historyEntry, ...currentHistory];
+                    }
+                }
+            }
+
             await updateDoc(docRef, {
-                ...product,
+                ...updates,
                 updatedAt: new Date().toISOString(),
             });
         } catch (error) {
@@ -90,7 +115,8 @@ export const ProductService = {
         productId: string,
         action: 'add' | 'remove' | 'set',
         quantity: number,
-        note?: string
+        note?: string,
+        changedBy: string = "admin" // Default for backward compatibility or system updates
     ): Promise<void> {
         // 1. Get current product
         const product = await this.getProductById(productId);
@@ -122,7 +148,7 @@ export const ProductService = {
             changeAmount: changeAmount,
             actionType: action,
             date: new Date().toISOString(),
-            changedBy: "admin", // TODO: Get actual user ID
+            changedBy: changedBy,
             note: note
         };
 

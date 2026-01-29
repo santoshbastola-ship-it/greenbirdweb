@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import dynamic from 'next/dynamic';
 import { SettingsService } from "@/services/settings.service";
 import NepaliDate from "nepali-date-converter";
+import { Toast, ToastType } from "@/components/ui/Toast";
 
 const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
     ssr: false,
@@ -24,10 +25,11 @@ interface POSItem {
     productId: string;
     productName: string;
     unit: StockUnit;
+    priceUnit: StockUnit;
     price: number;
     quantity: number;
+    pricingQuantity: number; // Used when priceUnit differs from unit
     total: number;
-    weight?: number;
     description?: string;
 }
 
@@ -39,16 +41,31 @@ export default function NewSalePage() {
     const [customerId, setCustomerId] = useState<string | undefined>(undefined);
     const [cart, setCart] = useState<POSItem[]>([]);
     const [loading, setLoading] = useState(false);
+    const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
+    const [filteredCustomers, setFilteredCustomers] = useState<User[]>([]);
 
     // Form state
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [date, setDate] = useState(() => {
+        // Initialize with today's date in YYYY-MM-DD format suitable for NepaliDatePicker
+        const today = new NepaliDate();
+        return today.format("YYYY-MM-DD");
+    });
     const [discount, setDiscount] = useState(0);
-    const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(PaymentStatus.PaidCash);
+    const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(PaymentStatus.Pending);
     const [orderStatus, setOrderStatus] = useState<OrderStatus>(OrderStatus.Delivered);
     const [paidAmount, setPaidAmount] = useState<number>(0);
     const [soldBy, setSoldBy] = useState("");
     const [admins, setAdmins] = useState<User[]>([]);
+    const [customDeliveryFee, setCustomDeliveryFee] = useState<string>("");
     const [deliveryFee, setDeliveryFee] = useState(0);
+
+    // Toast state
+    const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+
+    const showToast = (message: string, type: ToastType = 'success') => {
+        setToast({ message, type });
+    };
+
 
     useEffect(() => {
         loadData();
@@ -64,6 +81,7 @@ export default function NewSalePage() {
             setProducts(productsData);
             setCustomers(customersData);
             setAdmins(adminsData);
+
 
             const settings = await SettingsService.getSettings();
             setDeliveryFee(settings.deliveryFee || 0);
@@ -89,71 +107,113 @@ export default function NewSalePage() {
         if (existing) {
             updateQuantity(product.id, existing.quantity + 1);
         } else {
+            const priceUnit = product.priceUnit || product.unit;
             setCart([...cart, {
                 productId: product.id,
                 productName: product.name,
                 unit: product.unit,
+                priceUnit: priceUnit,
                 price: product.currentPrice,
                 quantity: 1,
+                pricingQuantity: (product.unit === priceUnit) ? 1 : 0, // Default to 0 if units differ to force input
                 total: product.currentPrice
             }]);
         }
     };
 
-    const updateQuantity = (id: string, qty: number, weight?: number, desc?: string) => {
-        if (qty <= 0 && weight === undefined && desc === undefined) {
-            removeFromCart(id);
-            return;
+    const updateQuantity = (id: string, qty: number, priceQty?: number, desc?: string) => {
+        if (qty <= 0 && priceQty === undefined && desc === undefined) {
+            // Only remove if quantity is explicitly set to 0 or less (and not just updating other fields)
+            // But usually we want explicit remove button. checking for consistency with previous code.
+            // Previous code: if (qty <= 0 && weight === undefined && desc === undefined) removeFromCart(id);
+            // Let's keep it safe: only remove if qty <= 0 AND it was a direct quantity change (implied).
+            if (qty <= 0 && desc === undefined && priceQty === undefined) {
+                removeFromCart(id);
+                return;
+            }
         }
-        setCart(cart.map(item =>
-            item.productId === id
-                ? {
-                    ...item,
-                    quantity: qty,
-                    weight: weight !== undefined ? weight : item.weight,
-                    description: desc !== undefined ? desc : item.description,
-                    total: item.unit === 'pcs' && (weight || item.weight) ? (weight || item.weight || 0) * item.price : qty * item.price
-                }
-                : item
-        ));
+
+        setCart(cart.map(item => {
+            if (item.productId !== id) return item;
+
+            const newQuantity = qty >= 0 ? qty : 0;
+            const newPricingQuantity = priceQty !== undefined ? priceQty : item.pricingQuantity;
+            const newDesc = desc !== undefined ? desc : item.description;
+
+            // Calculate Total
+            // If unit == priceUnit, Total = Quantity * Price
+            // If unit != priceUnit, Total = PricingQuantity * Price
+            let newTotal = 0;
+            if (item.unit === item.priceUnit) {
+                newTotal = newQuantity * item.price;
+            } else {
+                newTotal = newPricingQuantity * item.price;
+            }
+
+            return {
+                ...item,
+                quantity: newQuantity,
+                pricingQuantity: newPricingQuantity,
+                description: newDesc,
+                total: newTotal
+            };
+        }));
     };
 
     const removeFromCart = (id: string) => {
         setCart(cart.filter(item => item.productId !== id));
     };
 
+    const currentDeliveryFee = customDeliveryFee !== "" ? parseFloat(customDeliveryFee) : deliveryFee;
     const totalAmount = cart.reduce((sum, item) => sum + item.total, 0);
-    const totalPayable = Math.max(0, totalAmount + deliveryFee - (discount || 0));
+    const totalPayable = Math.max(0, totalAmount + currentDeliveryFee - (discount || 0));
 
+    // Removed auto-update of paidAmount based on totalPayable as per user request
+    // Default paidAmount is 0
     useEffect(() => {
-        if (paymentStatus === PaymentStatus.PaidCash || paymentStatus === PaymentStatus.PaidOnline) {
-            setPaidAmount(totalPayable);
+        // Filter customers based on partyName input if not selected
+        if (!customerId) {
+            const lower = partyName.toLowerCase();
+            if (lower) {
+                const matches = customers.filter(c =>
+                    c.name.toLowerCase().includes(lower) ||
+                    (c.email && c.email.toLowerCase().includes(lower))
+                );
+                setFilteredCustomers(matches);
+                // Only show dropdown if we have matches and the input isn't exactly one of the matches names (prevent reopening on selection)
+                // Actually simpler: always show matches if typing
+                setShowCustomerDropdown(true);
+            } else {
+                setFilteredCustomers([]);
+                setShowCustomerDropdown(false);
+            }
         }
-    }, [totalPayable, paymentStatus]);
+    }, [partyName, customerId, customers]);
 
     const handleSave = async () => {
         if (!partyName) {
-            alert("Please enter Party/Customer Name");
+            showToast("Please enter Party/Customer Name", "error");
             return;
         }
         if (cart.length === 0) {
-            alert("Please add at least one item");
+            showToast("Please add at least one item", "error");
             return;
         }
 
         setLoading(true);
         try {
             await TransactionService.createTransaction({
-                billNo: "SAL-" + Math.floor(Math.random() * 100000),
+                billNo: "SL-" + Math.floor(Math.random() * 100000),
                 type: TransactionType.Sale,
                 items: cart.map(item => ({
                     productId: item.productId,
                     productName: item.productName,
                     businessType: 'product',
                     quantity: item.quantity,
-                    weight: item.weight,
+                    // If units differ, use pricingQuantity as weight, otherwise undefined or 0
+                    weight: item.unit !== item.priceUnit ? item.pricingQuantity : undefined,
                     unit: item.unit,
-                    priceUnit: item.unit,
+                    priceUnit: item.priceUnit,
                     pricePerUnit: item.price,
                     totalPrice: item.total,
                     description: item.description
@@ -168,7 +228,7 @@ export default function NewSalePage() {
                 paymentStatus: paymentStatus,
                 status: orderStatus,
                 paidAmount: Number(paidAmount),
-                deliveryFee: deliveryFee,
+                deliveryFee: currentDeliveryFee,
                 payments: [{
                     amount: Number(paidAmount),
                     date: new Date(),
@@ -176,18 +236,29 @@ export default function NewSalePage() {
                 }]
             });
 
-            alert("Sale saved successfully");
-            router.push("/admin/sales");
-        } catch (error) {
+            showToast("Sale saved successfully");
+            setTimeout(() => {
+                router.push("/admin/sales");
+            }, 1000);
+        } catch (error: any) {
             console.error("Error saving sale:", error);
-            alert("Failed to save sale");
+            // Provide more detailed error message if possible
+            const errorMessage = error.message || "Unknown error occurred";
+            showToast(`Failed to save sale: ${errorMessage}`, "error");
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="max-w-3xl mx-auto py-6 pb-20 px-4">
+        <div className="max-w-3xl mx-auto pt-4 pb-20 px-4">
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
@@ -196,7 +267,6 @@ export default function NewSalePage() {
                     </Link>
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">New Sale</h1>
-                        <p className="text-sm text-gray-500">Record a new sales transaction</p>
                     </div>
                 </div>
                 <button
@@ -218,42 +288,68 @@ export default function NewSalePage() {
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-2">
-                                <Search className="h-4 w-4 text-gray-400" /> Select Customer (Optional)
-                            </label>
-                            <select
-                                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all"
-                                onChange={(e) => {
-                                    const selectedUser = customers.find(c => c.id === e.target.value);
-                                    if (selectedUser) {
-                                        setCustomerId(selectedUser.id);
-                                        setPartyName(selectedUser.name || selectedUser.email || "");
-                                    } else {
-                                        setCustomerId(undefined);
-                                        setPartyName("");
-                                    }
-                                }}
-                                value={customerId || ""}
-                            >
-                                <option value="">Manual Entry / Guest</option>
-                                {customers.map(c => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.name || c.email}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-2">
                                 <UserIcon className="h-4 w-4 text-gray-400" /> Customer / Party Name <span className="text-red-500">*</span>
                             </label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all font-medium"
-                                placeholder="Enter customer name"
-                                value={partyName}
-                                onChange={(e) => setPartyName(e.target.value)}
-                            />
+                            <div className="flex gap-2">
+                                <div className="relative flex-1">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <input
+                                        type="text"
+                                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all font-medium"
+                                        placeholder="Search existing customer or type new name..."
+                                        value={partyName}
+                                        onChange={(e) => {
+                                            setPartyName(e.target.value);
+                                            setCustomerId(undefined); // Reset ID when typing
+                                        }}
+                                        onFocus={() => {
+                                            if (partyName) setShowCustomerDropdown(true);
+                                        }}
+                                        onBlur={() => {
+                                            // Delay create to allow click on dropdown
+                                            setTimeout(() => setShowCustomerDropdown(false), 200);
+                                        }}
+                                    />
+                                    {customerId && (
+                                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-green-100 text-green-700 text-xs font-bold">
+                                                <UserIcon className="h-3 w-3" /> Existing
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {/* Customer Autocomplete Dropdown */}
+                                    {showCustomerDropdown && filteredCustomers.length > 0 && (
+                                        <div className="absolute z-10 w-full mt-1 bg-white rounded-xl shadow-xl border border-gray-100 max-h-60 overflow-y-auto">
+                                            {filteredCustomers.map(customer => (
+                                                <button
+                                                    key={customer.id}
+                                                    className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-center justify-between group border-b border-gray-50 last:border-0"
+                                                    onClick={() => {
+                                                        setPartyName(customer.name);
+                                                        setCustomerId(customer.id);
+                                                        setShowCustomerDropdown(false);
+                                                    }}
+                                                >
+                                                    <div>
+                                                        <div className="font-bold text-gray-900 group-hover:text-green-700">{customer.name}</div>
+                                                        {customer.phoneNumber && <div className="text-xs text-gray-500">{customer.phoneNumber}</div>}
+                                                    </div>
+                                                    <div className="text-xs text-gray-400 group-hover:text-green-600">Select</div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                <Link
+                                    href="/admin/users"
+                                    target="_blank"
+                                    className="flex items-center justify-center w-11 h-11 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors shadow-sm"
+                                    title="Add New Customer"
+                                >
+                                    <Plus className="h-5 w-5" />
+                                </Link>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -323,36 +419,13 @@ export default function NewSalePage() {
                                 <div className="space-y-3">
                                     {cart.map((item) => (
                                         <div key={item.productId} className="flex flex-col p-4 border border-gray-100 rounded-2xl bg-gray-50 gap-3 group">
-                                            <div className="flex items-center justify-between gap-4">
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className="font-bold text-gray-900 truncate">{item.productName}</h4>
-                                                    <div className="text-xs text-gray-500 mt-0.5">
-                                                        Rs {item.price.toLocaleString()} per {item.unit}
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-4">
-                                                    <div className="flex items-center bg-white rounded-xl border border-gray-200 h-9 p-1">
-                                                        <button
-                                                            onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                                                            className="px-2.5 hover:bg-gray-50 text-gray-500 font-bold transition-colors"
-                                                        >
-                                                            -
-                                                        </button>
-                                                        <input
-                                                            type="number"
-                                                            className="w-10 text-center text-sm border-0 focus:ring-0 p-0 font-bold bg-transparent"
-                                                            value={item.quantity}
-                                                            onChange={(e) => updateQuantity(item.productId, parseFloat(e.target.value) || 0)}
-                                                        />
-                                                        <button
-                                                            onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                                                            className="px-2.5 hover:bg-gray-50 text-green-600 font-bold transition-colors"
-                                                        >
-                                                            +
-                                                        </button>
-                                                    </div>
-                                                    <div className="font-bold text-gray-900 text-right min-w-[80px]">
-                                                        Rs {item.total.toLocaleString()}
+                                            <div className="flex flex-col gap-3">
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="font-bold text-gray-900 truncate">{item.productName}</h4>
+                                                        <div className="text-xs text-gray-500 mt-0.5">
+                                                            Rs {item.price.toLocaleString()} per {item.priceUnit}
+                                                        </div>
                                                     </div>
                                                     <button
                                                         onClick={() => removeFromCart(item.productId)}
@@ -361,26 +434,67 @@ export default function NewSalePage() {
                                                         <Trash2 className="h-4 w-4" />
                                                     </button>
                                                 </div>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <div className="relative">
-                                                    <input
-                                                        type="number"
-                                                        placeholder="Weight (Kg)"
-                                                        className="w-full text-sm px-3 py-2 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500 transition-all"
-                                                        value={item.weight || ""}
-                                                        onChange={(e) => updateQuantity(item.productId, item.quantity, parseFloat(e.target.value) || 0)}
-                                                    />
-                                                    {item.unit === 'kg' && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-bold uppercase">Kg</span>}
+
+                                                <div className="flex flex-wrap items-center gap-4 bg-white p-2 rounded-xl border border-gray-100">
+                                                    {/* Stock Quantity Controls */}
+                                                    <div className="flex-1 min-w-[120px]">
+                                                        <div className="flex items-center justify-between mb-1 px-1">
+                                                            <span className="text-[10px] uppercase text-gray-400 font-bold">{item.unit}</span>
+                                                        </div>
+                                                        <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200 h-10 p-1">
+                                                            <button
+                                                                onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                                                                className="w-10 h-full flex items-center justify-center hover:bg-white rounded-md text-gray-500 font-bold transition-all active:scale-90"
+                                                            >
+                                                                -
+                                                            </button>
+                                                            <input
+                                                                type="number"
+                                                                className="flex-1 min-w-0 text-center text-sm border-0 focus:ring-0 p-0 font-bold bg-transparent"
+                                                                value={item.quantity}
+                                                                onChange={(e) => updateQuantity(item.productId, parseFloat(e.target.value) || 0)}
+                                                                onFocus={(e) => e.target.select()}
+                                                                title={`Quantity in ${item.unit}`}
+                                                            />
+                                                            <button
+                                                                onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                                                                className="w-10 h-full flex items-center justify-center hover:bg-white rounded-md text-green-600 font-bold transition-all active:scale-90"
+                                                            >
+                                                                +
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Pricing Quantity Controls (Only if units differ) */}
+                                                    {item.unit !== item.priceUnit && (
+                                                        <div className="flex-1 min-w-[120px]">
+                                                            <div className="flex items-center justify-between mb-1 px-1">
+                                                                <span className="text-[10px] uppercase text-gray-400 font-bold">{item.priceUnit} (Weight)</span>
+                                                            </div>
+                                                            <div className="flex items-center bg-green-50/50 rounded-lg border border-green-100 h-10 p-1">
+                                                                <input
+                                                                    type="number"
+                                                                    className="w-full text-center text-sm border-0 focus:ring-0 p-0 font-bold bg-transparent text-gray-700"
+                                                                    value={item.pricingQuantity}
+                                                                    onChange={(e) => updateQuantity(item.productId, item.quantity, parseFloat(e.target.value) || 0)}
+                                                                    onFocus={(e) => e.target.select()}
+                                                                    placeholder="0"
+                                                                    title={`Quantity in ${item.priceUnit}`}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Total and Trash */}
+                                                    <div className="flex flex-col items-end justify-center min-w-[100px] ml-auto">
+                                                        <span className="text-[10px] uppercase text-gray-400 font-bold mb-1">Total</span>
+                                                        <div className="font-black text-gray-900 text-sm">
+                                                            Rs {item.total.toLocaleString()}
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <input
-                                                    type="text"
-                                                    placeholder="Notes/Description"
-                                                    className="w-full text-sm px-3 py-2 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-green-500 transition-all"
-                                                    value={item.description || ""}
-                                                    onChange={(e) => updateQuantity(item.productId, item.quantity, item.weight, e.target.value)}
-                                                />
                                             </div>
+
                                         </div>
                                     ))}
                                 </div>
@@ -410,18 +524,15 @@ export default function NewSalePage() {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-2">
-                                    <ShoppingBag className="h-4 w-4 text-gray-400" /> Order Status
+                                    <CreditCard className="h-4 w-4 text-gray-400" /> Delivery Fee (Rs)
                                 </label>
-                                <select
+                                <input
+                                    type="number"
                                     className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all"
-                                    value={orderStatus}
-                                    onChange={(e) => setOrderStatus(e.target.value as OrderStatus)}
-                                >
-                                    <option value={OrderStatus.Open}>Open</option>
-                                    <option value={OrderStatus.Accepted}>Accepted</option>
-                                    <option value={OrderStatus.Delivered}>Delivered</option>
-                                    <option value={OrderStatus.Cancelled}>Cancelled</option>
-                                </select>
+                                    placeholder={deliveryFee.toString()}
+                                    value={customDeliveryFee}
+                                    onChange={(e) => setCustomDeliveryFee(e.target.value)}
+                                />
                             </div>
                         </div>
 
@@ -469,9 +580,7 @@ export default function NewSalePage() {
                             </div>
                             <div className="flex justify-between items-center text-sm text-gray-500">
                                 <span>Delivery Fee</span>
-                                <span className={deliveryFee === 0 ? "text-green-600 font-bold" : ""}>
-                                    {deliveryFee === 0 ? "Free Delivery" : `Rs ${deliveryFee.toLocaleString()}`}
-                                </span>
+                                <span>Rs {currentDeliveryFee.toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between items-center pt-2 mt-2 border-t border-gray-100">
                                 <span className="text-gray-900 font-bold">Total Payable</span>
@@ -488,10 +597,11 @@ export default function NewSalePage() {
                         disabled={loading}
                         className="w-full md:w-auto flex items-center justify-center gap-2 px-12 py-4 bg-green-600 text-white rounded-2xl font-black text-lg hover:bg-green-700 transition-all shadow-xl shadow-green-900/10 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
                     >
-                        {loading ? "Processing..." : <><Save className="h-6 w-6" /> Save Transaction</>}
+                        {loading ? "Processing..." : <><Save className="h-6 w-6" /> Save Sale</>}
                     </button>
                 </div>
             </div>
         </div>
+
     );
 }

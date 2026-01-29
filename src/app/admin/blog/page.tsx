@@ -17,6 +17,7 @@ import {
     Upload
 } from "lucide-react";
 import Link from "next/link";
+import LogoLoader from "@/components/ui/LogoLoader";
 
 export default function AdminBlogPage() {
     const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -146,13 +147,13 @@ export default function AdminBlogPage() {
     if (loading) {
         return (
             <div className="h-full flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+                <LogoLoader />
             </div>
         );
     }
 
     return (
-        <div className="p-6">
+        <div className="space-y-8 pt-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Blog Management</h1>

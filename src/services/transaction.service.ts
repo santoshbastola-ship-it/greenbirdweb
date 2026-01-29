@@ -1,14 +1,23 @@
-import { collection, addDoc, getDocs, query, where, orderBy, doc, getDoc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, orderBy, doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { TransactionRecord, TransactionType, OrderStatus, PaymentStatus, PaymentRecord, NotificationType } from "@/types";
 import { NotificationService } from "./notification.service";
 
-// Helper to remove undefined values for Firestore
-const sanitizeData = (data: any) => {
-    const sanitized = { ...data };
-    Object.keys(sanitized).forEach(key => {
-        if (sanitized[key] === undefined) {
-            delete sanitized[key];
+// Helper to remove undefined values for Firestore (recursive)
+const sanitizeData = (data: any): any => {
+    if (data === null || typeof data !== 'object') {
+        return data;
+    }
+
+    if (Array.isArray(data)) {
+        return data.map(sanitizeData);
+    }
+
+    const sanitized: any = {};
+    Object.keys(data).forEach(key => {
+        const value = data[key];
+        if (value !== undefined) {
+            sanitized[key] = sanitizeData(value);
         }
     });
     return sanitized;
@@ -38,6 +47,14 @@ const safePayments = (payments: any): PaymentRecord[] => {
     }));
 };
 
+const safeLogs = (logs: any) => {
+    if (!Array.isArray(logs)) return [];
+    return logs.map((l: any) => ({
+        ...l,
+        date: parseDate(l.date)
+    }));
+};
+
 
 const COLLECTION_NAME = "transactions";
 
@@ -46,11 +63,13 @@ export const TransactionService = {
     createTransaction: async (transaction: Omit<TransactionRecord, "id">): Promise<string> => {
         try {
             // 1. Create the transaction record
-            const docRef = await addDoc(collection(db, COLLECTION_NAME), {
+            const sanitizedTransaction = sanitizeData({
                 ...transaction,
                 entryTimestamp: new Date().toISOString(), // Ensure serializable date
                 date: new Date(transaction.date).toISOString()
             });
+
+            const docRef = await addDoc(collection(db, COLLECTION_NAME), sanitizedTransaction);
 
             // 2. Update Product Stock based on Transaction Type
             try {
@@ -134,6 +153,7 @@ export const TransactionService = {
                     entryTimestamp: parseDate(data.entryTimestamp),
                     updatedAt: data.updatedAt ? parseDate(data.updatedAt) : undefined,
                     payments: safePayments(data.payments),
+                    logs: safeLogs(data.logs),
                     items: Array.isArray(data.items) ? data.items : []
                 } as TransactionRecord;
             });
@@ -158,6 +178,7 @@ export const TransactionService = {
                     entryTimestamp: parseDate(data.entryTimestamp),
                     updatedAt: data.updatedAt ? parseDate(data.updatedAt) : undefined,
                     payments: safePayments(data.payments),
+                    logs: safeLogs(data.logs),
                     items: Array.isArray(data.items) ? data.items : []
                 } as TransactionRecord;
             } else {
@@ -191,6 +212,7 @@ export const TransactionService = {
                         entryTimestamp: parseDate(data.entryTimestamp),
                         updatedAt: data.updatedAt ? parseDate(data.updatedAt) : undefined,
                         payments: safePayments(data.payments),
+                        logs: safeLogs(data.logs),
                         items: Array.isArray(data.items) ? data.items : []
                     } as TransactionRecord;
                 })
@@ -223,6 +245,7 @@ export const TransactionService = {
                     entryTimestamp: parseDate(data.entryTimestamp),
                     updatedAt: data.updatedAt ? parseDate(data.updatedAt) : undefined,
                     payments: safePayments(data.payments),
+                    logs: safeLogs(data.logs),
                     items: Array.isArray(data.items) ? data.items : []
                 } as TransactionRecord;
             });
@@ -270,6 +293,7 @@ export const TransactionService = {
                     entryTimestamp: parseDate(data.entryTimestamp),
                     updatedAt: data.updatedAt ? parseDate(data.updatedAt) : undefined,
                     payments: safePayments(data.payments),
+                    logs: safeLogs(data.logs),
                     items: Array.isArray(data.items) ? data.items : []
                 } as TransactionRecord;
             });
@@ -288,10 +312,15 @@ export const TransactionService = {
                 updatedAt: new Date().toISOString()
             };
 
-            // If cancelling, add the reason
-            if (status === OrderStatus.Cancelled && reason) {
-                updateData.cancellationReason = reason;
-            }
+            const newLog = {
+                id: Date.now().toString(),
+                date: new Date().toISOString(),
+                action: "Status Updated",
+                details: `Status changed to ${status}${reason ? `. Reason: ${reason}` : ''}`,
+                changedBy: "Admin"
+            };
+
+            updateData.logs = arrayUnion(newLog);
 
             await updateDoc(docRef, updateData);
 
@@ -326,10 +355,19 @@ export const TransactionService = {
     updatePaymentStatus: async (id: string, paymentStatus: PaymentStatus, paidAmount: number, payments: PaymentRecord[]): Promise<void> => {
         try {
             const docRef = doc(db, COLLECTION_NAME, id);
+            const newLog = {
+                id: Date.now().toString(),
+                date: new Date().toISOString(),
+                action: "Payment Recorded",
+                details: `Payment updated. Total paid amount is now Rs ${paidAmount.toLocaleString()}`,
+                changedBy: "Admin"
+            };
+
             await updateDoc(docRef, {
                 paymentStatus,
                 paidAmount,
                 payments,
+                logs: arrayUnion(newLog),
                 updatedAt: new Date().toISOString()
             });
         } catch (error) {

@@ -9,6 +9,7 @@ import StockHistoryModal from "@/components/admin/StockHistoryModal";
 import AdvancedSearch from "@/components/admin/AdvancedSearch";
 import { toNepali } from "@/lib/date-helper";
 import NepaliDate from "nepali-date-converter";
+import LogoLoader from "@/components/ui/LogoLoader";
 
 export default function QuickStockUpdatePage() {
     const [searchTerm, setSearchTerm] = useState("");
@@ -102,13 +103,13 @@ export default function QuickStockUpdatePage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+                <LogoLoader />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="space-y-8 pt-4">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between mb-8">
                     <h1 className="text-3xl font-bold text-gray-900">Stock Update</h1>
@@ -152,52 +153,66 @@ export default function QuickStockUpdatePage() {
 
                 {filteredProducts.length > 0 ? (
                     <div className="space-y-4">
-                        {filteredProducts.map(product => (
-                            <div key={product.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between hover:shadow-md transition-shadow gap-4">
-                                <div
-                                    className="flex items-center space-x-4 cursor-pointer flex-1"
-                                    onClick={() => handleUpdateClick(product)}
-                                >
-                                    <div className="h-14 w-14 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                                        <img
-                                            src={product.images[0] || "/placeholder.png"}
-                                            alt={product.name}
-                                            className="h-full w-full object-cover"
-                                        />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <h3 className="font-bold text-gray-900 text-lg truncate">{product.name}</h3>
-                                        <p className="text-sm text-gray-500 capitalize">{product.businessType}</p>
-                                    </div>
-                                </div>
+                        {filteredProducts.map(product => {
+                            const isLowStock = product.currentStock < 10;
+                            const stockColorClass = isLowStock ? 'text-red-600' : 'text-green-600';
+                            const bgColorClass = isLowStock ? 'bg-red-50' : 'bg-green-50';
 
-                                <div className="flex items-center justify-between sm:justify-end sm:space-x-8 w-full sm:w-auto">
-                                    <div
-                                        className="text-left sm:text-right min-w-[100px] cursor-pointer"
-                                        onClick={() => handleUpdateClick(product)}
-                                    >
-                                        <p className={`font-bold text-xl ${product.currentStock < 10 ? 'text-red-600' : 'text-green-600'}`}>
-                                            {product.currentStock} {product.unit}
-                                        </p>
-                                        <p className="text-xs text-gray-400">
-                                            Last: {product.stockHistory && product.stockHistory.length > 0
-                                                ? toNepali(product.stockHistory[0].date)
-                                                : "-"}
-                                        </p>
+                            return (
+                                <div key={product.id} className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition-shadow gap-4 group">
+                                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                                        <div className="h-10 w-10 flex-shrink-0 bg-gray-50 rounded-lg overflow-hidden border border-gray-100 flex items-center justify-center">
+                                            {product.images?.[0] ? (
+                                                <img
+                                                    className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                                    src={product.images[0]}
+                                                    alt={product.name}
+                                                />
+                                            ) : (
+                                                <div className={`h-full w-full ${bgColorClass} flex items-center justify-center`}>
+                                                    <Package className={`h-5 w-5 ${stockColorClass}`} />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <h3
+                                                className="font-bold text-gray-900 text-base truncate cursor-pointer hover:text-green-600 transition-colors"
+                                                onClick={() => handleUpdateClick(product)}
+                                            >
+                                                {product.name}
+                                            </h3>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{product.businessType}</span>
+                                                <span className="text-gray-300">•</span>
+                                                <span className="text-[10px] text-gray-400">
+                                                    Last: {product.stockHistory && product.stockHistory.length > 0
+                                                        ? toNepali(product.stockHistory[0].date)
+                                                        : "-"}
+                                                </span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="flex space-x-2">
+
+                                    <div className="flex items-center gap-6">
+                                        <div
+                                            className="text-right cursor-pointer group"
+                                            onClick={() => handleUpdateClick(product)}
+                                        >
+                                            <p className={`font-black text-lg ${stockColorClass}`}>
+                                                {product.currentStock} <span className="text-xs font-bold uppercase">{product.unit}</span>
+                                            </p>
+                                        </div>
                                         <button
                                             onClick={() => handleHistoryClick(product)}
-                                            className="flex items-center gap-2 px-4 py-2 bg-gray-50 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium text-sm border border-gray-200"
+                                            className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
                                             title="View History"
                                         >
-                                            <Clock className="h-4 w-4" />
-                                            <span>Stock History</span>
+                                            <Clock className="h-5 w-5" />
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 ) : (
                     <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-100">

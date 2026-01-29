@@ -9,23 +9,56 @@ import NepaliDate from "nepali-date-converter";
  *                 'DD MMM YYYY' -> 15 Chaitra 2080
  *                 'np' -> Returns raw NepaliDate object
  */
-export function toNepali(date: Date | string | number, format: string = "YYYY-MM-DD"): string {
+export function toNepali(date: any, format: string = "YYYY-MM-DD"): string {
     try {
-        const jsDate = new Date(date);
+        if (!date) return "Invalid Date";
+
+        let jsDate: Date;
+        if (typeof date.toDate === 'function') {
+            jsDate = date.toDate();
+        } else if (typeof date === 'object' && date.seconds !== undefined) {
+            jsDate = new Date(date.seconds * 1000);
+        } else {
+            jsDate = new Date(date);
+        }
 
         // Check if valid date
         if (isNaN(jsDate.getTime())) return "Invalid Date";
 
         const bsDate = new NepaliDate(jsDate);
 
-        // Global override: Always formatted as YYYY-MM-DD as per user request
-        // if (format === 'DD MMM YYYY') {
-        //    return bsDate.format('DD MMM YYYY', 'en');
-        // }
-        return bsDate.format('YYYY-MM-DD', 'en');
+        if (format === 'DD MMM YYYY') {
+            return bsDate.format('DD MMM YYYY', 'en');
+        }
+        return bsDate.format(format, 'en');
     } catch (e) {
         console.error("Date conversion error", e);
         return "Error";
+    }
+}
+
+/**
+ * Converts a date to Nepali Date + Time string
+ */
+export function formatDateTime(date: any, formatStr: string = "DD MMM YYYY"): string {
+    const nepaliDate = toNepali(date, formatStr);
+    if (nepaliDate === "Invalid Date") return "Invalid Date";
+
+    try {
+        let jsDate: Date;
+        if (typeof date.toDate === 'function') {
+            jsDate = date.toDate();
+        } else if (typeof date === 'object' && date.seconds !== undefined) {
+            jsDate = new Date(date.seconds * 1000);
+        } else {
+            jsDate = new Date(date);
+        }
+
+        const hours = jsDate.getHours().toString().padStart(2, '0');
+        const minutes = jsDate.getMinutes().toString().padStart(2, '0');
+        return `${nepaliDate} ${hours}:${minutes}`;
+    } catch (e) {
+        return nepaliDate;
     }
 }
 

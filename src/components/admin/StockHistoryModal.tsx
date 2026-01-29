@@ -2,7 +2,7 @@
 
 import { X } from "lucide-react";
 import { Product, StockHistoryEntry } from "@/types";
-import { toNepali } from "@/lib/date-helper";
+import { toNepali, formatDateTime } from "@/lib/date-helper";
 
 interface StockHistoryModalProps {
     product: Product;
@@ -67,13 +67,14 @@ export default function StockHistoryModal({ product, onClose }: StockHistoryModa
                                         <th scope="col" className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Change</th>
                                         <th scope="col" className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Remaining</th>
                                         <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Note</th>
+                                        <th scope="col" className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider border-b">Updated By</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-100">
                                     {sortedHistory.map((entry) => (
                                         <tr key={entry.id} className="hover:bg-gray-50 transition-colors">
                                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
-                                                {toNepali(entry.date)}
+                                                {formatDateTime(entry.date)}
                                             </td>
                                             <td className="px-4 py-3 whitespace-nowrap">
                                                 <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${getActionColor(entry.actionType)}`}>
@@ -88,6 +89,9 @@ export default function StockHistoryModal({ product, onClose }: StockHistoryModa
                                             </td>
                                             <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate" title={entry.note || ""}>
                                                 {entry.note || "-"}
+                                            </td>
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-medium">
+                                                {entry.changedBy || "admin"}
                                             </td>
                                         </tr>
                                     ))}

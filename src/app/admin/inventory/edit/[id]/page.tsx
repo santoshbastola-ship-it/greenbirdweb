@@ -6,13 +6,13 @@ interface PageProps {
     params: Promise<{ id: string }>;
 }
 
-// Generate static params for all products
-// Generate static params: empty array means no pages are pre-generated, relying on fallback
-export const dynamicParams = false;
-
 export async function generateStaticParams() {
-    return [{ id: 'placeholder' }];
+    const products = await ProductService.getAllProducts();
+    return products.map((product) => ({
+        id: product.id,
+    }));
 }
+
 
 export default async function EditProductPage({ params }: PageProps) {
     const { id } = await params;

@@ -21,6 +21,7 @@ import {
     Filter,
     Plus
 } from "lucide-react";
+import LogoLoader from "@/components/ui/LogoLoader";
 
 export default function AdminBookingsPage() {
     const [bookings, setBookings] = useState<Booking[]>([]);
@@ -247,7 +248,7 @@ export default function AdminBookingsPage() {
 
             {loading ? (
                 <div className="h-64 flex items-center justify-center">
-                    <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+                    <LogoLoader />
                 </div>
             ) : (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden font-geist">
@@ -363,8 +364,8 @@ export default function AdminBookingsPage() {
                                     type="button"
                                     onClick={() => setCustomerType('existing')}
                                     className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${customerType === 'existing'
-                                            ? 'bg-white text-green-700 shadow-sm'
-                                            : 'text-gray-500 hover:text-gray-700'
+                                        ? 'bg-white text-green-700 shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-700'
                                         }`}
                                 >
                                     Existing Customer
@@ -373,8 +374,8 @@ export default function AdminBookingsPage() {
                                     type="button"
                                     onClick={() => setCustomerType('new')}
                                     className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${customerType === 'new'
-                                            ? 'bg-white text-green-700 shadow-sm'
-                                            : 'text-gray-500 hover:text-gray-700'
+                                        ? 'bg-white text-green-700 shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-700'
                                         }`}
                                 >
                                     New Customer

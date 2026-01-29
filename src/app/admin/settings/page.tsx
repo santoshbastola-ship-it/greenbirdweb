@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { SettingsService } from "@/services/settings.service";
 import { AppSettings } from "@/types";
 import { Save, RefreshCcw, Truck, Percent, IndianRupee, AlertCircle } from "lucide-react";
+import LogoLoader from "@/components/ui/LogoLoader";
 
 export default function AdminSettingsPage() {
     const [settings, setSettings] = useState<AppSettings | null>(null);
@@ -50,13 +51,13 @@ export default function AdminSettingsPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-[400px]">
-                <RefreshCcw className="h-8 w-8 text-green-600 animate-spin" />
+                <LogoLoader />
             </div>
         );
     }
 
     return (
-        <div className="max-w-4xl mx-auto py-8 px-4">
+        <div className="max-w-4xl mx-auto pt-4 pb-8 px-4">
             <div className="flex items-center justify-between mb-8">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">App Settings</h1>

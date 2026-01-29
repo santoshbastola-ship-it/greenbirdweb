@@ -16,7 +16,7 @@ import Link from "next/link";
 
 export default function AdminDashboard() {
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 pt-4">
             {/* Header */}
             <div>
                 <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>

@@ -11,6 +11,7 @@ import TaskDetailsModal from "@/components/admin/TaskDetailsModal";
 import NepaliDate from "nepali-date-converter";
 import AdvancedSearch from "@/components/admin/AdvancedSearch";
 import { useAuth } from "@/context/AuthContext";
+import LogoLoader from "@/components/ui/LogoLoader";
 
 type TabStatus = TaskStatus | 'All';
 
@@ -217,7 +218,7 @@ export default function TasksPage() {
                 {/* Task List */}
                 {loading ? (
                     <div className="flex items-center justify-center h-64">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+                        <LogoLoader />
                     </div>
                 ) : filteredTasks.length === 0 ? (
                     <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-100">

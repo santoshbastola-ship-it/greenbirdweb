@@ -6,6 +6,10 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Save, Upload, X } from "lucide-react";
 import Link from "next/link";
 import { ProductService } from "@/services/product.service";
+import { Toast, ToastType } from "@/components/ui/Toast";
+import { useAuth } from "@/context/AuthContext";
+import { format } from "date-fns";
+import { toNepali, formatDateTime } from "@/lib/date-helper";
 
 interface ProductFormProps {
     initialData?: Product;
@@ -14,9 +18,12 @@ interface ProductFormProps {
 
 export default function ProductForm({ initialData, isEditMode = false }: ProductFormProps) {
     const router = useRouter();
+    const { dbUser } = useAuth();
+    const changedBy = dbUser?.name || "System";
     const [loading, setLoading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploadingImage, setUploadingImage] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
 
     const [formData, setFormData] = useState<Partial<Product>>(
         initialData || {
@@ -33,23 +40,29 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
         }
     );
 
+    const showToast = (message: string, type: ToastType = 'success') => {
+        setToast({ message, type });
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
         try {
             if (isEditMode && initialData) {
-                await ProductService.updateProduct(initialData.id, formData);
-                alert("Product updated successfully");
+                await ProductService.updateProduct(initialData.id, formData, changedBy);
+                showToast("Product updated successfully");
             } else {
-                await ProductService.createProduct(formData);
-                alert("Product created successfully");
+                await ProductService.createProduct(formData, changedBy);
+                showToast("Product created successfully");
             }
-            router.push("/admin/inventory");
-            router.refresh();
+            setTimeout(() => {
+                router.push("/admin/inventory");
+                router.refresh();
+            }, 1000);
         } catch (error) {
             console.error("Error saving product:", error);
-            alert("Failed to save product");
+            showToast("Failed to save product", "error");
         } finally {
             setLoading(false);
         }
@@ -81,7 +94,7 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
             }));
         } catch (error: any) {
             console.error("Error uploading image:", error);
-            alert(`Failed to upload image: ${error.message || 'Unknown error'}`);
+            showToast(`Failed to upload image: ${error.message || 'Unknown error'}`, "error");
         } finally {
             setUploadingImage(false);
             // Reset input so same file can be selected again if needed
@@ -98,6 +111,13 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
 
     return (
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-6">
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
             {/* Header Actions */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
@@ -251,6 +271,39 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                             </div>
                         </div>
                     </div>
+
+                    {/* Price History */}
+                    {isEditMode && formData.priceHistory && formData.priceHistory.length > 0 && (
+                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
+                            <h2 className="text-lg font-semibold text-gray-900 border-b pb-2 mb-4">Price History</h2>
+                            <div className="overflow-y-auto max-h-60">
+                                <table className="w-full text-sm text-left">
+                                    <thead className="text-xs text-gray-700 uppercase bg-gray-50 sticky top-0">
+                                        <tr>
+                                            <th className="px-4 py-2">Date</th>
+                                            <th className="px-4 py-2">Price</th>
+                                            <th className="px-4 py-2">Changed By</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {formData.priceHistory.map((entry, index) => (
+                                            <tr key={index} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-4 py-2 text-gray-600 whitespace-nowrap">
+                                                    {formatDateTime(entry.date, "DD MMM YYYY")}
+                                                </td>
+                                                <td className="px-4 py-2 font-semibold text-green-700">
+                                                    Rs {entry.price.toLocaleString()}
+                                                </td>
+                                                <td className="px-4 py-2 text-gray-500">
+                                                    {entry.changedBy}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Media / Images */}
@@ -302,6 +355,18 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Bottom Action Bar */}
+            <div className="flex justify-end pt-6 border-t border-gray-100">
+                <button
+                    type="submit"
+                    disabled={loading || uploadingImage}
+                    className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition-colors flex items-center shadow-lg shadow-green-900/10 disabled:opacity-50"
+                >
+                    <Save className="h-5 w-5 mr-2" />
+                    {loading ? "Saving..." : "Save Product"}
+                </button>
             </div>
         </form>
     );

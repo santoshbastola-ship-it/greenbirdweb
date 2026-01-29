@@ -5,6 +5,7 @@ import { Plus, Trash2, Calendar, FileText, Image as ImageIcon, Loader2 } from "l
 import { FarmActivity } from "@/types/extra";
 import { getActivities, addActivity, deleteActivity, uploadActivityImage } from "@/lib/services/activities";
 import { format } from "date-fns";
+import LogoLoader from "@/components/ui/LogoLoader";
 
 export default function ActivitiesAdminPage() {
     const [activities, setActivities] = useState<FarmActivity[]>([]);
@@ -96,8 +97,8 @@ export default function ActivitiesAdminPage() {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex justify-between items-center">
+        <div className="space-y-8 pt-4">
+            <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Farm Activities</h1>
                     <p className="text-gray-500 text-sm">Manage photos and updates about farm activities</p>
@@ -208,7 +209,7 @@ export default function ActivitiesAdminPage() {
                                 <tr>
                                     <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
                                         <div className="flex items-center justify-center gap-2">
-                                            <Loader2 className="h-4 w-4 animate-spin" /> Loading activities...
+                                            <LogoLoader />
                                         </div>
                                     </td>
                                 </tr>

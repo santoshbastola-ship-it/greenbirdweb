@@ -127,7 +127,7 @@ export default function CartPage() {
             };
 
             await TransactionService.createTransaction({
-                billNo: "ORD-" + Math.floor(Math.random() * 100000),
+                billNo: "OR-" + Math.floor(Math.random() * 100000),
                 type: TransactionType.Sale,
                 items: validItems.map(i => ({
                     productId: i.productId,

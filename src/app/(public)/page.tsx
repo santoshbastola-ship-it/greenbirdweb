@@ -9,6 +9,7 @@ import { getActivities } from "@/lib/services/activities";
 import { ProductService } from "@/services/product.service";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
+import LogoLoader from "@/components/ui/LogoLoader";
 
 export default function Home() {
   const [activities, setActivities] = useState<FarmActivity[]>([]);
@@ -124,7 +125,7 @@ export default function Home() {
 
           {loadingActivities ? (
             <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2D5A27]"></div>
+              <LogoLoader size="sm" />
             </div>
           ) : activities.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -173,7 +174,7 @@ export default function Home() {
 
           {loadingProducts ? (
             <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2D5A27]"></div>
+              <LogoLoader size="sm" />
             </div>
           ) : featuredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

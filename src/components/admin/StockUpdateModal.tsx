@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X, Save } from "lucide-react";
 import { Product } from "@/types";
 import { ProductService } from "@/services/product.service";
+import { useAuth } from "@/context/AuthContext";
 
 interface StockUpdateModalProps {
     product: Product;
@@ -18,6 +19,7 @@ export default function StockUpdateModal({ product, onClose, onUpdate }: StockUp
     const [quantity, setQuantity] = useState<string>("");
     const [note, setNote] = useState("");
     const [loading, setLoading] = useState(false);
+    const { dbUser } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,7 +31,7 @@ export default function StockUpdateModal({ product, onClose, onUpdate }: StockUp
 
         setLoading(true);
         try {
-            await ProductService.updateProductStock(product.id, action, qty, note);
+            await ProductService.updateProductStock(product.id, action, qty, note, dbUser?.name || "Unknown User");
             onUpdate();
             onClose();
         } catch (error) {
