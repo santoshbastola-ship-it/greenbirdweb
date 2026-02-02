@@ -10,7 +10,7 @@ const withPWA = require("next-pwa")({
 import packageJson from './package.json';
 
 const nextConfig: NextConfig = {
-  output: 'export',
+  // output: 'export', // Disabled to allow API routes (WhatsApp)
   images: {
     unoptimized: true,
   },
@@ -19,4 +19,5 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPWA(nextConfig);
+// export default withPWA(nextConfig);
+export default nextConfig;

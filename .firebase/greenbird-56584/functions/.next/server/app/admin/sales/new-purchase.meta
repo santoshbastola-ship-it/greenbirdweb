@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/admin/layout,_N_T_/admin/sales/layout,_N_T_/admin/sales/new-purchase/layout,_N_T_/admin/sales/new-purchase/page,_N_T_/admin/sales/new-purchase"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/admin/sales/new-purchase/__PAGE__",
+    "/admin/sales/new-purchase",
+    "/admin/sales",
+    "/admin",
+    "/_index",
+    "/_head"
+  ]
+}

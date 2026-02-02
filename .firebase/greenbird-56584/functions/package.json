@@ -1,0 +1,27 @@
+{
+  "name": "greenbird-pwa",
+  "version": "0.2.0",
+  "private": true,
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "firebase": "^12.8.0",
+    "html-to-image": "^1.11.13",
+    "lucide-react": "^0.562.0",
+    "nepali-date-converter": "^3.4.0",
+    "nepali-datepicker-reactjs": "^1.1.9",
+    "next": "16.1.4",
+    "next-pwa": "^5.6.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "tailwind-merge": "^3.4.0",
+    "zustand": "^5.0.10",
+    "firebase-frameworks": "^0.11.0",
+    "firebase-functions": "^6.0.1",
+    "firebase-admin": "^11.11.1"
+  },
+  "main": "server.js",
+  "engines": {
+    "node": "24"
+  }
+}

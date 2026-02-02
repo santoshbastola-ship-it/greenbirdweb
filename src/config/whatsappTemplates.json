@@ -1,0 +1,43 @@
+{
+    "order_confirmation": {
+        "name": "order_confirmation_v1",
+        "language": "en",
+        "components": [
+            {
+                "type": "body",
+                "parameters": [
+                    {
+                        "type": "text",
+                        "text": "{{1}}"
+                    },
+                    {
+                        "type": "text",
+                        "text": "{{2}}"
+                    }
+                ]
+            }
+        ]
+    },
+    "order_shipped": {
+        "name": "order_shipped_v1",
+        "language": "en",
+        "components": [
+            {
+                "type": "body",
+                "parameters": [
+                    {
+                        "type": "text",
+                        "text": "{{1}}"
+                    },
+                    {
+                        "type": "text",
+                        "text": "{{2}}"
+                    }
+                ]
+            }
+        ]
+    },
+    "morning_ping": {
+        "text": "Good morning! System status: Online. Reply to open the 24h window."
+    }
+}

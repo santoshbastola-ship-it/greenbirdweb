@@ -59,7 +59,7 @@ export default function Footer({ minimized = false }: FooterProps) {
                                     />
                                 </div>
                                 <p className="text-gray-300 text-sm leading-relaxed">
-                                    The homestead emphasizes "Organic, Local, and Fresh" as its primary mission.
+                                    The homestead emphasizes "Organic.Fresh.Local" as its primary mission.
                                     Sustainable farming for a better future.
                                 </p>
                             </div>
@@ -170,7 +170,7 @@ export default function Footer({ minimized = false }: FooterProps) {
                             />
                         </div>
                         <p className="text-gray-300 text-sm leading-relaxed">
-                            The homestead emphasizes "Organic, Local, and Fresh" as its primary mission.
+                            The homestead emphasizes "Organic.Fresh.Local" as its primary mission.
                             Sustainable farming for a better future.
                         </p>
                     </div>
@@ -183,6 +183,8 @@ export default function Footer({ minimized = false }: FooterProps) {
                             <li><a href="/about" className="hover:text-white transition-colors">Our Story</a></li>
                             <li><a href="/blog" className="hover:text-white transition-colors">Blog</a></li>
                             <li><a href="/contact" className="hover:text-white transition-colors">Contact Us</a></li>
+                            <li><a href="/privacy" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                            <li><a href="/terms" className="hover:text-white transition-colors">Terms of Service</a></li>
                         </ul>
                     </div>
 

@@ -1,0 +1,16 @@
+{
+  "headers": {
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/admin/layout,_N_T_/admin/energy/layout,_N_T_/admin/energy/page,_N_T_/admin/energy"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/admin/energy/__PAGE__",
+    "/admin/energy",
+    "/admin",
+    "/_index",
+    "/_head"
+  ]
+}

@@ -40,8 +40,8 @@ function ProductListContent({ initialProducts }: ProductListContentProps) {
                     </h1>
                     <span className="text-sm text-gray-500">{products.length} items</span>
                 </div>
-                <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded-md border border-gray-100">
-                    <span className="font-semibold text-[#2D5A27]">Note:</span> Item quantity can be set from the Checkout page.
+                <p className="text-base text-gray-800 bg-yellow-50 p-3 rounded-lg border border-yellow-200 shadow-sm text-center">
+                    <span className="font-bold text-yellow-700">Note:</span> Item quantity can be set from the Checkout page.
                 </p>
             </div>
 

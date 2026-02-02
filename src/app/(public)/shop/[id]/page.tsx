@@ -8,7 +8,7 @@ interface PageProps {
     params: Promise<{ id: string }>;
 }
 
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export async function generateStaticParams() {
     return [{ id: 'placeholder' }];

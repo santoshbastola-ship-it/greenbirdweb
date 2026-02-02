@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { SettingsService } from "@/services/settings.service";
 import { AppSettings } from "@/types";
-import { Save, RefreshCcw, Truck, Percent, IndianRupee, AlertCircle } from "lucide-react";
+import { Save, RefreshCcw, Truck, Percent, IndianRupee, AlertCircle, Phone, User } from "lucide-react";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { UserService } from "@/services/user.service";
 
 export default function AdminSettingsPage() {
     const { dbUser, loading: authLoading } = useAuth();
@@ -16,6 +17,7 @@ export default function AdminSettingsPage() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const [phoneNumber, setPhoneNumber] = useState("");
 
     useEffect(() => {
         if (!authLoading && dbUser && dbUser.role !== 'admin') {
@@ -26,6 +28,7 @@ export default function AdminSettingsPage() {
     useEffect(() => {
         if (dbUser?.role === 'admin') {
             loadSettings();
+            setPhoneNumber(dbUser.phoneNumber || "");
         }
     }, [dbUser]);
 
@@ -50,7 +53,14 @@ export default function AdminSettingsPage() {
         setSuccess(false);
 
         try {
+            // Update app settings
             await SettingsService.updateSettings(settings);
+
+            // Update admin phone number if changed
+            if (dbUser && phoneNumber !== dbUser.phoneNumber) {
+                await UserService.updateUser(dbUser.id, { phoneNumber });
+            }
+
             setSuccess(true);
             setTimeout(() => setSuccess(false), 3000);
         } catch (err) {
@@ -91,7 +101,48 @@ export default function AdminSettingsPage() {
                 </div>
             )}
 
+
             <form onSubmit={handleSave} className="space-y-6">
+                {/* Admin Profile */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-purple-50 rounded-lg">
+                            <User className="h-5 w-5 text-purple-600" />
+                        </div>
+                        <h2 className="text-lg font-bold text-gray-900">Admin Profile</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Admin Name
+                            </label>
+                            <input
+                                type="text"
+                                value={dbUser?.name || ""}
+                                disabled
+                                className="w-full px-4 py-2 border border-gray-200 rounded-xl bg-gray-50 text-gray-500"
+                            />
+                            <p className="mt-1 text-xs text-gray-400">Your account name (read-only)</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                <Phone className="h-4 w-4 text-purple-600" />
+                                WhatsApp Phone Number
+                            </label>
+                            <input
+                                type="tel"
+                                value={phoneNumber}
+                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                placeholder="977XXXXXXXXXX"
+                                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"
+                            />
+                            <p className="mt-1 text-xs text-gray-400">For receiving order notifications (include country code)</p>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Delivery Settings */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div className="flex items-center gap-3 mb-6">

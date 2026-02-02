@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import LogoLoader from "@/components/ui/LogoLoader";
 import MediaCarousel from "@/components/ui/MediaCarousel";
 import { Quote, ExternalLink, User } from "lucide-react";
+import JsonLd from "@/components/seo/JsonLd";
 
 
 export default function Home() {
@@ -22,6 +23,29 @@ export default function Home() {
   const [loadingActivities, setLoadingActivities] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingTestimonials, setLoadingTestimonials] = useState(true);
+
+  const jsonLdData = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Greenbird Homestead",
+    "url": "https://greenbirdhomestead.com.np",
+    "logo": "https://greenbirdhomestead.com.np/icon.png",
+    "sameAs": [
+      // Add social profiles here if available
+    ],
+    "description": "Organic.Fresh.Local - Farm fresh products, organic produce, free-range livestock and farm operations management in Nepal.",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Nepal",
+      "addressCountry": "NP"
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "customer support",
+      "email": "contact@greenbirdhomestead.com.np" // Placeholder, should be updated if real email exists
+    }
+  };
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,6 +71,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <JsonLd data={jsonLdData} />
       {/* Hero Section */}
       <section className="relative bg-[#2D5A27] text-white overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=2940&auto=format&fit=crop')] bg-cover bg-center opacity-30"></div>

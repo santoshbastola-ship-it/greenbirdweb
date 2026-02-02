@@ -1,14 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import { User, LogOut, ChevronDown, UserCircle, Key } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, LogOut, ChevronDown, UserCircle, Key, Bell } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import AdminProfileModal from "./ProfileModal";
+import { NotificationService } from "@/services/notification.service";
 
 export default function AdminHeader() {
     const { user, dbUser, logout } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    // Subscribe to unread notifications
+    useEffect(() => {
+        if (user?.uid) {
+            const unsubscribe = NotificationService.subscribeToUnreadCount(user.uid, (count) => {
+                setUnreadCount(count);
+            });
+            return () => unsubscribe();
+        }
+    }, [user?.uid]);
 
     return (
         <header className="bg-white border-b border-gray-200 h-16 sticky top-0 z-30 flex items-center justify-between px-4 md:px-8">
@@ -21,6 +33,19 @@ export default function AdminHeader() {
             </div>
 
             <div className="flex items-center gap-4">
+                {/* Notification Bell */}
+                <a
+                    href="/admin/notifications"
+                    className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors group"
+                    title="Notifications"
+                >
+                    <Bell className="h-5 w-5 text-gray-600 group-hover:text-green-600 transition-colors" />
+                    {/* Unread badge */}
+                    {unreadCount > 0 && (
+                        <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+                    )}
+                </a>
+
                 <div className="relative">
                     <button
                         onClick={() => setIsMenuOpen(!isMenuOpen)}

@@ -57,6 +57,7 @@ const safeLogs = (logs: any) => {
 
 
 const COLLECTION_NAME = "transactions";
+const WHATSAPP_SUPPORT_FOOTER = "\n\n_(Automated message. For support, chat with us at https://wa.me/9779765142494)_";
 
 export const TransactionService = {
     // Create a new transaction (Sale or Purchase)
@@ -101,17 +102,39 @@ export const TransactionService = {
                 const title = `New ${transaction.type} Order`;
                 const message = `New ${transaction.type} from ${transaction.partyName} for ${transaction.items.length} items.`;
 
-                // Send to all admins
+                // Send in-app notifications to ALL admins
                 await Promise.all(adminIds.map(adminId =>
                     NotificationService.createNotification({
                         targetUserId: adminId,
                         title,
                         message,
                         type: 'info',
-                        channels: ['in-app', 'whatsapp'], // Simulate WhatsApp to admin
+                        channels: ['in-app'],
                         relatedEntityId: docRef.id,
                         relatedEntityType: 'transaction',
-                        route: `/admin/orders` // Redirect to orders
+                        route: `/admin/orders`
+                    })
+                ));
+
+                // Send WhatsApp notification to UNIQUE phone numbers only (deduplicate)
+                const uniquePhoneAdmins = new Map<string, string>();
+                adminSnap.docs.forEach(doc => {
+                    const phone = doc.data().phoneNumber;
+                    if (phone && !uniquePhoneAdmins.has(phone)) {
+                        uniquePhoneAdmins.set(phone, doc.id);
+                    }
+                });
+
+                await Promise.all(Array.from(uniquePhoneAdmins.values()).map(adminId =>
+                    NotificationService.createNotification({
+                        targetUserId: adminId,
+                        title,
+                        message,
+                        type: 'info',
+                        channels: ['whatsapp'],
+                        relatedEntityId: docRef.id,
+                        relatedEntityType: 'transaction',
+                        route: `/admin/orders`
                     })
                 ));
 
@@ -120,7 +143,7 @@ export const TransactionService = {
                     await NotificationService.createNotification({
                         targetUserId: transaction.customerId,
                         title: "Order Placed Successfully",
-                        message: `Your order #${transaction.billNo} has been placed.`,
+                        message: `Your order #${transaction.billNo} has been placed.${WHATSAPP_SUPPORT_FOOTER}`,
                         type: 'success',
                         channels: ['in-app', 'whatsapp'],
                         relatedEntityId: docRef.id,
@@ -330,14 +353,42 @@ export const TransactionService = {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     if (data.customerId) {
-                        const title = `Order Status Updated`;
-                        const message = `Your order #${data.billNo} is now ${status}. ${reason ? `Reason: ${reason}` : ''}`;
+                        let title = '';
+                        let message = '';
+                        let type: 'info' | 'success' | 'warning' = 'info';
+
+                        switch (status) {
+                            case 'cancelled':
+                                title = 'Order Cancelled';
+                                message = `Your order #${data.billNo} has been cancelled.${reason ? ` Reason: ${reason}` : ''}${WHATSAPP_SUPPORT_FOOTER}`;
+                                type = 'warning';
+                                break;
+                            case 'delivered':
+                                title = 'Order Delivered!';
+                                message = `Your order #${data.billNo} has been delivered! Thank you for shopping with Greenbird Homestead. 🌱${WHATSAPP_SUPPORT_FOOTER}`;
+                                type = 'success';
+                                break;
+                            case 'accepted':
+                                title = 'Order Confirmed';
+                                message = `Your order #${data.billNo} has been confirmed and is being prepared.${WHATSAPP_SUPPORT_FOOTER}`;
+                                type = 'success';
+                                break;
+                            case 'open':
+                                title = 'Order Received';
+                                message = `Your order #${data.billNo} has been received and is being reviewed.${WHATSAPP_SUPPORT_FOOTER}`;
+                                type = 'info';
+                                break;
+                            default:
+                                title = 'Order Status Updated';
+                                message = `Your order #${data.billNo} is now ${status}.${reason ? ` ${reason}` : ''}${WHATSAPP_SUPPORT_FOOTER}`;
+                                type = 'info';
+                        }
 
                         await NotificationService.createNotification({
                             targetUserId: data.customerId,
                             title,
                             message,
-                            type: 'info',
+                            type,
                             channels: ['in-app', 'whatsapp'],
                             relatedEntityId: id,
                             relatedEntityType: 'transaction'
@@ -370,6 +421,31 @@ export const TransactionService = {
                 logs: arrayUnion(newLog),
                 updatedAt: new Date().toISOString()
             });
+
+            // NOTIFICATION LOGIC: Notify Customer of Payment Update
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.customerId) {
+                        const isPaid = paymentStatus === PaymentStatus.PaidCash || paymentStatus === PaymentStatus.PaidOnline;
+                        const title = `Payment ${isPaid ? 'Received' : 'Updated'}`;
+                        const message = `Payment for order #${data.billNo} has been updated. Total paid: Rs ${paidAmount.toLocaleString()}. Status: ${paymentStatus}.${WHATSAPP_SUPPORT_FOOTER}`;
+
+                        await NotificationService.createNotification({
+                            targetUserId: data.customerId,
+                            title,
+                            message,
+                            type: 'success',
+                            channels: ['in-app', 'whatsapp'],
+                            relatedEntityId: id,
+                            relatedEntityType: 'transaction'
+                        });
+                    }
+                }
+            } catch (notifyError) {
+                console.error("Failed to send payment update notification:", notifyError);
+            }
         } catch (error) {
             console.error("Error updating payment status:", error);
             throw error;

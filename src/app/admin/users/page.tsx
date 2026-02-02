@@ -45,6 +45,7 @@ export default function UserManagementPage() {
                 return (
                     user.name.toLowerCase().includes(query) ||
                     user.email?.toLowerCase().includes(query) ||
+                    user.phoneNumber?.toLowerCase().includes(query) ||
                     getRoleDisplayName(user.role).toLowerCase().includes(query)
                 );
             });
@@ -91,9 +92,9 @@ export default function UserManagementPage() {
         }
     };
 
-    const handleUpdateUser = async (userId: string, name: string, role: UserRole) => {
+    const handleUpdateUser = async (userId: string, name: string, role: UserRole, phoneNumber?: string) => {
         try {
-            await UserService.updateUser(userId, { name, role });
+            await UserService.updateUser(userId, { name, role, phoneNumber });
             await loadUsers();
             // Show success message
             alert("User updated successfully!");
@@ -191,7 +192,7 @@ export default function UserManagementPage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <input
                         type="text"
-                        placeholder="Search by name, email, role..."
+                        placeholder="Search by name, email, phone, role..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
@@ -244,6 +245,9 @@ export default function UserManagementPage() {
                                         </span>
                                     </div>
                                     <p className="text-sm text-gray-500">{user.email || "No email"}</p>
+                                    {user.phoneNumber && (
+                                        <p className="text-sm text-gray-600 font-medium">📱 {user.phoneNumber}</p>
+                                    )}
 
                                     <div className="mt-1">
                                         {!user.isActive && (

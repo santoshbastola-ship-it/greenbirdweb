@@ -2,6 +2,7 @@ import { ProductService } from "@/services/product.service";
 import CategoryFilter from "@/components/shop/CategoryFilter";
 import ProductList from "@/components/shop/ProductList";
 import { Suspense } from "react";
+import WhatsAppOptInModal from "@/components/shop/WhatsAppOptInModal";
 
 
 
@@ -23,6 +24,8 @@ export default async function ShopPage() {
 
                 </div>
             </div>
+
+            <WhatsAppOptInModal />
         </div>
     );
 }

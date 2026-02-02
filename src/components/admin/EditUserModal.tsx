@@ -8,7 +8,7 @@ interface EditUserModalProps {
     isOpen: boolean;
     user: User | null;
     onClose: () => void;
-    onSubmit: (userId: string, name: string, role: UserRole) => Promise<void>;
+    onSubmit: (userId: string, name: string, role: UserRole, phoneNumber?: string) => Promise<void>;
     onDelete: (userId: string) => Promise<void>;
     onResendInvite: (email: string) => Promise<void>;
     onToggleStatus: (userId: string, currentStatus: boolean) => Promise<void>;
@@ -25,6 +25,7 @@ export default function EditUserModal({
 }: EditUserModalProps) {
     const [name, setName] = useState("");
     const [role, setRole] = useState<UserRole>("manager");
+    const [phoneNumber, setPhoneNumber] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState("");
 
@@ -32,6 +33,7 @@ export default function EditUserModal({
         if (user) {
             setName(user.name);
             setRole(user.role);
+            setPhoneNumber(user.phoneNumber || "");
         }
     }, [user]);
 
@@ -48,7 +50,7 @@ export default function EditUserModal({
 
         setIsSubmitting(true);
         try {
-            await onSubmit(user.id, name.trim(), role);
+            await onSubmit(user.id, name.trim(), role, phoneNumber.trim());
             onClose();
         } catch (err: any) {
             setError(err.message || "Failed to update user");
@@ -142,6 +144,22 @@ export default function EditUserModal({
                             <option value="manager">Farm Manager</option>
                             <option value="customer">Customer</option>
                         </select>
+                    </div>
+
+                    <div>
+                        <label htmlFor="edit-phone" className="block text-sm font-medium text-gray-700 mb-1">
+                            Phone Number (WhatsApp)
+                        </label>
+                        <input
+                            type="text"
+                            id="edit-phone"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            disabled={isSubmitting}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100"
+                            placeholder="e.g. 9779841..."
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Include country code (e.g. 977) for WhatsApp notifications.</p>
                     </div>
 
                     <div className="flex gap-3 pt-2">

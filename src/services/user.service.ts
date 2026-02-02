@@ -260,6 +260,21 @@ export const UserService = {
 
     updateUser: async (userId: string, data: Partial<User>): Promise<void> => {
         try {
+            // Format phone number if provided
+            if (data.phoneNumber) {
+                // Remove any spaces, dashes, or special characters
+                let phoneNumber = data.phoneNumber.replace(/[\s\-\(\)]/g, '');
+
+                // If phone number doesn't start with 977 and is 10 digits, add 977 prefix
+                if (!phoneNumber.startsWith('977') && phoneNumber.length === 10) {
+                    phoneNumber = '977' + phoneNumber;
+                    console.log(`[UserService] Added country code 977 to phone number: ${phoneNumber}`);
+                }
+
+                // Update the data object with formatted phone number
+                data = { ...data, phoneNumber };
+            }
+
             // Check users first
             let docRef = doc(db, USERS_COLLECTION, userId);
             let docSnap = await getDoc(docRef);

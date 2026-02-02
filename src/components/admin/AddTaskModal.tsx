@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { X, Calendar, User, AlignLeft, AlertCircle, Repeat } from "lucide-react";
-import { TaskItem, TaskPriority, TaskRepetition, TaskStatus } from "@/types";
+import { TaskItem, TaskPriority, TaskRepetition, TaskStatus, User as AppUser } from "@/types";
 import { TaskService } from "@/services/task.service";
+import { UserService } from "@/services/user.service";
 import { toNepali, getTodayNepali } from "@/lib/date-helper";
 import dynamic from 'next/dynamic';
 
@@ -36,6 +37,19 @@ export default function AddTaskModal({ onClose, onSuccess, task }: { onClose: ()
     });
 
     const [loading, setLoading] = useState(false);
+    const [users, setUsers] = useState<AppUser[]>([]);
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const fetchedUsers = await UserService.getAllUsers();
+                setUsers(fetchedUsers);
+            } catch (error) {
+                console.error("Failed to fetch users", error);
+            }
+        };
+        fetchUsers();
+    }, []);
 
     useEffect(() => {
         if (task) {
@@ -263,14 +277,19 @@ export default function AddTaskModal({ onClose, onSuccess, task }: { onClose: ()
                                 <User className="h-4 w-4 mr-1 text-gray-400" />
                                 Assign To
                             </label>
-                            <input
-                                type="text"
+                            <select
                                 name="assignedTo"
                                 value={formData.assignedTo}
                                 onChange={handleChange}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                                placeholder="Enter name"
-                            />
+                            >
+                                <option value="">Unassigned</option>
+                                {users.map(user => (
+                                    <option key={user.id} value={user.name}>
+                                        {user.name} ({user.role})
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
                         {/* Status - NOW AVAILABLE IN ALL MODES */}

@@ -1,4 +1,4 @@
-import { collection, addDoc, query, where, orderBy, limit, getDocs, updateDoc, doc, Timestamp } from "firebase/firestore";
+import { collection, addDoc, query, where, orderBy, limit, getDocs, updateDoc, doc, Timestamp, getDoc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Notification, NotificationType, NotificationChannel } from "@/types";
 
@@ -84,22 +84,30 @@ export const NotificationService = {
     },
 
     // STUB: Send WhatsApp Notification
-    sendWhatsappNotification: async (to: string, title: string, body: string): Promise<void> => {
-        // In a real app, this would call an API (Twilio, Interakt, WhatsApp Cloud API)
-        // For now, we simulate by logging and saving to a separate collection.
-
-        console.log(`[WHATSAPP STUB] Sending to ${to}: ${title} - ${body}`);
-
+    // Send WhatsApp Notification (Zero-Cost Optimization)
+    sendWhatsappNotification: async (toUserId: string, title: string, body: string): Promise<void> => {
         try {
-            await addDoc(collection(db, WHATSAPP_LOGS_COLLECTION), {
-                to,
-                title,
-                body,
-                sentAt: new Date().toISOString(),
-                status: 'simulated'
+            // Call API route to handle secure server-side sending
+            // This prevents "process.env" issues on the client-side
+            await fetch('/api/whatsapp/notification', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ toUserId, title, body })
+            });
+
+        } catch (error) {
+            console.error("Error sending WhatsApp notification:", error);
+        }
+    },
+
+    // Delete notification
+    deleteNotification: async (id: string): Promise<void> => {
+        try {
+            await import("firebase/firestore").then(async ({ deleteDoc }) => {
+                await deleteDoc(doc(db, COLLECTION_NAME, id));
             });
         } catch (error) {
-            console.error("Error logging WhatsApp stub:", error);
+            console.error("Error deleting notification:", error);
         }
     },
 
@@ -108,5 +116,27 @@ export const NotificationService = {
         const cleanNumber = phoneNumber.replace(/\D/g, '');
         const encodedText = encodeURIComponent(text);
         return `https://wa.me/${cleanNumber}?text=${encodedText}`;
+    },
+
+    // Subscribe to unread count
+    subscribeToUnreadCount: (userId: string, callback: (count: number) => void): () => void => {
+        try {
+            const q = query(
+                collection(db, COLLECTION_NAME),
+                where("targetUserId", "==", userId),
+                where("isRead", "==", false)
+            );
+
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                callback(snapshot.size);
+            }, (error) => {
+                console.error("Error subscribing to unread count:", error);
+            });
+
+            return unsubscribe;
+        } catch (error) {
+            console.error("Error setting up unread count subscription:", error);
+            return () => { };
+        }
     }
 };
