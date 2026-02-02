@@ -1,4 +1,4 @@
-import { collection, addDoc, query, where, orderBy, limit, getDocs, updateDoc, doc, Timestamp, getDoc, onSnapshot } from "firebase/firestore";
+import { collection, addDoc, query, where, orderBy, limit, getDocs, updateDoc, doc, Timestamp, getDoc, onSnapshot, writeBatch } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Notification, NotificationType, NotificationChannel } from "@/types";
 
@@ -56,7 +56,6 @@ export const NotificationService = {
         }
     },
 
-    // Mark notification as read
     markAsRead: async (id: string): Promise<void> => {
         try {
             await updateDoc(doc(db, COLLECTION_NAME, id), {
@@ -64,6 +63,59 @@ export const NotificationService = {
             });
         } catch (error) {
             console.error("Error marking notification as read:", error);
+        }
+    },
+
+    // Mark notification as unread
+    markAsUnread: async (id: string): Promise<void> => {
+        try {
+            await updateDoc(doc(db, COLLECTION_NAME, id), {
+                isRead: false
+            });
+        } catch (error) {
+            console.error("Error marking notification as unread:", error);
+        }
+    },
+
+    // Mark batch as read
+    markBatchAsRead: async (ids: string[]): Promise<void> => {
+        try {
+            const batch = writeBatch(db);
+            ids.forEach(id => {
+                const ref = doc(db, COLLECTION_NAME, id);
+                batch.update(ref, { isRead: true });
+            });
+            await batch.commit();
+        } catch (error) {
+            console.error("Error marking batch as read:", error);
+        }
+    },
+
+    // Mark batch as unread
+    markBatchAsUnread: async (ids: string[]): Promise<void> => {
+        try {
+            const batch = writeBatch(db);
+            ids.forEach(id => {
+                const ref = doc(db, COLLECTION_NAME, id);
+                batch.update(ref, { isRead: false });
+            });
+            await batch.commit();
+        } catch (error) {
+            console.error("Error marking batch as unread:", error);
+        }
+    },
+
+    // Delete batch
+    deleteBatch: async (ids: string[]): Promise<void> => {
+        try {
+            const batch = writeBatch(db);
+            ids.forEach(id => {
+                const ref = doc(db, COLLECTION_NAME, id);
+                batch.delete(ref);
+            });
+            await batch.commit();
+        } catch (error) {
+            console.error("Error deleting batch:", error);
         }
     },
 
@@ -76,10 +128,32 @@ export const NotificationService = {
                 where("isRead", "==", false)
             );
             const querySnapshot = await getDocs(q);
-            const updatePromises = querySnapshot.docs.map(d => updateDoc(d.ref, { isRead: true }));
-            await Promise.all(updatePromises);
+            const batch = writeBatch(db);
+            querySnapshot.docs.forEach(d => {
+                batch.update(d.ref, { isRead: true });
+            });
+            await batch.commit();
         } catch (error) {
             console.error("Error marking all as read:", error);
+        }
+    },
+
+    // Mark all as unread for a user
+    markAllAsUnread: async (userId: string): Promise<void> => {
+        try {
+            const q = query(
+                collection(db, COLLECTION_NAME),
+                where("targetUserId", "==", userId),
+                where("isRead", "==", true)
+            );
+            const querySnapshot = await getDocs(q);
+            const batch = writeBatch(db);
+            querySnapshot.docs.forEach(d => {
+                batch.update(d.ref, { isRead: false });
+            });
+            await batch.commit();
+        } catch (error) {
+            console.error("Error marking all as unread:", error);
         }
     },
 
@@ -130,7 +204,12 @@ export const NotificationService = {
             const unsubscribe = onSnapshot(q, (snapshot) => {
                 callback(snapshot.size);
             }, (error) => {
-                console.error("Error subscribing to unread count:", error);
+                console.error("Error subscribing to unread count (snapshot error):", error);
+
+                // If the error code includes 'failed-precondition', it's likely a missing index.
+                if (error.code === 'failed-precondition') {
+                    console.error("Missing Firestore Index! Please check the console link to create it.");
+                }
             });
 
             return unsubscribe;
