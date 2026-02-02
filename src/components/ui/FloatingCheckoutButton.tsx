@@ -35,7 +35,7 @@ export default function FloatingCheckoutButton() {
         <>
             <div
                 className={`
-                    fixed bottom-0 left-0 right-0 z-50 
+                    fixed bottom-0 left-0 right-0 z-[9999] 
                     transition-transform duration-300 ease-out
                     ${isVisible ? 'translate-y-0' : 'translate-y-full'}
                 `}
