@@ -15,6 +15,7 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { BlogPost } from "@/types/extra";
+import { NotificationService } from "./notification.service";
 
 
 const BLOG_COLLECTION = "blog_posts";
@@ -133,6 +134,16 @@ export const BlogService = {
             published: post.published ?? true,
             views: 0
         });
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "New Blog Post",
+            `New blog post created: ${post.title}`,
+            docRef.id,
+            'blog',
+            '/admin/blog'
+        );
+
         return docRef.id;
     },
 
@@ -148,6 +159,15 @@ export const BlogService = {
         }
 
         await updateDoc(postRef, updateData);
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "Blog Post Updated",
+            `Blog post updated: ${id}`,
+            id,
+            'blog',
+            '/admin/blog'
+        );
     },
 
     /**
@@ -166,6 +186,15 @@ export const BlogService = {
                 console.error("Error deleting image from storage:", error);
             }
         }
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "Blog Post Deleted",
+            `Blog post deleted: ${id}`,
+            undefined,
+            'blog',
+            '/admin/blog'
+        );
     },
 
     /**

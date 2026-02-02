@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, CheckCircle, Calendar, AlertCircle, Circle, User } from "lucide-react";
+import { Plus, CheckCircle, Calendar, AlertCircle, Circle, User, Trash2 } from "lucide-react";
 
 import { TaskItem, TaskPriority, TaskStatus } from "@/types";
 import { TaskService } from "@/services/task.service";
@@ -89,6 +89,19 @@ export default function TasksPage() {
             console.error("Failed to update status", error);
             // Revert on error
             loadTasks();
+        }
+    };
+
+    const handleDelete = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        if (!confirm("Are you sure you want to delete this task?")) return;
+
+        try {
+            await TaskService.deleteTask(id);
+            setTasks(tasks.filter(t => t.id !== id));
+        } catch (error) {
+            console.error("Failed to delete task", error);
+            alert("Failed to delete task.");
         }
     };
 
@@ -243,6 +256,7 @@ export default function TasksPage() {
                                 onClick={() => setSelectedTaskId(task.id)}
                                 onToggleStatus={(e) => handleToggleStatus(task, e)}
                                 isCompleting={completingTaskIds.has(task.id)}
+                                onDelete={dbUser?.email === "greenbirdhomestead@gmail.com" ? handleDelete : undefined}
                             />
                         ))}
                     </div>
@@ -268,7 +282,7 @@ export default function TasksPage() {
     );
 }
 
-function TaskCard({ task, onClick, onToggleStatus, isCompleting }: { task: TaskItem; onClick: () => void; onToggleStatus: (e: React.MouseEvent) => void; isCompleting?: boolean }) {
+function TaskCard({ task, onClick, onToggleStatus, isCompleting, onDelete }: { task: TaskItem; onClick: () => void; onToggleStatus: (e: React.MouseEvent) => void; isCompleting?: boolean; onDelete?: (e: React.MouseEvent, id: string) => void }) {
     const getPriorityStyles = (p: string) => {
         switch (p) {
             case 'urgent': return { bg: "bg-red-50", text: "text-red-600", icon: AlertCircle };
@@ -323,7 +337,7 @@ function TaskCard({ task, onClick, onToggleStatus, isCompleting }: { task: TaskI
                     </div>
                 </div>
 
-                {/* Right: Status Badge (Hidden on very small screens if crowded, but good for context) */}
+                {/* Right: Status Badge & Actions */}
                 <div className="flex-shrink-0 flex flex-col items-end gap-2">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                         ${task.status === TaskStatus.Done ? "bg-green-100 text-green-800" :
@@ -335,6 +349,17 @@ function TaskCard({ task, onClick, onToggleStatus, isCompleting }: { task: TaskI
                     <span className={`text-[10px] uppercase font-bold tracking-wider ${style.text}`}>
                         {task.priority}
                     </span>
+
+                    {/* Delete Button (Stop propagation to prevent card click) */}
+                    {onDelete && (
+                        <button
+                            onClick={(e) => onDelete(e, task.id)}
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors mt-1"
+                            title="Delete Task"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

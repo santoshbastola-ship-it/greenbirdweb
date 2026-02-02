@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { EnergyBill, EnergyType, PaymentStatus } from '@/types';
+import { NotificationService } from './notification.service';
 
 const COLLECTION_NAME = 'energy_bills';
 
@@ -112,6 +113,16 @@ export const addEnergyBill = async (bill: Omit<EnergyBill, 'id'>): Promise<strin
         });
 
         const docRef = await addDoc(collection(db, COLLECTION_NAME), data);
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "New Energy Bill",
+            `New ${bill.type} bill added for ${bill.month} ${bill.year}`,
+            docRef.id,
+            'energy',
+            '/admin/energy'
+        );
+
         return docRef.id;
     } catch (error) {
         console.error('Error adding energy bill:', error);
@@ -130,6 +141,15 @@ export const updateEnergyBill = async (
         const data = convertToFirestoreData(updates);
         const billRef = doc(db, COLLECTION_NAME, id);
         await updateDoc(billRef, data);
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "Energy Bill Updated",
+            `Energy bill updated: ${id}`,
+            id,
+            'energy',
+            '/admin/energy'
+        );
     } catch (error) {
         console.error('Error updating energy bill:', error);
         throw error;
@@ -143,6 +163,15 @@ export const deleteEnergyBill = async (id: string): Promise<void> => {
     try {
         const billRef = doc(db, COLLECTION_NAME, id);
         await deleteDoc(billRef);
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "Energy Bill Deleted",
+            `Energy bill deleted: ${id}`,
+            undefined,
+            'energy',
+            '/admin/energy'
+        );
     } catch (error) {
         console.error('Error deleting energy bill:', error);
         throw error;
@@ -171,6 +200,15 @@ export const updatePaymentStatus = async (
         }
 
         await updateDoc(billRef, updates);
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "Bill Payment Updated",
+            `Payment status updated for bill ${id}: ${paymentStatus}`,
+            id,
+            'energy',
+            '/admin/energy'
+        );
     } catch (error) {
         console.error('Error updating payment status:', error);
         throw error;

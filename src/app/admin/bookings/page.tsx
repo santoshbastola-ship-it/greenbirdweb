@@ -18,7 +18,8 @@ import {
     MoreVertical,
     Pencil,
     Plus,
-    Users
+    Users,
+    Trash2
 } from "lucide-react";
 import LogoLoader from "@/components/ui/LogoLoader";
 import BookingModal from "@/components/admin/BookingModal";
@@ -26,8 +27,10 @@ import AdvancedSearch from "@/components/admin/AdvancedSearch";
 import NepaliDate from "nepali-date-converter";
 import { toNepali } from "@/lib/date-helper";
 import { Toast, ToastType } from "@/components/ui/Toast";
+import { useAuth } from "@/context/AuthContext";
 
 export default function AdminBookingsPage() {
+    const { dbUser } = useAuth();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
@@ -194,6 +197,7 @@ export default function AdminBookingsPage() {
                                 setSelectedBooking(b);
                                 setIsBookingModalOpen(true);
                             }}
+                            onDelete={dbUser?.email === "greenbirdhomestead@gmail.com" ? () => handleDeleteBooking(booking.id) : undefined}
                         />
                     ))}
                 </div>
@@ -220,11 +224,13 @@ export default function AdminBookingsPage() {
 function BookingCard({
     booking,
     onUpdateStatus,
-    onEdit
+    onEdit,
+    onDelete
 }: {
     booking: Booking;
     onUpdateStatus: (id: string, status: BookingStatus) => void;
     onEdit: (booking: Booking) => void;
+    onDelete?: () => void;
 }) {
     const getStatusColor = (status: BookingStatus) => {
         switch (status) {
@@ -313,6 +319,16 @@ function BookingCard({
                         >
                             <Pencil className="h-4 w-4" />
                         </button>
+
+                        {onDelete && (
+                            <button
+                                onClick={onDelete}
+                                className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
+                                title="Delete"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </button>
+                        )}
 
                     </div>
                 </div>

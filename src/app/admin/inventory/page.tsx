@@ -26,10 +26,14 @@ import { toNepali } from "@/lib/date-helper";
 import NepaliDate from "nepali-date-converter";
 import { Calendar, Clock, DollarSign, ChevronRight } from "lucide-react";
 import LogoLoader from "@/components/ui/LogoLoader";
+import ProductDetailsModal from "@/components/admin/ProductDetailsModal";
 
 type TabStatus = BusinessType | "ALL";
 
+import { useAuth } from "@/context/AuthContext";
+
 export default function InventoryPage() {
+    const { dbUser } = useAuth();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -40,6 +44,7 @@ export default function InventoryPage() {
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [isStockUpdateModalOpen, setIsStockUpdateModalOpen] = useState(false);
     const [isStockHistoryModalOpen, setIsStockHistoryModalOpen] = useState(false);
+    const [isProductViewModalOpen, setIsProductViewModalOpen] = useState(false);
 
     useEffect(() => {
         loadProducts();
@@ -109,6 +114,11 @@ export default function InventoryPage() {
     const handleStockHistory = (product: Product) => {
         setSelectedProduct(product);
         setIsStockHistoryModalOpen(true);
+    };
+
+    const handleProductView = (product: Product) => {
+        setSelectedProduct(product);
+        setIsProductViewModalOpen(true);
     };
 
     const handleProductUpdated = () => {
@@ -194,9 +204,10 @@ export default function InventoryPage() {
                         <ProductCard
                             key={product.id}
                             product={product}
+                            onView={() => handleProductView(product)}
                             onStockUpdate={() => handleStockUpdate(product)}
                             onStockHistory={() => handleStockHistory(product)}
-                            onDelete={() => handleDelete(product.id)}
+                            onDelete={dbUser?.email === "greenbirdhomestead@gmail.com" ? () => handleDelete(product.id) : undefined}
                             icon={getBusinessIcon(product.businessType)}
                         />
                     ))}
@@ -217,21 +228,30 @@ export default function InventoryPage() {
                     onClose={() => setIsStockHistoryModalOpen(false)}
                 />
             )}
+
+            {isProductViewModalOpen && selectedProduct && (
+                <ProductDetailsModal
+                    product={selectedProduct}
+                    onClose={() => setIsProductViewModalOpen(false)}
+                />
+            )}
         </div>
     );
 }
 
 function ProductCard({
     product,
+    onView,
     onStockUpdate,
     onStockHistory,
     onDelete,
     icon
 }: {
     product: Product;
+    onView: () => void;
     onStockUpdate: () => void;
     onStockHistory: () => void;
-    onDelete: () => void;
+    onDelete?: () => void;
     icon: React.ReactNode;
 }) {
     // Determine stock status color
@@ -244,9 +264,9 @@ function ProductCard({
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 hover:shadow-md transition-all duration-200">
             <div className="flex items-center justify-between gap-3">
                 {/* Left Section: Image & Basic Info */}
-                <Link
-                    href={`/admin/inventory/edit/${product.id}`}
-                    className="flex items-center gap-3 flex-1 min-w-0 group"
+                <button
+                    onClick={onView}
+                    className="flex items-center gap-3 flex-1 min-w-0 group text-left"
                 >
                     <div className="h-10 w-10 flex-shrink-0 bg-gray-50 rounded-lg overflow-hidden border border-gray-100 flex items-center justify-center">
                         {product.images?.[0] ? (
@@ -271,7 +291,7 @@ function ProductCard({
                             </div>
                         )}
                     </div>
-                </Link>
+                </button>
 
                 {/* Right Section: Price & Stock */}
                 <div className="flex items-center gap-3 flex-shrink-0">
@@ -291,6 +311,21 @@ function ProductCard({
                             <Home className={`h-4 w-4 ${product.isFeatured ? "text-blue-600" : "text-gray-300"}`} />
                         </div>
                     </div>
+
+                    {/* Delete Button */}
+                    {onDelete && (
+                        <button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onDelete();
+                            }}
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete Product"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </button>
+                    )}
 
                     {/* Stock Pill */}
                     <button

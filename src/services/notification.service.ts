@@ -217,5 +217,58 @@ export const NotificationService = {
             console.error("Error setting up unread count subscription:", error);
             return () => { };
         }
+    },
+
+    // Notify all admins (In-App + WhatsApp)
+    notifyAdmins: async (title: string, message: string, relatedEntityId?: string, relatedEntityType?: any, route?: string): Promise<void> => {
+        try {
+            // 1. Fetch all admins
+            const q = query(collection(db, "users"), where("role", "==", "admin"));
+            const adminSnap = await getDocs(q);
+            const adminDocs = adminSnap.docs;
+
+            if (adminDocs.length === 0) return;
+
+            // 2. Send In-App Notifications to ALL admins
+            const adminIds = adminDocs.map(d => d.id);
+            await Promise.all(adminIds.map(adminId =>
+                NotificationService.createNotification({
+                    targetUserId: adminId,
+                    title,
+                    message,
+                    type: 'info',
+                    channels: ['in-app'],
+                    relatedEntityId,
+                    relatedEntityType,
+                    route
+                })
+            ));
+
+            // 3. Send WhatsApp to UNIQUE phone numbers
+            const uniquePhoneAdmins = new Map<string, string>();
+            adminDocs.forEach(doc => {
+                const data = doc.data();
+                const phone = data.phoneNumber;
+                if (phone && !uniquePhoneAdmins.has(phone)) {
+                    uniquePhoneAdmins.set(phone, doc.id);
+                }
+            });
+
+            await Promise.all(Array.from(uniquePhoneAdmins.values()).map(adminId =>
+                NotificationService.createNotification({
+                    targetUserId: adminId,
+                    title,
+                    message,
+                    type: 'info',
+                    channels: ['whatsapp'],
+                    relatedEntityId,
+                    relatedEntityType,
+                    route
+                })
+            ));
+
+        } catch (error) {
+            console.error("Error notifying admins:", error);
+        }
     }
 };

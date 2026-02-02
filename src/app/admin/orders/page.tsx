@@ -434,6 +434,20 @@ function OrderDetailsModal({
         }
     };
 
+    const handleDelete = async () => {
+        if (!confirm("Are you sure you want to PERMANENTLY delete this order?")) return;
+        setIsUpdating(true);
+        try {
+            await TransactionService.deleteTransaction(order.id);
+            onClose();
+            onUpdate();
+        } catch (error) {
+            console.error(error);
+            alert("Failed to delete order");
+            setIsUpdating(false);
+        }
+    };
+
     const handleSaveChanges = async () => {
         if (!confirm("Are you sure you want to save these changes?")) return;
 
@@ -579,6 +593,16 @@ function OrderDetailsModal({
                             </div>
                         )}
                         <div className="w-px h-6 bg-gray-200 mx-2"></div>
+                        {dbUser?.email === "greenbirdhomestead@gmail.com" && !isEditing && (
+                            <button
+                                onClick={handleDelete}
+                                disabled={isUpdating}
+                                className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Delete Order"
+                            >
+                                <Trash className="h-5 w-5" />
+                            </button>
+                        )}
                         <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                             <X className="h-6 w-6 text-gray-500" />
                         </button>

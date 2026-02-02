@@ -26,10 +26,12 @@ const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(
 
 import "nepali-datepicker-reactjs/dist/index.css";
 import LogoLoader from "@/components/ui/LogoLoader";
+import { useAuth } from "@/context/AuthContext";
 
 type TabStatus = "Pending" | "Partial" | "Paid" | "All";
 
 export default function EnergyBillsPage() {
+    const { dbUser } = useAuth();
     const [bills, setBills] = useState<EnergyBill[]>([]);
     const [activeTab, setActiveTab] = useState<TabStatus>("Pending");
     const [searchQuery, setSearchQuery] = useState("");
@@ -63,6 +65,19 @@ export default function EnergyBillsPage() {
 
         return () => unsubscribe();
     }, []);
+
+    const handleDelete = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        if (!confirm("Are you sure you want to delete this bill?")) return;
+
+        try {
+            await deleteEnergyBill(id);
+            // Subscription will update state
+        } catch (error) {
+            console.error("Error deleting bill:", error);
+            alert("Failed to delete bill");
+        }
+    };
 
     // Sync selectedBill with updated bills list
     useEffect(() => {
@@ -206,6 +221,7 @@ export default function EnergyBillsPage() {
                                 bill={bill}
                                 onSelect={() => setSelectedBill(bill)}
                                 onEdit={() => setBillToEdit(bill)}
+                                onDelete={dbUser?.email === "greenbirdhomestead@gmail.com" ? (e) => handleDelete(e, bill.id) : undefined}
                             />
                         ))}
                     </div>
@@ -246,11 +262,13 @@ export default function EnergyBillsPage() {
 function BillCard({
     bill,
     onSelect,
-    onEdit
+    onEdit,
+    onDelete
 }: {
     bill: EnergyBill;
     onSelect: () => void;
     onEdit: () => void;
+    onDelete?: (e: React.MouseEvent) => void;
 }) {
     const styles = getTypeStyles(bill.type);
 
@@ -319,6 +337,18 @@ function BillCard({
                             {getPaymentStatusDisplayName(bill.paymentStatus)}
                         </span>
                     </div>
+                </div>
+
+                <div className="flex-shrink-0">
+                    {onDelete && (
+                        <button
+                            onClick={onDelete}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete Bill"
+                        >
+                            <Trash2 className="h-5 w-5" />
+                        </button>
+                    )}
                 </div>
             </div>
 

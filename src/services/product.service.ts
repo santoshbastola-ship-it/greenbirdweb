@@ -2,6 +2,7 @@ import { collection, getDocs, doc, getDoc, query, where, updateDoc, deleteDoc, a
 import { db, storage } from "@/lib/firebase";
 import { Product, StockHistoryEntry, PriceHistoryEntry } from "@/types";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { NotificationService } from "./notification.service";
 
 const COLLECTION_NAME = "products";
 
@@ -57,6 +58,15 @@ export const ProductService = {
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
             });
+
+            // Notify Admins
+            await NotificationService.notifyAdmins(
+                "New Product Created",
+                `New product created: ${product.name}`,
+                docRef.id,
+                'product',
+                '/admin/inventory'
+            );
             return docRef.id;
         } catch (error) {
             console.error("Error creating product:", error);
@@ -89,6 +99,15 @@ export const ProductService = {
                 ...updates,
                 updatedAt: new Date().toISOString(),
             });
+
+            // Notify Admins
+            await NotificationService.notifyAdmins(
+                "Product Updated",
+                `Product updated: ${id}`,
+                id,
+                'product',
+                '/admin/inventory'
+            );
         } catch (error) {
             console.error("Error updating product:", error);
             throw error;
@@ -116,7 +135,8 @@ export const ProductService = {
         action: 'add' | 'remove' | 'set',
         quantity: number,
         note?: string,
-        changedBy: string = "admin" // Default for backward compatibility or system updates
+        changedBy: string = "admin", // Default for backward compatibility or system updates
+        changedByUserId?: string
     ): Promise<void> {
         // 1. Get current product
         const product = await this.getProductById(productId);
@@ -163,6 +183,19 @@ export const ProductService = {
                 currentStock: newStock,
                 stockHistory: [historyEntry, ...currentHistory]
             });
+
+            // 5. Send Notification
+            if (changedByUserId) {
+                await NotificationService.createNotification({
+                    targetUserId: changedByUserId,
+                    title: "Stock Updated",
+                    message: `Stock for ${product.name} updated. New stock: ${newStock} ${product.unit} (${action === 'add' ? '+' : action === 'remove' ? '-' : '='}${Math.abs(changeAmount)})`,
+                    type: "info",
+                    channels: ["in-app"],
+                    route: "/admin/stock-update"
+                });
+            }
+
         } catch (error) {
             console.error("Error updating stock:", error);
             throw error;
@@ -172,6 +205,15 @@ export const ProductService = {
     deleteProduct: async (id: string): Promise<void> => {
         try {
             await deleteDoc(doc(db, COLLECTION_NAME, id));
+
+            // Notify Admins
+            await NotificationService.notifyAdmins(
+                "Product Deleted",
+                `Product deleted: ${id}`,
+                undefined,
+                'product',
+                '/admin/inventory'
+            );
         } catch (error) {
             console.error("Error deleting product:", error);
             throw error;

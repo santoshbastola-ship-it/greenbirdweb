@@ -13,6 +13,7 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../firebase";
 import { Testimonial } from "@/types/extra";
+import { NotificationService } from "@/services/notification.service";
 
 const COLLECTION_NAME = "testimonials";
 
@@ -45,6 +46,16 @@ export const addTestimonial = async (testimonial: Omit<Testimonial, "id">): Prom
             ...testimonial,
             createdAt: Timestamp.now(),
         });
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "New Testimonial",
+            `New testimonial added from ${testimonial.name}`,
+            docRef.id,
+            'testimonial',
+            '/admin/testimonials'
+        );
+
         return docRef.id;
     } catch (error) {
         console.error("Error adding testimonial:", error);
@@ -57,6 +68,15 @@ export const updateTestimonialStatus = async (id: string, isPublished: boolean):
         await updateDoc(doc(db, COLLECTION_NAME, id), {
             isPublished
         });
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "Testimonial Status Updated",
+            `Testimonial ${id} status updated to ${isPublished ? 'Published' : 'Draft'}`,
+            id,
+            'testimonial',
+            '/admin/testimonials'
+        );
     } catch (error) {
         console.error("Error updating testimonial status:", error);
         throw error;
@@ -66,6 +86,15 @@ export const updateTestimonialStatus = async (id: string, isPublished: boolean):
 export const deleteTestimonial = async (id: string): Promise<void> => {
     try {
         await deleteDoc(doc(db, COLLECTION_NAME, id));
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "Testimonial Deleted",
+            `Testimonial deleted: ${id}`,
+            undefined,
+            'testimonial',
+            '/admin/testimonials'
+        );
     } catch (error) {
         console.error("Error deleting testimonial:", error);
         throw error;

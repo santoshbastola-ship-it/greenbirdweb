@@ -4,7 +4,7 @@ import { Calendar, Trash2, Eye, EyeOff, Image as ImageIcon, Video } from "lucide
 
 interface ActivityCardProps {
     activity: FarmActivity;
-    onDelete: (id: string) => void;
+    onDelete?: (id: string) => void;
     onToggleStatus: (id: string, currentStatus: boolean) => void;
 }
 
@@ -77,13 +77,15 @@ export default function ActivityCard({ activity, onDelete, onToggleStatus }: Act
                     >
                         {activity.isPublished ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                     </button>
-                    <button
-                        onClick={() => onDelete(activity.id)}
-                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Delete Activity"
-                    >
-                        <Trash2 className="h-5 w-5" />
-                    </button>
+                    {onDelete && (
+                        <button
+                            onClick={() => onDelete(activity.id)}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Delete Activity"
+                        >
+                            <Trash2 className="h-5 w-5" />
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

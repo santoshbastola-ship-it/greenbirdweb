@@ -40,9 +40,10 @@ export default function AdminHeader() {
                     title="Notifications"
                 >
                     <Bell className="h-5 w-5 text-gray-600 group-hover:text-green-600 transition-colors" />
-                    {/* Unread badge */}
                     {unreadCount > 0 && (
-                        <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full ring-2 ring-white"></span>
+                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                        </span>
                     )}
                 </a>
 

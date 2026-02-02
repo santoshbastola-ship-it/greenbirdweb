@@ -76,6 +76,18 @@ export default function BlogManagementPage() {
         }
     };
 
+    const handleDelete = async (post: BlogPost) => {
+        if (!confirm(`Are you sure you want to delete "${post.title}"?`)) return;
+
+        try {
+            await BlogService.deletePost(post.id, post.imageUrl);
+            setPosts(posts.filter(p => p.id !== post.id));
+        } catch (error) {
+            console.error("Error deleting post:", error);
+            alert("Failed to delete post");
+        }
+    };
+
     const filteredPosts = posts.filter(p =>
         p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         p.categories.some((c: string) => c.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -132,6 +144,7 @@ export default function BlogManagementPage() {
                                 post={post}
                                 onEdit={() => handleEdit(post)}
                                 onTogglePublish={() => handleTogglePublish(post)}
+                                onDelete={dbUser?.email === "greenbirdhomestead@gmail.com" ? () => handleDelete(post) : undefined}
                             />
                         ))}
                     </div>
@@ -152,11 +165,13 @@ export default function BlogManagementPage() {
 function BlogCard({
     post,
     onEdit,
-    onTogglePublish
+    onTogglePublish,
+    onDelete
 }: {
     post: BlogPost;
     onEdit: () => void;
     onTogglePublish: () => void;
+    onDelete?: () => void;
 }) {
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
@@ -208,6 +223,15 @@ function BlogCard({
                             >
                                 {post.published ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
+                            {onDelete && (
+                                <button
+                                    onClick={onDelete}
+                                    className="p-2 text-red-400 hover:text-red-600 transition-colors rounded-full hover:bg-red-50"
+                                    title="Delete Post"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            )}
                         </div>
                     </div>
 

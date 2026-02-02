@@ -1,10 +1,10 @@
 1:"$Sreact.fragment"
 2:I[47257,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/d2be314c3ece3fbe.js"],"ClientPageRoot"]
-3:I[10384,["/_next/static/chunks/aa057ee2b489ffe4.js","/_next/static/chunks/866d0f02a61b4fcd.js","/_next/static/chunks/ad721793837a4104.js","/_next/static/chunks/fa4f57cfe2f0a515.js","/_next/static/chunks/1b24b9db35ac9da1.js","/_next/static/chunks/fef7eb19c06f3e35.js","/_next/static/chunks/f083d4041bd488f8.js"],"default"]
+3:I[10384,["/_next/static/chunks/aa057ee2b489ffe4.js","/_next/static/chunks/866d0f02a61b4fcd.js","/_next/static/chunks/ad721793837a4104.js","/_next/static/chunks/fa4f57cfe2f0a515.js","/_next/static/chunks/1b24b9db35ac9da1.js","/_next/static/chunks/a1e9fed4fce4630e.js","/_next/static/chunks/ccea601e8a94e8ea.js"],"default"]
 6:I[97367,["/_next/static/chunks/ff1a16fafef87110.js","/_next/static/chunks/d2be314c3ece3fbe.js"],"OutletBoundary"]
 7:"$Sreact.suspense"
 :HL["/_next/static/chunks/85587adcd29f7ba3.css","style"]
-0:{"buildId":"_bXFs3jXTzTmINSf8iiOt","rsc":["$","$1","c",{"children":[["$","$L2",null,{"Component":"$3","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@4","$@5"]}}],[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/85587adcd29f7ba3.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/f083d4041bd488f8.js","async":true}]],["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]]}],"loading":null,"isPartial":false}
+0:{"buildId":"KA34FWF15D_qQ7JzZcZxz","rsc":["$","$1","c",{"children":[["$","$L2",null,{"Component":"$3","serverProvidedParams":{"searchParams":{},"params":{},"promises":["$@4","$@5"]}}],[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/85587adcd29f7ba3.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/ccea601e8a94e8ea.js","async":true}]],["$","$L6",null,{"children":["$","$7",null,{"name":"Next.MetadataOutlet","children":"$@8"}]}]]}],"loading":null,"isPartial":false}
 4:{}
 5:{}
 8:null

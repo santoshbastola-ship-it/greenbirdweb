@@ -7,8 +7,10 @@ import { Testimonial } from "@/types/extra";
 import LogoLoader from "@/components/ui/LogoLoader";
 import AddTestimonialModal from "@/components/admin/AddTestimonialModal";
 import { format } from "date-fns";
+import { useAuth } from "@/context/AuthContext";
 
 export default function TestimonialsAdminPage() {
+    const { dbUser } = useAuth();
     const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -134,12 +136,14 @@ export default function TestimonialsAdminPage() {
                                     )}
                                 </button>
 
-                                <button
-                                    onClick={() => handleDelete(testimonial.id)}
-                                    className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                                >
-                                    <Trash2 className="h-5 w-5" />
-                                </button>
+                                {dbUser?.email === "greenbirdhomestead@gmail.com" && (
+                                    <button
+                                        onClick={() => handleDelete(testimonial.id)}
+                                        className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                    >
+                                        <Trash2 className="h-5 w-5" />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     ))}

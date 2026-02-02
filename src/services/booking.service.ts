@@ -12,6 +12,7 @@ import {
     Timestamp
 } from "firebase/firestore";
 import { Booking, BookingStatus } from "@/types/extra";
+import { NotificationService } from "./notification.service";
 
 const BOOKING_COLLECTION = "bookings";
 
@@ -48,6 +49,16 @@ export const BookingService = {
             status: 'pending' as BookingStatus,
             createdAt: Timestamp.now()
         });
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "New Booking",
+            `New booking received from ${booking.name} for ${booking.checkInDate}`,
+            docRef.id,
+            'booking',
+            '/admin/bookings'
+        );
+
         return docRef.id;
     },
 
@@ -57,6 +68,15 @@ export const BookingService = {
     async updateBookingStatus(id: string, status: BookingStatus): Promise<void> {
         const bookingRef = doc(db, BOOKING_COLLECTION, id);
         await updateDoc(bookingRef, { status });
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "Booking Status Updated",
+            `Booking ${id} status updated to ${status}`,
+            id,
+            'booking',
+            '/admin/bookings'
+        );
     },
 
     /**
@@ -77,6 +97,15 @@ export const BookingService = {
         delete updateData.createdAt;
 
         await updateDoc(bookingRef, updateData);
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "Booking Updated",
+            `Booking ${id} updated`,
+            id,
+            'booking',
+            '/admin/bookings'
+        );
     },
 
     /**
@@ -84,5 +113,14 @@ export const BookingService = {
      */
     async deleteBooking(id: string): Promise<void> {
         await deleteDoc(doc(db, BOOKING_COLLECTION, id));
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "Booking Deleted",
+            `Booking ${id} deleted`,
+            undefined,
+            'booking',
+            '/admin/bookings'
+        );
     }
 };

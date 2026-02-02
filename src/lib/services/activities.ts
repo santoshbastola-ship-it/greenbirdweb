@@ -12,6 +12,7 @@ import {
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../firebase";
 import { FarmActivity } from "@/types/extra";
+import { NotificationService } from "@/services/notification.service";
 
 const COLLECTION_NAME = "farm_activities";
 
@@ -47,6 +48,16 @@ export const addActivity = async (activity: Omit<FarmActivity, "id">): Promise<s
             isPublished: activity.isPublished ?? true,
             createdAt: Timestamp.now(),
         });
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "New Farm Activity",
+            `New activity added: ${activity.title}`,
+            docRef.id,
+            'activity',
+            '/admin/activities'
+        );
+
         return docRef.id;
     } catch (error) {
         console.error("Error adding activity:", error);
@@ -60,6 +71,15 @@ export const updateActivityStatus = async (id: string, isPublished: boolean): Pr
         await updateDoc(doc(db, COLLECTION_NAME, id), {
             isPublished
         });
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "Activity Status Updated",
+            `Activity ${id} status updated to ${isPublished ? 'Published' : 'Draft'}`,
+            id,
+            'activity',
+            '/admin/activities'
+        );
     } catch (error) {
         console.error("Error updating activity status:", error);
         throw error;
@@ -69,6 +89,15 @@ export const updateActivityStatus = async (id: string, isPublished: boolean): Pr
 export const deleteActivity = async (id: string): Promise<void> => {
     try {
         await deleteDoc(doc(db, COLLECTION_NAME, id));
+
+        // Notify Admins
+        await NotificationService.notifyAdmins(
+            "Activity Deleted",
+            `Activity deleted: ${id}`,
+            undefined,
+            'activity',
+            '/admin/activities'
+        );
     } catch (error) {
         console.error("Error deleting activity:", error);
         throw error;

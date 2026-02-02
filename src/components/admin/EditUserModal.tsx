@@ -9,7 +9,7 @@ interface EditUserModalProps {
     user: User | null;
     onClose: () => void;
     onSubmit: (userId: string, name: string, role: UserRole, phoneNumber?: string) => Promise<void>;
-    onDelete: (userId: string) => Promise<void>;
+    onDelete?: (userId: string) => Promise<void>;
     onResendInvite: (email: string) => Promise<void>;
     onToggleStatus: (userId: string, currentStatus: boolean) => Promise<void>;
 }
@@ -204,14 +204,16 @@ export default function EditUserModal({
                             >
                                 {user.isActive ? "Deactivate User" : "Activate User"}
                             </button>
-                            <button
-                                type="button"
-                                onClick={() => handleAction(() => onDelete(user.id))}
-                                disabled={isSubmitting}
-                                className="w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-100"
-                            >
-                                Delete User
-                            </button>
+                            {onDelete && (
+                                <button
+                                    type="button"
+                                    onClick={() => handleAction(() => onDelete(user.id))}
+                                    disabled={isSubmitting}
+                                    className="w-full px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors border border-red-100"
+                                >
+                                    Delete User
+                                </button>
+                            )}
                         </div>
                     </div>
                 </form>

@@ -62,6 +62,15 @@ export const TaskService = {
                 }
             }
 
+            // Notify Admins
+            await NotificationService.notifyAdmins(
+                "New Task Created",
+                `New task created: ${newTask.title}`,
+                docRef.id,
+                'task',
+                '/admin/tasks'
+            );
+
             return docRef.id;
         } catch (error) {
             console.error("Error creating task:", error);
@@ -136,6 +145,15 @@ export const TaskService = {
                     console.error("Failed to notify task completion:", notifyError);
                 }
             }
+
+            // Notify Admins of Update
+            await NotificationService.notifyAdmins(
+                "Task Updated",
+                `Task updated: ${task.title || id}`,
+                id,
+                'task',
+                '/admin/tasks'
+            );
         } catch (error) {
             console.error("Error updating task:", error);
             throw error;
@@ -145,6 +163,15 @@ export const TaskService = {
     deleteTask: async (id: string): Promise<void> => {
         try {
             await deleteDoc(doc(db, COLLECTION_NAME, id));
+
+            // Notify Admins
+            await NotificationService.notifyAdmins(
+                "Task Deleted",
+                `Task deleted: ${id}`,
+                undefined,
+                'task',
+                '/admin/tasks'
+            );
         } catch (error) {
             console.error("Error deleting task:", error);
             throw error;

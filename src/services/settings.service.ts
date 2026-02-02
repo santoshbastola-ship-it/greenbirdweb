@@ -1,6 +1,7 @@
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { AppSettings } from "@/types";
+import { NotificationService } from "./notification.service";
 
 const COLLECTION_NAME = "settings";
 const DOCUMENT_ID = "global";
@@ -41,6 +42,15 @@ export const SettingsService = {
 
             const docRef = doc(db, COLLECTION_NAME, DOCUMENT_ID);
             await setDoc(docRef, settings, { merge: true });
+
+            // Notify Admins
+            await NotificationService.notifyAdmins(
+                "Settings Updated",
+                "App global settings have been updated.",
+                "global",
+                'setting',
+                '/admin/settings'
+            );
         } catch (error) {
             console.error("Error updating settings:", error);
             throw error;

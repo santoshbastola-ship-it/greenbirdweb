@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, query, where, orderBy, doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, orderBy, doc, getDoc, updateDoc, deleteDoc, arrayUnion } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { TransactionRecord, TransactionType, OrderStatus, PaymentStatus, PaymentRecord, NotificationType } from "@/types";
 import { NotificationService } from "./notification.service";
@@ -92,68 +92,31 @@ export const TransactionService = {
                 console.error("Failed to load ProductService for stock update:", serviceLoadError);
             }
 
-            // NOTIFICATION LOGIC: Notify Admins about new transaction
-            try {
-                // Fetch admins to notify
-                const q = query(collection(db, "users"), where("role", "==", "admin"));
-                const adminSnap = await getDocs(q);
-                const adminIds = adminSnap.docs.map(d => d.id);
+            const title = `New ${transaction.type} Order`;
+            const message = `New ${transaction.type} from ${transaction.partyName} for ${transaction.items.length} items.`;
 
-                const title = `New ${transaction.type} Order`;
-                const message = `New ${transaction.type} from ${transaction.partyName} for ${transaction.items.length} items.`;
+            await NotificationService.notifyAdmins(
+                title,
+                message,
+                docRef.id,
+                'transaction',
+                '/admin/orders'
+            );
 
-                // Send in-app notifications to ALL admins
-                await Promise.all(adminIds.map(adminId =>
-                    NotificationService.createNotification({
-                        targetUserId: adminId,
-                        title,
-                        message,
-                        type: 'info',
-                        channels: ['in-app'],
-                        relatedEntityId: docRef.id,
-                        relatedEntityType: 'transaction',
-                        route: `/admin/orders`
-                    })
-                ));
-
-                // Send WhatsApp notification to UNIQUE phone numbers only (deduplicate)
-                const uniquePhoneAdmins = new Map<string, string>();
-                adminSnap.docs.forEach(doc => {
-                    const phone = doc.data().phoneNumber;
-                    if (phone && !uniquePhoneAdmins.has(phone)) {
-                        uniquePhoneAdmins.set(phone, doc.id);
-                    }
+            // Also notify the customer if it is a Sale and customerId is present
+            if (transaction.type === TransactionType.Sale && transaction.customerId) {
+                await NotificationService.createNotification({
+                    targetUserId: transaction.customerId,
+                    title: "Order Placed Successfully",
+                    message: `Your order #${transaction.billNo} has been placed.${WHATSAPP_SUPPORT_FOOTER}`,
+                    type: 'success',
+                    channels: ['in-app', 'whatsapp'],
+                    relatedEntityId: docRef.id,
+                    relatedEntityType: 'transaction'
                 });
-
-                await Promise.all(Array.from(uniquePhoneAdmins.values()).map(adminId =>
-                    NotificationService.createNotification({
-                        targetUserId: adminId,
-                        title,
-                        message,
-                        type: 'info',
-                        channels: ['whatsapp'],
-                        relatedEntityId: docRef.id,
-                        relatedEntityType: 'transaction',
-                        route: `/admin/orders`
-                    })
-                ));
-
-                // Also notify the customer if it is a Sale and customerId is present
-                if (transaction.type === TransactionType.Sale && transaction.customerId) {
-                    await NotificationService.createNotification({
-                        targetUserId: transaction.customerId,
-                        title: "Order Placed Successfully",
-                        message: `Your order #${transaction.billNo} has been placed.${WHATSAPP_SUPPORT_FOOTER}`,
-                        type: 'success',
-                        channels: ['in-app', 'whatsapp'],
-                        relatedEntityId: docRef.id,
-                        relatedEntityType: 'transaction'
-                    });
-                }
-
-            } catch (notifyError) {
-                console.error("Failed to send notifications for new transaction:", notifyError);
             }
+
+
 
             return docRef.id;
         } catch (error) {
@@ -446,6 +409,15 @@ export const TransactionService = {
             } catch (notifyError) {
                 console.error("Failed to send payment update notification:", notifyError);
             }
+
+            // Notify Admins
+            await NotificationService.notifyAdmins(
+                `Payment Updated`,
+                `Payment for Order #${id} updated. New Status: ${paymentStatus}, Paid: ${paidAmount}`,
+                id,
+                'transaction',
+                '/admin/orders'
+            );
         } catch (error) {
             console.error("Error updating payment status:", error);
             throw error;
@@ -496,8 +468,37 @@ export const TransactionService = {
             }
 
             await updateDoc(docRef, updateData);
+
+            // Notify Admins
+            await NotificationService.notifyAdmins(
+                `Transaction Updated`,
+                `Transaction #${id} has been updated.`,
+                id,
+                'transaction',
+                '/admin/orders'
+            );
         } catch (error) {
             console.error("Error updating transaction:", error);
+            throw error;
+        }
+    },
+
+    // Delete Transaction
+    deleteTransaction: async (id: string): Promise<void> => {
+        try {
+            const docRef = doc(db, COLLECTION_NAME, id);
+            await deleteDoc(docRef);
+
+            // Notify Admins
+            await NotificationService.notifyAdmins(
+                `Transaction Deleted`,
+                `Transaction #${id} has been deleted.`,
+                undefined,
+                'transaction',
+                '/admin/orders'
+            );
+        } catch (error) {
+            console.error("Error deleting transaction:", error);
             throw error;
         }
     }

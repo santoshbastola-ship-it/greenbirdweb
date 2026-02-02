@@ -13,7 +13,7 @@ export default function NotificationsPage() {
     const router = useRouter();
     const [notifications, setNotifications] = useState<NotificationType[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState<'all' | 'unread'>('all');
+    const [filter, setFilter] = useState<'all' | 'unread'>('unread');
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
     useEffect(() => {
@@ -169,12 +169,6 @@ export default function NotificationsPage() {
                 </div>
                 <div className="flex gap-2">
                     <button
-                        onClick={handleTestNotification}
-                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
-                    >
-                        Test Notif
-                    </button>
-                    <button
                         onClick={handleMarkAllAsRead}
                         className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
                     >
@@ -272,7 +266,7 @@ export default function NotificationsPage() {
                             key={notification.id}
                             className={`group bg-white rounded-xl p-4 shadow-sm border transition-all ${notification.isRead
                                 ? 'border-gray-100'
-                                : 'border-green-200 bg-green-50/30'
+                                : 'border-green-200 bg-green-50 border-l-4 border-l-green-500'
                                 } hover:shadow-md`}
                         >
                             <div className="flex items-start gap-4">
@@ -304,7 +298,7 @@ export default function NotificationsPage() {
                                             {toNepali(notification.createdAt, "DD MMM YYYY, hh:mm A")}
                                         </p>
                                     </div>
-                                    <p className="text-sm text-gray-600 mb-3">{notification.message}</p>
+                                    <p className={`text-sm ${!notification.isRead ? 'text-gray-900 font-medium' : 'text-gray-600'} mb-3`}>{notification.message}</p>
 
                                     {notification.route && (
                                         <a

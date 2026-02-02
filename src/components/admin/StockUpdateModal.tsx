@@ -19,7 +19,7 @@ export default function StockUpdateModal({ product, onClose, onUpdate }: StockUp
     const [quantity, setQuantity] = useState<string>("");
     const [note, setNote] = useState("");
     const [loading, setLoading] = useState(false);
-    const { dbUser } = useAuth();
+    const { user, dbUser } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -31,7 +31,7 @@ export default function StockUpdateModal({ product, onClose, onUpdate }: StockUp
 
         setLoading(true);
         try {
-            await ProductService.updateProductStock(product.id, action, qty, note, dbUser?.name || "Unknown User");
+            await ProductService.updateProductStock(product.id, action, qty, note, dbUser?.name || "Unknown User", user?.uid);
             onUpdate();
             onClose();
         } catch (error) {

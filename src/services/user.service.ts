@@ -1,6 +1,7 @@
 import { collection, getDocs, query, where, doc, getDoc, addDoc, updateDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { User, UserRole } from "@/types";
+import { NotificationService } from "./notification.service";
 
 const USERS_COLLECTION = "users";
 const PARTNERS_COLLECTION = "partners";
@@ -157,6 +158,16 @@ export const UserService = {
             };
 
             const docRef = await addDoc(collection(db, PARTNERS_COLLECTION), newCustomer);
+
+            // Notify Admins
+            await NotificationService.notifyAdmins(
+                "New Partner Created",
+                `New ${data.partnerType} created: ${data.name}`,
+                docRef.id,
+                'user',
+                '/admin/partners'
+            );
+
             return docRef.id;
         } catch (error) {
             console.error("Error creating customer:", error);
@@ -239,6 +250,16 @@ export const UserService = {
             };
 
             const docRef = await addDoc(collection(db, USERS_COLLECTION), newUser);
+
+            // Notify Admins
+            await NotificationService.notifyAdmins(
+                "New User Invited",
+                `New user invited: ${email} as ${role}`,
+                docRef.id,
+                'user',
+                '/admin/users'
+            );
+
             return docRef.id;
         } catch (error) {
             console.error("Error inviting user:", error);
@@ -251,6 +272,15 @@ export const UserService = {
             await import("firebase/firestore").then(async ({ deleteDoc }) => {
                 const docRef = doc(db, USERS_COLLECTION, userId);
                 await deleteDoc(docRef);
+
+                // Notify Admins
+                await NotificationService.notifyAdmins(
+                    "User Deleted",
+                    `User deleted: ${userId}`,
+                    undefined,
+                    'user',
+                    '/admin/users'
+                );
             });
         } catch (error) {
             console.error("Error deleting user:", error);
@@ -287,6 +317,15 @@ export const UserService = {
 
             if (docSnap.exists()) {
                 await setDoc(docRef, data, { merge: true });
+
+                // Notify Admins
+                await NotificationService.notifyAdmins(
+                    "User Updated",
+                    `User updated: ${data.name || userId}`,
+                    userId,
+                    'user',
+                    '/admin/users'
+                );
             } else {
                 throw new Error("User not found");
             }
@@ -309,6 +348,15 @@ export const UserService = {
 
             if (docSnap.exists()) {
                 await setDoc(docRef, { isActive }, { merge: true });
+
+                // Notify Admins
+                await NotificationService.notifyAdmins(
+                    "User Status Changed",
+                    `User ${userId} status changed to ${isActive ? 'Active' : 'Inactive'}`,
+                    userId,
+                    'user',
+                    '/admin/users'
+                );
             }
         } catch (error) {
             console.error("Error toggling user status:", error);
