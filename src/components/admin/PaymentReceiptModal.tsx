@@ -2,7 +2,6 @@ import { TransactionRecord } from "@/types";
 import { Copy, X, Check, Share2, Loader2, Download } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import { toNepali } from "@/lib/date-helper";
-import { FaWhatsapp } from "react-icons/fa";
 import ShareableBill from "@/components/admin/ShareableBill"; // Fixed import path
 import { toPng } from 'html-to-image';
 
@@ -185,7 +184,7 @@ Greenbird Homestead`;
                         disabled={isSharing}
                         className="flex-1 px-4 py-2.5 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-green-200"
                     >
-                        {isSharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FaWhatsapp className="h-5 w-5" />}
+                        {isSharing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Share2 className="h-5 w-5" />}
                         <span>Share Receipt</span>
                     </button>
                 </div>

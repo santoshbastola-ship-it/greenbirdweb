@@ -74,7 +74,7 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
                     </div>
                 )}
 
-                )}
+
 
                 {product.tags && product.tags.length > 0 && (
                     <div className="absolute top-1 left-1 flex flex-wrap gap-0.5 z-20">
