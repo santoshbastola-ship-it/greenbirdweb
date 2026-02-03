@@ -164,6 +164,7 @@ export interface Product {
     images: string[];
     description?: string;
     categoryId?: string;
+    categoryName?: string;
     isAvailableForSale: boolean;
     isFeatured?: boolean;
     relatedProductIds?: string[]; // IDs of products to recommend when this product is viewed/carted
@@ -266,4 +267,16 @@ export interface Notification {
     route?: string; // In-app route to navigate to
     validUntil?: string | Date; // Expiry date for the notification
     imageUrl?: string; // Image for the notification (e.g., for offers)
+}
+
+export interface BroadcastHistory {
+    id: string;
+    title: string;
+    message: string;
+    sentAt: string; // ISO string
+    sentBy: string; // Admin UID
+    recipientCount: number;
+    type: NotificationType;
+    imageUrl?: string;
+    validUntil?: string;
 }

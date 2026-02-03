@@ -214,7 +214,11 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                 <select
                                     name="businessType"
                                     value={formData.businessType}
-                                    onChange={handleChange}
+                                    onChange={(e) => {
+                                        handleChange(e);
+                                        // Reset category when business type changes
+                                        setFormData((prev) => ({ ...prev, categoryId: "" }));
+                                    }}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
                                 >
                                     <option value="livestock">Livestock</option>
@@ -225,23 +229,26 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Category <span className="text-red-500">*</span></label>
                                 <select
                                     name="categoryId"
+                                    required
                                     value={formData.categoryId || ""}
                                     onChange={handleChange}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
                                     disabled={loadingCategories}
                                 >
                                     <option value="">Select a Category</option>
-                                    {categories.map((cat) => (
-                                        <option key={cat.id} value={cat.id}>
-                                            {cat.name}
-                                        </option>
-                                    ))}
+                                    {categories
+                                        .filter(cat => !cat.businessType || cat.businessType === formData.businessType)
+                                        .map((cat) => (
+                                            <option key={cat.id} value={cat.id}>
+                                                {cat.name}
+                                            </option>
+                                        ))}
                                 </select>
-                                {categories.length === 0 && !loadingCategories && (
-                                    <p className="text-xs text-amber-600 mt-1">No active categories found. Create them in Categories menu.</p>
+                                {categories.filter(cat => !cat.businessType || cat.businessType === formData.businessType).length === 0 && !loadingCategories && (
+                                    <p className="text-xs text-amber-600 mt-1">No active categories found for {formData.businessType}. Create them in Categories menu.</p>
                                 )}
                             </div>
                         </div>

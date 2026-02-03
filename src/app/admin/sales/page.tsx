@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic';
 import Link from "next/link";
 import { toPng } from 'html-to-image';
 import ShareableBill from "@/components/admin/ShareableBill";
+import PaymentReceiptModal from "@/components/admin/PaymentReceiptModal";
 
 const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
     ssr: false,
@@ -24,6 +25,7 @@ import { useAuth } from "@/context/AuthContext";
 import { ProductService } from "@/services/product.service";
 import AdvancedSearch from "@/components/admin/AdvancedSearch";
 import LogoLoader from "@/components/ui/LogoLoader";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 type TabType = "All" | "Pending" | TransactionType.Sale | TransactionType.Purchase;
 
@@ -36,6 +38,23 @@ export default function SalesListPage() {
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [selectedId, setSelectedId] = useState<string | null>(null);
+
+    // Confirmation Modal State
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        confirmText: string;
+        onConfirm: () => void;
+        variant: "danger" | "warning" | "info" | "success";
+    }>({
+        isOpen: false,
+        title: "",
+        message: "",
+        confirmText: "",
+        onConfirm: () => { },
+        variant: "danger"
+    });
 
     useEffect(() => {
         loadTransactions();
@@ -54,16 +73,25 @@ export default function SalesListPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to PERMANENTLY delete this transaction?")) return;
-        setLoading(true);
-        try {
-            await TransactionService.deleteTransaction(id);
-            loadTransactions();
-        } catch (error) {
-            console.error(error);
-            alert("Failed to delete transaction");
-            setLoading(false);
-        }
+        setConfirmModal({
+            isOpen: true,
+            title: "Delete Transaction",
+            message: "Are you sure you want to PERMANENTLY delete this transaction? This action cannot be undone.",
+            confirmText: "Yes, Delete Transaction",
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                setLoading(true);
+                try {
+                    await TransactionService.deleteTransaction(id);
+                    loadTransactions();
+                } catch (error) {
+                    console.error(error);
+                    alert("Failed to delete transaction");
+                    setLoading(false);
+                }
+            }
+        });
     };
 
     const isManager = dbUser?.role === 'manager';
@@ -207,8 +235,20 @@ export default function SalesListPage() {
                     transaction={selectedTransaction}
                     onClose={() => setSelectedId(null)}
                     onUpdate={loadTransactions}
+                    onDelete={handleDelete}
+                    setConfirmModal={setConfirmModal}
                 />
             )}
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                confirmText={confirmModal.confirmText}
+                variant={confirmModal.variant}
+            />
         </div>
     );
 }
@@ -317,11 +357,15 @@ function TransactionCard({ transaction, onSelect, onUpdate, onDelete }: { transa
 function TransactionDetailsModal({
     transaction,
     onClose,
-    onUpdate
+    onUpdate,
+    onDelete: parentDelete,
+    setConfirmModal
 }: {
     transaction: TransactionRecord;
     onClose: () => void;
     onUpdate: () => void;
+    onDelete: (id: string) => Promise<void>;
+    setConfirmModal: (modal: any) => void;
 }) {
     const [isUpdating, setIsUpdating] = useState(false);
     const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -331,6 +375,10 @@ function TransactionDetailsModal({
     const [showLogs, setShowLogs] = useState(false);
     const [isSharing, setIsSharing] = useState(false);
     const billCaptureRef = useRef<HTMLDivElement>(null);
+    const [receiptData, setReceiptData] = useState<{
+        isOpen: boolean;
+        receivedAmount: number;
+    }>({ isOpen: false, receivedAmount: 0 });
 
     // Edit Mode State
     const [isEditing, setIsEditing] = useState(false);
@@ -403,6 +451,20 @@ function TransactionDetailsModal({
             }
 
             await TransactionService.updatePaymentStatus(transaction.id, newStatus, payAmount, payments);
+
+            // Show receipt modal if paid or partial
+            if (newStatus === PaymentStatus.PaidCash || newStatus === PaymentStatus.PaidOnline) {
+                // Determine amount received in this transaction
+                // Roughly, for full payment it's the remaining due.
+                const updatedPaidAmount = payAmount;
+                // We want to show what was just paid. 
+                // In full payment case above, we calculated remaining. 
+                const justPaid = payAmount - (transaction.paidAmount || 0);
+
+                if (justPaid > 0) {
+                    setReceiptData({ isOpen: true, receivedAmount: justPaid });
+                }
+            }
             onUpdate();
         } catch (error) {
             console.error("Error updating payment status:", error);
@@ -474,22 +536,25 @@ function TransactionDetailsModal({
 
 
     const handleDelete = async () => {
-        if (!confirm("Are you sure you want to PERMANENTLY delete this transaction?")) return;
-        setIsUpdating(true);
-        try {
-            await TransactionService.deleteTransaction(transaction.id);
-            onClose();
-            onUpdate();
-        } catch (error) {
-            console.error(error);
-            alert("Failed to delete transaction");
-            setIsUpdating(false);
-        }
+        onClose(); // Close the details modal first
+        await parentDelete(transaction.id);
     };
 
     const handleSaveChanges = async () => {
-        if (!confirm("Are you sure you want to save these changes?")) return;
+        setConfirmModal({
+            isOpen: true,
+            title: "Save Changes",
+            message: "Are you sure you want to save these changes?",
+            confirmText: "Save Changes",
+            variant: "info",
+            onConfirm: async () => {
+                setConfirmModal((prev: any) => ({ ...prev, isOpen: false }));
+                await performSave();
+            }
+        });
+    };
 
+    const performSave = async () => {
         setIsUpdating(true);
         try {
             const changes: string[] = [];
@@ -982,10 +1047,13 @@ function TransactionDetailsModal({
                                                 await TransactionService.updatePaymentStatus(transaction.id, newStatus, newPaidAmount, newPayments);
                                                 onUpdate();
                                                 amountInput.value = "";
-                                                noteInput.value = "";
                                             } catch (error) {
                                                 alert("Failed to save payment");
                                             }
+
+                                            // Show receipt
+                                            setReceiptData({ isOpen: true, receivedAmount: amount });
+
                                         }}
                                         className="px-6 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition-colors shadow-sm text-sm"
                                     >
@@ -1012,9 +1080,21 @@ function TransactionDetailsModal({
                 <OrderPartialPaymentDialog
                     order={transaction}
                     onClose={() => setShowPaymentDialog(false)}
-                    onSuccess={onUpdate}
+                    onSuccess={(amount) => {
+                        onUpdate();
+                        if (amount && amount > 0) {
+                            setReceiptData({ isOpen: true, receivedAmount: amount });
+                        }
+                    }}
                 />
             )}
+
+            <PaymentReceiptModal
+                isOpen={receiptData.isOpen}
+                onClose={() => setReceiptData({ ...receiptData, isOpen: false })}
+                order={transaction}
+                receivedAmount={receiptData.receivedAmount}
+            />
         </div>
     );
 }

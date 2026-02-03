@@ -1,5 +1,9 @@
 # Release Notes
 
+## [0.2.1] - 2026-02-03
+- Integrated various features: categories, notifications, UI improvements, and quantity decimal support
+
+
 ## [0.1.9] - 2026-01-24
 ### Fixed
 - **Admin Dashboard**: Resolved an issue where refreshing the admin dashboard would incorrectly redirect specific admin roles to the home page.

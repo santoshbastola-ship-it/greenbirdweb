@@ -8,7 +8,7 @@ import { TransactionService } from "@/services/transaction.service";
 interface OrderPartialPaymentDialogProps {
     order: TransactionRecord;
     onClose: () => void;
-    onSuccess: () => void;
+    onSuccess: (amount?: number) => void;
 }
 
 export default function OrderPartialPaymentDialog({ order, onClose, onSuccess }: OrderPartialPaymentDialogProps) {
@@ -103,7 +103,7 @@ export default function OrderPartialPaymentDialog({ order, onClose, onSuccess }:
                 newPayments
             );
 
-            onSuccess();
+            onSuccess(paymentAmount);
             onClose();
         } catch (error) {
             console.error("Error updating payment:", error);

@@ -113,6 +113,12 @@
       "namedRegex": "^/admin/bookings(?:/)?$"
     },
     {
+      "page": "/admin/categories",
+      "regex": "^/admin/categories(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/categories(?:/)?$"
+    },
+    {
       "page": "/admin/energy",
       "regex": "^/admin/energy(?:/)?$",
       "routeKeys": {},
@@ -141,6 +147,12 @@
       "regex": "^/admin/notifications(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/admin/notifications(?:/)?$"
+    },
+    {
+      "page": "/admin/notifications/push",
+      "regex": "^/admin/notifications/push(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/notifications/push(?:/)?$"
     },
     {
       "page": "/admin/orders",
@@ -279,6 +291,12 @@
       "regex": "^/login(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/login(?:/)?$"
+    },
+    {
+      "page": "/notifications",
+      "regex": "^/notifications(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/notifications(?:/)?$"
     },
     {
       "page": "/orders",

@@ -6,28 +6,33 @@ import { Filter } from "lucide-react";
 import { BusinessType } from "@/types";
 import { useAuth } from "@/context/AuthContext";
 
-const CATEGORIES: { label: string; value: BusinessType | "all" }[] = [
-    { label: "All", value: "all" },
-    { label: "Livestocks", value: "livestock" },
-    { label: "Crops", value: "crop" },
-    { label: "Products", value: "product" },
-    { label: "Assets", value: "asset" },
-];
+import { CategoryService } from "@/services/category.service";
+import { Category } from "@/types";
+import { useEffect, useState } from "react";
 
 function CategoryFilterContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { dbUser } = useAuth();
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loading, setLoading] = useState(true);
     const currentCategory = searchParams.get("category") || "all";
 
     const isAdminOrManager = dbUser?.role === 'admin' || dbUser?.role === 'manager';
 
-    const visibleCategories = CATEGORIES.filter(cat => {
-        if (cat.value === 'asset') {
-            return isAdminOrManager;
-        }
-        return true;
-    });
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const data = await CategoryService.getActiveCategories();
+                setCategories(data);
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const handleCategoryClick = (categoryValue: string) => {
         const params = new URLSearchParams(searchParams);
@@ -39,34 +44,52 @@ function CategoryFilterContent() {
         router.push(`/shop?${params.toString()}`);
     };
 
+    if (loading) {
+        return <div className="w-full md:w-64 h-96 animate-pulse bg-white rounded-2xl" />;
+    }
+
     return (
-        <div className="w-full md:w-64 flex-shrink-0">
-            <div className="bg-white p-4 md:p-6 rounded-2xl border border-gray-100 md:sticky md:top-24 shadow-sm md:shadow-none">
-                <div className="flex items-center mb-4 md:mb-6">
+        <div className="w-full mb-8">
+            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                <div className="flex items-center mb-4">
                     <Filter className="h-5 w-5 mr-2 text-[#2D5A27]" />
-                    <h2 className="font-extrabold text-[#5C4033] tracking-tight">Filters</h2>
+                    <h2 className="font-extrabold text-[#5C4033] tracking-tight">Categories</h2>
                 </div>
 
-                <div className="flex md:flex-col overflow-x-auto md:overflow-visible gap-2 pb-2 md:pb-0 no-scrollbar">
-                    <h3 className="hidden md:block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Categories</h3>
-                    {visibleCategories.map((cat) => {
-                        const isActive = currentCategory === cat.value;
-                        return (
-                            <button
-                                key={cat.value}
-                                onClick={() => handleCategoryClick(cat.value)}
-                                className={`
-                                    whitespace-nowrap px-4 py-2.5 rounded-xl text-sm font-medium transition-all text-left w-auto md:w-full
-                                    ${isActive
-                                        ? "bg-[#2D5A27] text-white shadow-md"
-                                        : "text-gray-600 hover:bg-[#2D5A27]/10 hover:text-[#2D5A27] bg-gray-50 md:bg-transparent"
-                                    }
-                                `}
-                            >
-                                {cat.label}
-                            </button>
-                        );
-                    })}
+                <div className="flex flex-wrap gap-2">
+                    <button
+                        onClick={() => handleCategoryClick("all")}
+                        className={`
+                            px-4 py-2 rounded-lg text-sm font-semibold transition-all
+                            ${currentCategory === "all"
+                                ? "bg-[#2D5A27] text-white shadow-md"
+                                : "bg-gray-50 text-gray-700 hover:bg-[#2D5A27]/10 hover:text-[#2D5A27]"
+                            }
+                        `}
+                    >
+                        All
+                    </button>
+
+                    {categories
+                        .filter(cat => isAdminOrManager || cat.businessType !== 'asset')
+                        .map((cat) => {
+                            const isActive = currentCategory === cat.id;
+                            return (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => handleCategoryClick(cat.id)}
+                                    className={`
+                                        px-4 py-2 rounded-lg text-sm font-semibold transition-all
+                                        ${isActive
+                                            ? "bg-[#2D5A27] text-white shadow-md"
+                                            : "bg-gray-50 text-gray-700 hover:bg-[#2D5A27]/10 hover:text-[#2D5A27]"
+                                        }
+                                    `}
+                                >
+                                    {cat.name}
+                                </button>
+                            );
+                        })}
                 </div>
             </div>
         </div>

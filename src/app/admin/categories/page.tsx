@@ -350,7 +350,7 @@ export default function CategoriesPage() {
                                     {actionLoading ? "Saving..." : (
                                         <>
                                             <Save className="h-5 w-5 mr-2" />
-                                            Update Category
+                                            {editingCategory ? "Update Category" : "Save Category"}
                                         </>
                                     )}
                                 </button>
@@ -384,9 +384,6 @@ function CategoryCard({
                     <div className="min-w-0">
                         <h3 className="font-bold text-gray-900 text-lg truncate">{category.name}</h3>
                         <div className="flex items-center text-xs text-gray-500 mt-1">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            {formatDateTime(category.createdAt, "DD MMM YYYY")}
-                            <span className="mx-2">•</span>
                             <span className={`capitalize ${styles.text} font-medium`}>{category.businessType || "Other"}</span>
                         </div>
                     </div>

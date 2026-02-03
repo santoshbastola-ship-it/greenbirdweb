@@ -295,7 +295,7 @@ export const NotificationService = {
     },
 
     // Broadcast a notification to all customers
-    createBroadcastNotification: async (notification: Omit<Notification, "id" | "isRead" | "createdAt" | "targetUserId">): Promise<void> => {
+    createBroadcastNotification: async (notification: Omit<Notification, "id" | "isRead" | "createdAt" | "targetUserId">, sentBy: string): Promise<void> => {
         try {
             // 1. Fetch all customers
             const q = query(collection(db, "users"), where("role", "==", "customer"));
@@ -325,8 +325,52 @@ export const NotificationService = {
 
                 await batch.commit();
             }
+
+            // 3. Save to broadcast history
+            await addDoc(collection(db, "broadcast_history"), sanitizeFirestoreData({
+                title: notification.title,
+                message: notification.message,
+                sentAt: new Date().toISOString(),
+                sentBy,
+                recipientCount: customerDocs.length,
+                type: notification.type,
+                imageUrl: notification.imageUrl,
+                validUntil: notification.validUntil,
+                timestamp: Timestamp.now()
+            }));
+
         } catch (error) {
             console.error("Error broadcasting notification:", error);
+        }
+    },
+
+    // Get broadcast history
+    getBroadcastHistory: async (limitCount: number = 20): Promise<any[]> => {
+        try {
+            const q = query(
+                collection(db, "broadcast_history"),
+                orderBy("timestamp", "desc"),
+                limit(limitCount)
+            );
+            const querySnapshot = await getDocs(q);
+            return querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+        } catch (error) {
+            console.error("Error fetching broadcast history:", error);
+            return [];
+        }
+    },
+
+    // Delete broadcast history entry
+    deleteBroadcastHistory: async (id: string): Promise<void> => {
+        try {
+            await import("firebase/firestore").then(async ({ deleteDoc }) => {
+                await deleteDoc(doc(db, "broadcast_history", id));
+            });
+        } catch (error) {
+            console.error("Error deleting broadcast history:", error);
         }
     }
 };

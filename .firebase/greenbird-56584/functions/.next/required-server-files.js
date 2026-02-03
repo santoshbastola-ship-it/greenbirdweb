@@ -2,7 +2,7 @@ self.__SERVER_FILES_MANIFEST={
   "version": 1,
   "config": {
     "env": {
-      "NEXT_PUBLIC_APP_VERSION": "0.2.0"
+      "NEXT_PUBLIC_APP_VERSION": "0.2.1"
     },
     "typescript": {
       "ignoreBuildErrors": false

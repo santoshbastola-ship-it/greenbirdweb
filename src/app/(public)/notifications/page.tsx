@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { NotificationService } from "@/services/notification.service";
 import { Notification as NotificationType } from "@/types";
-import { Bell, Check, Trash2, Tag, ShoppingBag, CreditCard, Clock, Image as ImageIcon, ExternalLink, ChevronRight } from "lucide-react";
+import { Bell, Check, Trash2, Tag, ShoppingBag, CreditCard, Clock, Image as ImageIcon, ExternalLink, ChevronRight, X, CheckCircle } from "lucide-react";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import { formatDateTime } from "@/lib/date-helper";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -14,6 +15,24 @@ export default function NotificationsPage() {
     const router = useRouter();
     const [notifications, setNotifications] = useState<NotificationType[]>([]);
     const [loading, setLoading] = useState(true);
+    const [actionLoading, setActionLoading] = useState(false);
+
+    // Confirmation Modal State
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        confirmText: string;
+        onConfirm: () => void;
+        variant: "danger" | "warning" | "info" | "success";
+    }>({
+        isOpen: false,
+        title: "",
+        message: "",
+        confirmText: "",
+        onConfirm: () => { },
+        variant: "danger"
+    });
 
     useEffect(() => {
         if (!user) {
@@ -72,6 +91,29 @@ export default function NotificationsPage() {
         }
     };
 
+    const handleMarkAllAsRead = () => {
+        if (!user) return;
+        setConfirmModal({
+            isOpen: true,
+            title: "Mark All as Read",
+            message: "Are you sure you want to mark all your notifications as read?",
+            confirmText: "Yes, Mark all as Read",
+            variant: "success",
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                setActionLoading(true);
+                try {
+                    await NotificationService.markAllAsRead(user.uid);
+                    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+                } catch (error) {
+                    console.error("Error marking all as read:", error);
+                } finally {
+                    setActionLoading(false);
+                }
+            }
+        });
+    };
+
     if (loading) {
         return (
             <div className="min-h-[60vh] flex items-center justify-center">
@@ -79,6 +121,14 @@ export default function NotificationsPage() {
             </div>
         );
     }
+
+    const [filter, setFilter] = useState<'all' | 'unread'>('all');
+
+    // Filter notifications based on the selected filter
+    const filteredNotifications = notifications.filter(n => {
+        if (filter === 'unread') return !n.isRead;
+        return true;
+    });
 
     return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -94,30 +144,60 @@ export default function NotificationsPage() {
                         Stay updated with your orders and latest offers
                     </p>
                 </div>
-                {notifications.some(n => !n.isRead) && (
-                    <button
-                        onClick={async () => {
-                            if (user) {
-                                await NotificationService.markAllAsRead(user.uid);
-                                setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-                            }
-                        }}
-                        className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-100 rounded-2xl text-sm font-bold text-gray-700 hover:border-green-200 hover:text-green-600 transition-all shadow-sm"
-                    >
-                        <Check className="h-4 w-4" />
-                        Mark all as read
-                    </button>
-                )}
+
+                <div className="flex items-center gap-4">
+                    {/* Filter Tabs */}
+                    <div className="bg-gray-100 p-1 rounded-xl flex items-center">
+                        <button
+                            onClick={() => setFilter('all')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === 'all'
+                                    ? 'bg-white text-gray-900 shadow-sm'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            All
+                        </button>
+                        <button
+                            onClick={() => setFilter('unread')}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${filter === 'unread'
+                                    ? 'bg-white text-green-600 shadow-sm'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            Unread
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] ${filter === 'unread'
+                                    ? 'bg-green-100 text-green-600'
+                                    : 'bg-gray-200 text-gray-600'
+                                }`}>
+                                {notifications.filter(n => !n.isRead).length}
+                            </span>
+                        </button>
+                    </div>
+
+                    {notifications.some(n => !n.isRead) && (
+                        <button
+                            onClick={handleMarkAllAsRead}
+                            className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-100 rounded-2xl text-sm font-bold text-gray-700 hover:border-green-200 hover:text-green-600 transition-all shadow-sm"
+                        >
+                            <Check className="h-4 w-4" />
+                            <span className="hidden sm:inline">Mark all as read</span>
+                        </button>
+                    )}
+                </div>
             </div>
 
-            {notifications.length === 0 ? (
+            {filteredNotifications.length === 0 ? (
                 <div className="bg-white rounded-[32px] p-16 text-center border-2 border-dashed border-gray-100 shadow-sm">
                     <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
                         <Bell className="h-10 w-10 text-gray-300" />
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">All Caught Up!</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                        {filter === 'unread' ? 'No Unread Notifications' : 'All Caught Up!'}
+                    </h3>
                     <p className="text-gray-500 max-w-xs mx-auto mb-8 font-medium">
-                        You don't have any notifications right now. We'll alert you when something happens.
+                        {filter === 'unread'
+                            ? "You've read all your important updates."
+                            : "You don't have any notifications right now."}
                     </p>
                     <Link
                         href="/shop"
@@ -129,7 +209,7 @@ export default function NotificationsPage() {
                 </div>
             ) : (
                 <div className="space-y-4">
-                    {notifications.map((notification) => (
+                    {filteredNotifications.map((notification) => (
                         <div
                             key={notification.id}
                             className={`group relative bg-white rounded-[24px] overflow-hidden border-2 transition-all p-1 ${notification.isRead
@@ -205,20 +285,20 @@ export default function NotificationsPage() {
                                 </div>
                             </div>
 
-                            {/* Optional Route Link */}
-                            {notification.route && (
-                                <Link
-                                    href={notification.route}
-                                    className="block border-t border-gray-50 p-4 bg-gray-50/50 hover:bg-green-50 transition-colors text-center text-xs font-bold text-green-600 uppercase tracking-widest flex items-center justify-center gap-2 group/link"
-                                >
-                                    View Details
-                                    <ExternalLink className="h-3.5 w-3.5 group-hover/link:translate-x-0.5 transition-transform" />
-                                </Link>
-                            )}
                         </div>
                     ))}
                 </div>
             )}
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                confirmText={confirmModal.confirmText}
+                variant={confirmModal.variant}
+                isLoading={actionLoading}
+            />
         </div>
     );
 }

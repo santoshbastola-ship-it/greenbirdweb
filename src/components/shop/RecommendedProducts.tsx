@@ -4,6 +4,7 @@ import { useRecommendations } from '@/hooks/useRecommendations';
 import { Product } from '@/types';
 import { Plus, Package, Check } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
+import { useAuth } from '@/context/AuthContext';
 
 export default function RecommendedProducts() {
     const { recommendations, loading } = useRecommendations();
@@ -47,6 +48,8 @@ export default function RecommendedProducts() {
 }
 
 function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }) {
+    const { dbUser } = useAuth();
+    const isAdminOrManager = dbUser?.role === 'admin' || dbUser?.role === 'manager';
     const [isAdded, setIsAdded] = useState(false);
 
     const handleAdd = () => {
@@ -71,8 +74,20 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
                     </div>
                 )}
 
+                )}
+
+                {product.tags && product.tags.length > 0 && (
+                    <div className="absolute top-1 left-1 flex flex-wrap gap-0.5 z-20">
+                        {product.tags.map((tag, index) => (
+                            <span key={index} className="bg-white/90 text-[#2D5A27] px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm border border-[#2D5A27]/20">
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
+                )}
+
                 {product.currentStock <= 0 && (
-                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center text-[8px]">
+                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center text-[8px] z-10">
                         <span className="bg-gray-900 text-white font-bold px-1.5 py-0.5 rounded-full shadow-lg">
                             OOS
                         </span>
@@ -86,7 +101,9 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
                     <h3 className="text-sm font-bold text-gray-900 truncate group-hover/title:text-green-600 transition-colors">
                         {product.name}
                     </h3>
-                    <p className="text-[10px] font-medium text-gray-400 capitalize tracking-wide">{product.businessType}</p>
+                    <p className="text-[10px] font-medium text-gray-400 capitalize tracking-wide">
+                        {product.categoryName || (isAdminOrManager ? product.businessType : "")}
+                    </p>
                 </Link>
 
                 <div className="mt-1 flex items-center gap-2">

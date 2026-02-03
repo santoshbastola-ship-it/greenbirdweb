@@ -17,10 +17,12 @@ import "nepali-datepicker-reactjs/dist/index.css";
 import PaymentStatusDropdown from "@/components/admin/PaymentStatusDropdown";
 import OrderStatusDropdown from "@/components/admin/OrderStatusDropdown";
 import OrderPartialPaymentDialog from "@/components/admin/OrderPartialPaymentDialog";
+import PaymentReceiptModal from "@/components/admin/PaymentReceiptModal";
 import { useAuth } from "@/context/AuthContext";
 import { ProductService } from "@/services/product.service";
 import AdvancedSearch from "@/components/admin/AdvancedSearch";
 import LogoLoader from "@/components/ui/LogoLoader";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 type TabStatus = OrderStatus;
 
@@ -33,6 +35,23 @@ export default function AdminOrdersPage() {
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+
+    // Confirmation Modal State
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        confirmText: string;
+        onConfirm: () => void;
+        variant: "danger" | "warning" | "info" | "success";
+    }>({
+        isOpen: false,
+        title: "",
+        message: "",
+        confirmText: "",
+        onConfirm: () => { },
+        variant: "danger"
+    });
 
     useEffect(() => {
         loadOrders();
@@ -53,16 +72,25 @@ export default function AdminOrdersPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to PERMANENTLY delete this order?")) return;
-        setLoading(true);
-        try {
-            await TransactionService.deleteTransaction(id);
-            loadOrders();
-        } catch (error) {
-            console.error(error);
-            alert("Failed to delete order");
-            setLoading(false);
-        }
+        setConfirmModal({
+            isOpen: true,
+            title: "Delete Order",
+            message: "Are you sure you want to PERMANENTLY delete this order? This action cannot be undone.",
+            confirmText: "Yes, Delete Order",
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                setLoading(true);
+                try {
+                    await TransactionService.deleteTransaction(id);
+                    loadOrders();
+                } catch (error) {
+                    console.error(error);
+                    alert("Failed to delete order");
+                    setLoading(false);
+                }
+            }
+        });
     };
 
     const isManager = dbUser?.role === 'manager';
@@ -196,8 +224,20 @@ export default function AdminOrdersPage() {
                     order={selectedOrder}
                     onClose={() => setSelectedOrderId(null)}
                     onUpdate={loadOrders}
+                    onDelete={handleDelete}
+                    setConfirmModal={setConfirmModal}
                 />
             )}
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                confirmText={confirmModal.confirmText}
+                variant={confirmModal.variant}
+            />
         </div>
     );
 }
@@ -369,15 +409,23 @@ function CancelDialog({
 function OrderDetailsModal({
     order,
     onClose,
-    onUpdate
+    onUpdate,
+    onDelete: parentDelete,
+    setConfirmModal
 }: {
     order: TransactionRecord;
     onClose: () => void;
     onUpdate: () => void;
+    onDelete: (id: string) => Promise<void>;
+    setConfirmModal: (modal: any) => void;
 }) {
     const [isUpdating, setIsUpdating] = useState(false);
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+    const [receiptData, setReceiptData] = useState<{
+        isOpen: boolean;
+        receivedAmount: number;
+    }>({ isOpen: false, receivedAmount: 0 });
     const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'Online'>('Cash');
     const { dbUser } = useAuth();
     const isManager = dbUser?.role === 'manager';
@@ -443,7 +491,7 @@ function OrderDetailsModal({
             let payments = order.payments || [];
 
             if (newStatus === PaymentStatus.PaidCash || newStatus === PaymentStatus.PaidOnline) {
-                payAmount = totalAmount;
+                payAmount = totalAmount; // Actually need to clarify if this resets or what. Assuming Full Payment means 'Total Amount' is marked paid.
                 const remaining = totalAmount - (order.paidAmount || 0);
                 if (remaining > 0) {
                     payments = [...payments, {
@@ -451,6 +499,9 @@ function OrderDetailsModal({
                         date: new Date(),
                         note: `Full Payment - ${newStatus === PaymentStatus.PaidOnline ? "Online" : "Cash"}`
                     }];
+
+                    // Show receipt for full payment
+                    setReceiptData({ isOpen: true, receivedAmount: remaining });
                 }
             } else if (newStatus === PaymentStatus.Pending) {
                 payAmount = 0; // Reset paid amount if marked as pending
@@ -467,22 +518,35 @@ function OrderDetailsModal({
     };
 
     const handleDelete = async () => {
-        if (!confirm("Are you sure you want to PERMANENTLY delete this order?")) return;
-        setIsUpdating(true);
-        try {
-            await TransactionService.deleteTransaction(order.id);
-            onClose();
-            onUpdate();
-        } catch (error) {
-            console.error(error);
-            alert("Failed to delete order");
-            setIsUpdating(false);
-        }
+        setConfirmModal({
+            isOpen: true,
+            title: "Delete Order",
+            message: "Are you sure you want to PERMANENTLY delete this order? This action cannot be undone.",
+            confirmText: "Yes, Delete Order",
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmModal((prev: any) => ({ ...prev, isOpen: false }));
+                onClose(); // Close the details modal first
+                await parentDelete(order.id);
+            }
+        });
     };
 
     const handleSaveChanges = async () => {
-        if (!confirm("Are you sure you want to save these changes?")) return;
+        setConfirmModal({
+            isOpen: true,
+            title: "Save Changes",
+            message: "Are you sure you want to save these changes to this order?",
+            confirmText: "Save Changes",
+            variant: "info",
+            onConfirm: async () => {
+                setConfirmModal((prev: any) => ({ ...prev, isOpen: false }));
+                await performSave();
+            }
+        });
+    };
 
+    const performSave = async () => {
         setIsUpdating(true);
         try {
             // Calculate changes for log
@@ -1081,6 +1145,9 @@ function OrderDetailsModal({
                                                 amountInput.value = "";
                                                 noteInput.value = "";
                                                 onUpdate();
+
+                                                // Show receipt
+                                                setReceiptData({ isOpen: true, receivedAmount: amount });
                                             } catch (error) {
                                                 console.error("Error updating payment:", error);
                                                 alert("Failed to record payment");
@@ -1100,6 +1167,12 @@ function OrderDetailsModal({
             </div>
 
             {/* Nested Modals */}
+            <PaymentReceiptModal
+                isOpen={receiptData.isOpen}
+                onClose={() => setReceiptData({ ...receiptData, isOpen: false })}
+                order={order}
+                receivedAmount={receiptData.receivedAmount}
+            />
             {
                 showCancelDialog && (
                     <CancelDialog
@@ -1117,7 +1190,12 @@ function OrderDetailsModal({
                     <OrderPartialPaymentDialog
                         order={order}
                         onClose={() => setShowPaymentDialog(false)}
-                        onSuccess={onUpdate}
+                        onSuccess={(amount) => {
+                            onUpdate();
+                            if (amount && amount > 0) {
+                                setReceiptData({ isOpen: true, receivedAmount: amount });
+                            }
+                        }}
                     />
                 )
             }

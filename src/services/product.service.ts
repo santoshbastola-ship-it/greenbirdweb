@@ -10,11 +10,25 @@ export const ProductService = {
     getAllProducts: async (): Promise<Product[]> => {
         try {
             const querySnapshot = await getDocs(collection(db, COLLECTION_NAME));
-            return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+            const products = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+
+            // Fetch categories to map names
+            const categories = await ProductService.getCategories();
+            const categoryMap = new Map(categories.map(cat => [cat.id, cat.name]));
+
+            return products.map(p => ({
+                ...p,
+                categoryName: p.categoryId ? categoryMap.get(p.categoryId) : undefined
+            }));
         } catch (error) {
             console.error("Error fetching products:", error);
             return [];
         }
+    },
+
+    getCategories: async () => {
+        const querySnapshot = await getDocs(collection(db, "categories"));
+        return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
     },
 
     getProductById: async (id: string): Promise<Product | null> => {
@@ -23,7 +37,15 @@ export const ProductService = {
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
-                return { id: docSnap.id, ...docSnap.data() } as Product;
+                const product = { id: docSnap.id, ...docSnap.data() } as Product;
+                if (product.categoryId) {
+                    const catRef = doc(db, "categories", product.categoryId);
+                    const catSnap = await getDoc(catRef);
+                    if (catSnap.exists()) {
+                        product.categoryName = catSnap.data().name;
+                    }
+                }
+                return product;
             } else {
                 return null;
             }
@@ -77,22 +99,38 @@ export const ProductService = {
     updateProduct: async (id: string, updates: Partial<Product>, changedBy: string = "admin"): Promise<void> => {
         try {
             const docRef = doc(db, COLLECTION_NAME, id);
+            const docSnap = await getDoc(docRef);
+
+            if (!docSnap.exists()) {
+                throw new Error("Product not found");
+            }
+
+            const oldProduct = docSnap.data() as Product;
+            const productName = oldProduct.name;
+            const changes: string[] = [];
 
             // If currentPrice is being updated, we need to track it
-            if (updates.currentPrice !== undefined) {
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const oldProduct = docSnap.data() as Product;
-                    if (oldProduct.currentPrice !== updates.currentPrice) {
-                        const historyEntry: PriceHistoryEntry = {
-                            price: updates.currentPrice,
-                            date: new Date().toISOString(),
-                            changedBy: changedBy
-                        };
-                        const currentHistory = oldProduct.priceHistory || [];
-                        updates.priceHistory = [historyEntry, ...currentHistory];
-                    }
-                }
+            if (updates.currentPrice !== undefined && updates.currentPrice !== oldProduct.currentPrice) {
+                changes.push(`price: Rs ${oldProduct.currentPrice} -> Rs ${updates.currentPrice}`);
+                const historyEntry: PriceHistoryEntry = {
+                    price: updates.currentPrice,
+                    date: new Date().toISOString(),
+                    changedBy: changedBy
+                };
+                const currentHistory = oldProduct.priceHistory || [];
+                updates.priceHistory = [historyEntry, ...currentHistory];
+            }
+
+            if (updates.currentStock !== undefined && updates.currentStock !== oldProduct.currentStock) {
+                changes.push(`stock: ${oldProduct.currentStock} -> ${updates.currentStock}`);
+            }
+
+            if (updates.isAvailableForSale !== undefined && updates.isAvailableForSale !== oldProduct.isAvailableForSale) {
+                changes.push(`status: ${oldProduct.isAvailableForSale ? 'In Stock' : 'Out of Stock'} -> ${updates.isAvailableForSale ? 'In Stock' : 'Out of Stock'}`);
+            }
+
+            if (updates.name !== undefined && updates.name !== oldProduct.name) {
+                changes.push(`name: ${oldProduct.name} -> ${updates.name}`);
             }
 
             await updateDoc(docRef, {
@@ -101,9 +139,13 @@ export const ProductService = {
             });
 
             // Notify Admins
+            const timestamp = new Date().toLocaleString();
+            const changesSummary = changes.length > 0 ? `(${changes.join(', ')})` : '(details updated)';
+            const message = `Product updated: ${productName} ${changesSummary} by ${changedBy} at ${timestamp}`;
+
             await NotificationService.notifyAdmins(
                 "Product Updated",
-                `Product updated: ${id}`,
+                message,
                 id,
                 'product',
                 '/admin/inventory'
@@ -185,16 +227,18 @@ export const ProductService = {
             });
 
             // 5. Send Notification
-            if (changedByUserId) {
-                await NotificationService.createNotification({
-                    targetUserId: changedByUserId,
-                    title: "Stock Updated",
-                    message: `Stock for ${product.name} updated. New stock: ${newStock} ${product.unit} (${action === 'add' ? '+' : action === 'remove' ? '-' : '='}${Math.abs(changeAmount)})`,
-                    type: "info",
-                    channels: ["in-app"],
-                    route: "/admin/stock-update"
-                });
-            }
+            const timestamp = new Date().toLocaleString();
+            const actionText = action === 'add' ? 'added' : action === 'remove' ? 'removed' : 'set';
+            const message = `Product updated: ${product.name} (stock updated: ${actionText} ${quantity} ${product.unit}, New total: ${newStock} ${product.unit}) by ${changedBy} at ${timestamp}`;
+
+            // Notify Admins
+            await NotificationService.notifyAdmins(
+                "Stock Updated",
+                message,
+                productId,
+                'product',
+                '/admin/inventory'
+            );
 
         } catch (error) {
             console.error("Error updating stock:", error);
@@ -202,7 +246,7 @@ export const ProductService = {
         }
     },
 
-    deleteProduct: async (id: string): Promise<void> => {
+    deleteProduct: async (id: string, changedBy: string = "admin"): Promise<void> => {
         try {
             // Fetch product first to get the name for notification
             const productRef = doc(db, COLLECTION_NAME, id);
@@ -215,9 +259,12 @@ export const ProductService = {
             await deleteDoc(productRef);
 
             // Notify Admins
+            const timestamp = new Date().toLocaleString();
+            const message = `Product deleted: ${productName} by ${changedBy} at ${timestamp}`;
+
             await NotificationService.notifyAdmins(
                 "Product Deleted",
-                `Product deleted: ${productName}`,
+                message,
                 undefined,
                 'product',
                 '/admin/inventory'

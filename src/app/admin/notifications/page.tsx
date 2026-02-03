@@ -7,6 +7,7 @@ import { Notification as NotificationType } from "@/types";
 import { Bell, Check, Trash2, X, CheckSquare, Square, Eye, EyeOff } from "lucide-react";
 import { toNepali, formatDateTime } from "@/lib/date-helper";
 import { useRouter } from "next/navigation";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default function NotificationsPage() {
     const { user } = useAuth();
@@ -15,6 +16,24 @@ export default function NotificationsPage() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'unread'>('unread');
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const [actionLoading, setActionLoading] = useState(false);
+
+    // Confirmation Modal State
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        confirmText: string;
+        onConfirm: () => void;
+        variant: "danger" | "warning" | "info" | "success";
+    }>({
+        isOpen: false,
+        title: "",
+        message: "",
+        confirmText: "",
+        onConfirm: () => { },
+        variant: "danger"
+    });
 
     useEffect(() => {
         if (!user) {
@@ -60,15 +79,26 @@ export default function NotificationsPage() {
         }
     };
 
-    const handleDelete = async (notificationId: string) => {
-        if (!confirm("Delete this notification?")) return;
-        try {
-            await NotificationService.deleteNotification(notificationId);
-            loadNotifications();
-            setSelectedIds(prev => prev.filter(id => id !== notificationId));
-        } catch (error) {
-            console.error("Error deleting notification:", error);
-        }
+    const handleDelete = async (id: string) => {
+        setConfirmModal({
+            isOpen: true,
+            title: "Delete Notification",
+            message: "Are you sure you want to delete this notification?",
+            confirmText: "Yes, Delete",
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                setActionLoading(true);
+                try {
+                    await NotificationService.deleteNotification(id);
+                    loadNotifications();
+                } catch (error) {
+                    console.error("Error deleting notification:", error);
+                } finally {
+                    setActionLoading(false);
+                }
+            }
+        });
     };
 
     const handleTestNotification = async () => {
@@ -127,25 +157,50 @@ export default function NotificationsPage() {
 
     const handleBulkDelete = async () => {
         if (selectedIds.length === 0) return;
-        if (!confirm(`Delete ${selectedIds.length} notifications?`)) return;
-        try {
-            await NotificationService.deleteBatch(selectedIds);
-            loadNotifications();
-            setSelectedIds([]);
-        } catch (error) {
-            console.error("Error bulk deleting:", error);
-        }
+        setConfirmModal({
+            isOpen: true,
+            title: "Delete Multiple Notifications",
+            message: `Are you sure you want to delete ${selectedIds.length} notifications?`,
+            confirmText: `Delete ${selectedIds.length}`,
+            variant: "danger",
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                setActionLoading(true);
+                try {
+                    await NotificationService.deleteBatch(selectedIds); // Assuming deleteBatch is the correct service method
+                    setSelectedIds([]);
+                    loadNotifications();
+                } catch (error) {
+                    console.error("Error deleting notifications:", error);
+                } finally {
+                    setActionLoading(false);
+                }
+            }
+        });
     };
 
     // Global Actions
-    const handleMarkAllAsRead = async () => {
-        if (!user || !confirm("Mark ALL notifications as read?")) return;
-        try {
-            await NotificationService.markAllAsRead(user.uid);
-            loadNotifications();
-        } catch (error) {
-            console.error("Error marking all as read:", error);
-        }
+    const handleMarkAllAsRead = () => {
+        if (!user) return;
+        setConfirmModal({
+            isOpen: true,
+            title: "Mark All as Read",
+            message: "Are you sure you want to mark ALL notifications as read?",
+            confirmText: "Mark all as Read",
+            variant: "success",
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                setActionLoading(true);
+                try {
+                    await NotificationService.markAllAsRead(user.uid);
+                    loadNotifications();
+                } catch (error) {
+                    console.error("Error marking all as read:", error);
+                } finally {
+                    setActionLoading(false);
+                }
+            }
+        });
     };
 
     const filteredNotifications = notifications.filter(n => {
@@ -300,14 +355,6 @@ export default function NotificationsPage() {
                                     </div>
                                     <p className={`text-sm ${!notification.isRead ? 'text-gray-900 font-medium' : 'text-gray-600'} mb-3`}>{notification.message}</p>
 
-                                    {notification.route && (
-                                        <a
-                                            href={notification.route}
-                                            className="inline-flex items-center text-xs font-semibold text-green-600 hover:text-green-700 bg-green-50 px-2 py-1 rounded-md hover:bg-green-100 transition-colors"
-                                        >
-                                            View Details
-                                        </a>
-                                    )}
                                 </div>
 
                                 {/* Individual Actions */}
@@ -342,6 +389,16 @@ export default function NotificationsPage() {
                     ))}
                 </div>
             )}
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                confirmText={confirmModal.confirmText}
+                variant={confirmModal.variant}
+                isLoading={actionLoading}
+            />
         </div>
     );
 }

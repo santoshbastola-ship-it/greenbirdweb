@@ -44,26 +44,33 @@ export default async function ProductDetailsPage({ params }: PageProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2">
 
                         {/* Image Section */}
-                        <div className="bg-gray-100 relative aspect-square md:aspect-auto">
+                        <div className="bg-gray-100 relative aspect-square md:aspect-auto group overflow-hidden rounded-3xl md:rounded-l-3xl md:rounded-r-none">
                             {/* Next/Image optimize later */}
                             <img
                                 src={imageSrc}
                                 alt={product.name}
                                 className="w-full h-full object-cover"
                             />
+                            {/* Tags Overlay */}
+                            {product.tags && product.tags.length > 0 && (
+                                <div className="absolute top-4 left-4 flex flex-wrap gap-2 z-10">
+                                    {product.tags.map((tag, index) => (
+                                        <span key={index} className="bg-white/95 text-[#2D5A27] px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider shadow-sm backdrop-blur-md border border-[#2D5A27]/20">
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {/* Info Section */}
                         <div className="p-8 md:p-12 flex flex-col justify-center">
                             <div className="flex items-center space-x-2 mb-4">
-                                <span className="px-3 py-1 bg-[#2D5A27]/10 text-[#2D5A27] rounded-full text-xs font-bold uppercase tracking-wide">
-                                    {product.businessType}
-                                </span>
-                                {product.tags && product.tags.map((tag, index) => (
-                                    <span key={index} className="px-3 py-1 bg-white text-[#2D5A27] border border-[#2D5A27]/20 rounded-full text-xs font-bold uppercase tracking-wide shadow-sm">
-                                        {tag}
+                                {product.categoryName && (
+                                    <span className="px-3 py-1 bg-[#2D5A27]/10 text-[#2D5A27] rounded-full text-xs font-bold uppercase tracking-wide">
+                                        {product.categoryName}
                                     </span>
-                                ))}
+                                )}
                                 {product.isAvailableForSale ? (
                                     <span className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold uppercase tracking-wide">
                                         In Stock

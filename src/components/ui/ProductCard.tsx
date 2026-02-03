@@ -3,13 +3,16 @@ import Link from "next/link";
 import { ShoppingBag, Star } from "lucide-react";
 import { Product } from "@/types";
 import AddToCartButton from "./AddToCartButton";
+import { useAuth } from "@/context/AuthContext";
 
 interface ProductCardProps {
     product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+    const { dbUser } = useAuth();
     const isAvailable = product.isAvailableForSale;
+    const isAdminOrManager = dbUser?.role === 'admin' || dbUser?.role === 'manager';
 
     // Fallback image if none provided
     const imageSrc = product.images.length > 0 ? product.images[0] : "/placeholder.png";
@@ -34,7 +37,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                     </div>
                 )}
                 {product.tags && product.tags.length > 0 && (
-                    <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-10">
+                    <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-20">
                         {product.tags.map((tag, index) => (
                             <span key={index} className="bg-white/90 text-[#2D5A27] px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm border border-[#2D5A27]/20">
                                 {tag}
@@ -48,7 +51,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 <div className="flex justify-between items-start mb-2">
                     <div>
                         <p className="text-xs text-[#2D5A27] font-semibold mb-1 uppercase tracking-wider">
-                            {product.businessType}
+                            {product.categoryName || (isAdminOrManager ? product.businessType : "")}
                         </p>
                         <Link href={`/shop/${product.id}`}>
                             <h3 className="font-bold text-gray-900 line-clamp-1 group-hover:text-[#2D5A27] transition-colors">

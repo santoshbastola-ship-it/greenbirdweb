@@ -21,13 +21,22 @@ function ProductListContent({ initialProducts }: ProductListContentProps) {
 
     const products = initialProducts.filter(p => {
         // First filter by category if present
-        if (category && p.businessType !== category) return false;
+        if (category) {
+            const matchesCategory = p.categoryId === category;
+            const matchesBusinessType = p.businessType === category;
+            if (!matchesCategory && !matchesBusinessType) return false;
+        }
 
         // Then hide assets from customers
         if (p.businessType === 'asset' && !isAdminOrManager) return false;
 
         return true;
     });
+
+    const categoryDisplayName = category
+        ? products.find(p => p.categoryId === category || p.businessType === category)?.categoryName ||
+        category.charAt(0).toUpperCase() + category.slice(1)
+        : 'All Products';
 
     return (
         <div className="flex-1">
@@ -36,7 +45,7 @@ function ProductListContent({ initialProducts }: ProductListContentProps) {
             <div className="flex flex-col gap-2 mb-6">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-bold text-gray-900">
-                        {category ? `${category.charAt(0).toUpperCase() + category.slice(1)}` : 'All Products'}
+                        {categoryDisplayName}
                     </h1>
                     <span className="text-sm text-gray-500">{products.length} items</span>
                 </div>
