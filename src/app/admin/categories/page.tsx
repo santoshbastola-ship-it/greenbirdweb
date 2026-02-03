@@ -1,12 +1,30 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Category } from "@/types";
+import { Category, BusinessType } from "@/types";
 import { CategoryService } from "@/services/category.service";
-import { Plus, Edit2, Trash2, X, Save, Check, AlertCircle } from "lucide-react";
+import {
+    Plus,
+    Search,
+    Trash2,
+    Edit,
+    X,
+    Save,
+    Check,
+    AlertCircle,
+    Bird,
+    Sprout,
+    Box,
+    Tractor,
+    Calendar,
+    Filter
+} from "lucide-react";
 import { Toast, ToastType } from "@/components/ui/Toast";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { formatDateTime } from "@/lib/date-helper";
+import AdvancedSearch from "@/components/admin/AdvancedSearch";
+
+type TabStatus = BusinessType | "ALL";
 
 export default function CategoriesPage() {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -14,12 +32,19 @@ export default function CategoriesPage() {
     const [actionLoading, setActionLoading] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
 
+    // Filter state
+    const [activeTab, setActiveTab] = useState<TabStatus>("ALL");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
+
     // Modal state
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const [formData, setFormData] = useState<Partial<Category>>({
         name: "",
         description: "",
+        businessType: "livestock",
         isActive: true
     });
 
@@ -40,7 +65,7 @@ export default function CategoriesPage() {
         }
     };
 
-    const showToast = (message: string, type: ToastType = 'success') => {
+    const showToast = (message: string, type: ToastType = "success") => {
         setToast({ message, type });
     };
 
@@ -50,6 +75,7 @@ export default function CategoriesPage() {
             setFormData({
                 name: category.name,
                 description: category.description || "",
+                businessType: category.businessType || "livestock",
                 isActive: category.isActive
             });
         } else {
@@ -57,6 +83,7 @@ export default function CategoriesPage() {
             setFormData({
                 name: "",
                 description: "",
+                businessType: "livestock",
                 isActive: true
             });
         }
@@ -66,7 +93,6 @@ export default function CategoriesPage() {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingCategory(null);
-        setFormData({ name: "", description: "", isActive: true });
     };
 
     const handleSave = async (e: React.FormEvent) => {
@@ -95,8 +121,9 @@ export default function CategoriesPage() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!window.confirm("Are you sure you want to delete this category? Products assigned to it will remain but without a category.")) return;
+    const handleDelete = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation();
+        if (!window.confirm("Are you sure you want to delete this category?")) return;
 
         setActionLoading(true);
         try {
@@ -111,16 +138,47 @@ export default function CategoriesPage() {
         }
     };
 
+    const filteredCategories = categories.filter((cat) => {
+        const matchesTab = activeTab === "ALL" || cat.businessType === activeTab;
+        const query = searchQuery.toLowerCase();
+        const matchesSearch = !searchQuery ||
+            cat.name.toLowerCase().includes(query) ||
+            (cat.description && cat.description.toLowerCase().includes(query)) ||
+            (cat.businessType && cat.businessType.toLowerCase().includes(query));
+
+        const catDate = cat.createdAt ? new Date(cat.createdAt) : new Date();
+        const matchesStartDate = !startDate || catDate >= new Date(startDate);
+        const matchesEndDate = !endDate || catDate <= new Date(new Date(endDate).setHours(23, 59, 59, 999));
+
+        return matchesTab && matchesSearch && matchesStartDate && matchesEndDate;
+    }).sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+    });
+
+    const getTabCount = (tab: TabStatus) => {
+        return categories.filter(cat => tab === "ALL" || cat.businessType === tab).length;
+    };
+
+    const tabs: { label: string; status: TabStatus }[] = [
+        { label: "All", status: "ALL" },
+        { label: "Livestock", status: "livestock" },
+        { label: "Crops", status: "crop" },
+        { label: "Products", status: "product" },
+        { label: "Assets", status: "asset" },
+    ];
+
     if (loading) {
         return (
-            <div className="min-h-[400px] flex items-center justify-center">
+            <div className="flex items-center justify-center h-96">
                 <LogoLoader />
             </div>
         );
     }
 
     return (
-        <div className="space-y-6">
+        <div className="min-h-screen bg-gray-50 py-8">
             {toast && (
                 <Toast
                     message={toast.message}
@@ -129,87 +187,77 @@ export default function CategoriesPage() {
                 />
             )}
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Categories</h1>
-                    <p className="text-gray-500">Manage product categories for Livestock, Crops, and more.</p>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
+                        <p className="text-gray-500 mt-1">Manage categories for Livestock, Crops, Products, and Assets.</p>
+                    </div>
+                    <button
+                        onClick={() => handleOpenModal()}
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm font-medium w-full sm:w-auto"
+                    >
+                        <Plus className="h-5 w-5" />
+                        New Category
+                    </button>
                 </div>
-                <button
-                    onClick={() => handleOpenModal()}
-                    className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors shadow-sm"
-                >
-                    <Plus className="h-5 w-5 mr-2" />
-                    New Category
-                </button>
-            </div>
 
-            {/* Categories Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-50 border-b border-gray-100">
-                            <tr>
-                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Description</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Created</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {categories.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                                        <div className="flex flex-col items-center">
-                                            <AlertCircle className="h-12 w-12 text-gray-300 mb-2" />
-                                            <p>No categories found. Create your first category to get started.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ) : (
-                                categories.map((category) => (
-                                    <tr key={category.id} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <span className="font-medium text-gray-900">{category.name}</span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-gray-600 line-clamp-1">{category.description || "-"}</span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${category.isActive
-                                                    ? "bg-green-100 text-green-800"
-                                                    : "bg-gray-100 text-gray-800"
-                                                }`}>
-                                                {category.isActive ? "Active" : "Inactive"}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-500">
-                                            {formatDateTime(category.createdAt, "DD MMM YYYY")}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end space-x-2">
-                                                <button
-                                                    onClick={() => handleOpenModal(category)}
-                                                    className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                                    title="Edit Category"
-                                                >
-                                                    <Edit2 className="h-4 w-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(category.id)}
-                                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    title="Delete Category"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                {/* Filters */}
+                <AdvancedSearch
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    startDate={startDate}
+                    onStartDateChange={setStartDate}
+                    endDate={endDate}
+                    onEndDateChange={setEndDate}
+                    placeholder="Search categories..."
+                />
+
+                {/* Tabs */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
+                    <div className="flex border-b border-gray-200 overflow-x-auto">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.status}
+                                onClick={() => setActiveTab(tab.status)}
+                                className={`flex-1 min-w-[100px] sm:min-w-[120px] px-4 sm:px-6 py-4 text-sm font-medium transition-colors relative whitespace-nowrap ${activeTab === tab.status
+                                    ? "text-green-600 border-b-2 border-green-600"
+                                    : "text-gray-500 hover:text-gray-700"
+                                    }`}
+                            >
+                                <div className="flex items-center justify-center gap-2">
+                                    <span>{tab.label}</span>
+                                    <span className={`px-2 py-0.5 rounded-full text-xs ${activeTab === tab.status
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-gray-100 text-gray-600"
+                                        }`}>
+                                        {getTabCount(tab.status)}
+                                    </span>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
                 </div>
+
+                {/* Categories List */}
+                {filteredCategories.length === 0 ? (
+                    <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-100">
+                        <Filter className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No {activeTab === "ALL" ? "" : activeTab} categories found</h3>
+                        <p className="text-gray-500">Categories matching your criteria will appear here.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {filteredCategories.map((category) => (
+                            <CategoryCard
+                                key={category.id}
+                                category={category}
+                                onEdit={() => handleOpenModal(category)}
+                                onDelete={(e) => handleDelete(e, category.id)}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Modal */}
@@ -239,9 +287,25 @@ export default function CategoriesPage() {
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                                    placeholder="e.g., Livestock, Crops, Dairy"
+                                    placeholder="e.g., Dairy, Vegetables, Tools"
                                     autoFocus
                                 />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Business Type <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={formData.businessType}
+                                    onChange={(e) => setFormData({ ...formData, businessType: e.target.value as BusinessType })}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                                >
+                                    <option value="livestock">Livestock</option>
+                                    <option value="crop">Crops</option>
+                                    <option value="product">Products</option>
+                                    <option value="asset">Assets</option>
+                                </select>
                             </div>
 
                             <div>
@@ -252,7 +316,7 @@ export default function CategoriesPage() {
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-                                    placeholder="Short description of the category..."
+                                    placeholder="Short description..."
                                     rows={3}
                                 />
                             </div>
@@ -286,7 +350,7 @@ export default function CategoriesPage() {
                                     {actionLoading ? "Saving..." : (
                                         <>
                                             <Save className="h-5 w-5 mr-2" />
-                                            Save Category
+                                            Update Category
                                         </>
                                     )}
                                 </button>
@@ -297,4 +361,83 @@ export default function CategoriesPage() {
             )}
         </div>
     );
+}
+
+function CategoryCard({
+    category,
+    onEdit,
+    onDelete
+}: {
+    category: Category;
+    onEdit: () => void;
+    onDelete: (e: React.MouseEvent) => void;
+}) {
+    const styles = getBusinessTypeStyles(category.businessType || "product");
+
+    return (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-4 min-w-0">
+                    <div className={`p-3 rounded-full flex-shrink-0 ${styles.bg}`}>
+                        <styles.icon className={`h-6 w-6 ${styles.text}`} />
+                    </div>
+                    <div className="min-w-0">
+                        <h3 className="font-bold text-gray-900 text-lg truncate">{category.name}</h3>
+                        <div className="flex items-center text-xs text-gray-500 mt-1">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            {formatDateTime(category.createdAt, "DD MMM YYYY")}
+                            <span className="mx-2">•</span>
+                            <span className={`capitalize ${styles.text} font-medium`}>{category.businessType || "Other"}</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Edit"
+                    >
+                        <Edit className="h-5 w-5" />
+                    </button>
+                    <button
+                        onClick={onDelete}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Delete"
+                    >
+                        <Trash2 className="h-5 w-5" />
+                    </button>
+                </div>
+            </div>
+
+            {category.description && (
+                <div className="mt-3 text-sm text-gray-600 line-clamp-2">
+                    {category.description}
+                </div>
+            )}
+
+            <div className="mt-4 flex items-center justify-between">
+                <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${category.isActive
+                    ? "bg-green-100 text-green-800"
+                    : "bg-gray-100 text-gray-800"
+                    }`}>
+                    {category.isActive ? "Active" : "Inactive"}
+                </span>
+            </div>
+        </div>
+    );
+}
+
+function getBusinessTypeStyles(type: BusinessType) {
+    switch (type) {
+        case "livestock":
+            return { icon: Bird, bg: "bg-orange-50", text: "text-orange-600" };
+        case "crop":
+            return { icon: Sprout, bg: "bg-green-50", text: "text-green-600" };
+        case "product":
+            return { icon: Box, bg: "bg-blue-50", text: "text-blue-600" };
+        case "asset":
+            return { icon: Tractor, bg: "bg-gray-50", text: "text-gray-600" };
+        default:
+            return { icon: Box, bg: "bg-gray-50", text: "text-gray-600" };
+    }
 }

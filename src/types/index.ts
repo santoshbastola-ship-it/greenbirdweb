@@ -131,6 +131,7 @@ export interface Category {
     id: string;
     name: string;
     description?: string;
+    businessType?: BusinessType;
     createdAt: Date | string;
     updatedAt: Date | string;
     isActive: boolean;
