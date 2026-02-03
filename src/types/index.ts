@@ -127,7 +127,15 @@ export interface PriceHistoryEntry {
     changedBy: string;
 }
 
-// Stock History
+export interface Category {
+    id: string;
+    name: string;
+    description?: string;
+    createdAt: Date | string;
+    updatedAt: Date | string;
+    isActive: boolean;
+}
+
 export interface StockHistoryEntry {
     id: string;
     productId: string;
@@ -154,9 +162,11 @@ export interface Product {
     createdBy: string;
     images: string[];
     description?: string;
+    categoryId?: string;
     isAvailableForSale: boolean;
     isFeatured?: boolean;
     relatedProductIds?: string[]; // IDs of products to recommend when this product is viewed/carted
+    tags?: string[];
 }
 
 export interface User {
@@ -251,6 +261,8 @@ export interface Notification {
     isRead: boolean;
     createdAt: string | Date;
     relatedEntityId?: string; // ID of Order, Task, etc.
-    relatedEntityType?: 'transaction' | 'task' | 'alert';
+    relatedEntityType?: 'transaction' | 'task' | 'alert' | 'offer';
     route?: string; // In-app route to navigate to
+    validUntil?: string | Date; // Expiry date for the notification
+    imageUrl?: string; // Image for the notification (e.g., for offers)
 }

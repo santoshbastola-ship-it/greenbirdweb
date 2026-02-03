@@ -21,6 +21,7 @@ import {
     ChevronRight,
     ShoppingBag,
     MessageSquare,
+    Bell,
 } from "lucide-react";
 import clsx from "clsx";
 import { useState } from "react";
@@ -41,6 +42,7 @@ export default function AdminSidebar() {
         { href: "/admin/energy", label: "Energy Bills", icon: Zap },
         { href: "/admin/stock-update", label: "Stock Update", icon: Package },
         { href: "/admin/inventory", label: "Product & Price", icon: Package },
+        { href: "/admin/categories", label: "Categories", icon: ClipboardList },
         { href: "/admin/sales", label: "Sales & Purchase", icon: ShoppingCart },
         { href: "/admin/partners", label: "Partners", icon: Users },
         { href: "/admin/reports", label: "Reports", icon: BarChart3 },
@@ -49,6 +51,7 @@ export default function AdminSidebar() {
         { href: "/admin/bookings", label: "Bookings", icon: CalendarDays },
         { href: "/admin/testimonials", label: "Testimonials", icon: MessageSquare },
         { href: "/admin/users", label: "Users", icon: Users },
+        { href: "/admin/notifications/push", label: "Push Notifications", icon: Bell },
         { href: "/admin/settings", label: "Settings", icon: Settings },
     ];
 

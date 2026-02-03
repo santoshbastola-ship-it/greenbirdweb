@@ -285,11 +285,7 @@ function ProductCard({
                                 {product.name}
                             </h3>
                         </div>
-                        {product.description && (
-                            <div className="text-xs text-gray-500 truncate">
-                                {product.description}
-                            </div>
-                        )}
+
                     </div>
                 </button>
 

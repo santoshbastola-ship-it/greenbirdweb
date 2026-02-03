@@ -12,6 +12,9 @@ import { format } from "date-fns";
 import { toNepali, formatDateTime } from "@/lib/date-helper";
 import { cleanInput } from "@/lib/input-validation";
 import RelatedProductsSelector from "./RelatedProductsSelector";
+import { CategoryService } from "@/services/category.service";
+import { Category } from "@/types";
+import { useEffect } from "react";
 
 interface ProductFormProps {
     initialData?: Product;
@@ -26,9 +29,17 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [uploadingImage, setUploadingImage] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [loadingCategories, setLoadingCategories] = useState(true);
 
-    const [formData, setFormData] = useState<Partial<Product>>(
-        initialData || {
+    const [formData, setFormData] = useState<Partial<Product>>(() => {
+        if (initialData) {
+            return {
+                ...initialData,
+                tags: initialData.tags || ["", ""],
+            };
+        }
+        return {
             name: "",
             businessType: "livestock",
             unit: "pcs",
@@ -39,8 +50,23 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
             images: [],
             isAvailableForSale: true,
             isFeatured: false,
-        }
-    );
+            tags: ["", ""],
+        };
+    });
+
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const data = await CategoryService.getActiveCategories();
+                setCategories(data);
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+            } finally {
+                setLoadingCategories(false);
+            }
+        };
+        fetchCategories();
+    }, []);
 
     const showToast = (message: string, type: ToastType = 'success') => {
         setToast({ message, type });
@@ -51,11 +77,15 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
         setLoading(true);
 
         try {
+            // Clean up tags (remove empty strings)
+            const cleanedTags = (formData.tags || []).filter(tag => tag && tag.trim() !== "");
+            const dataToSave = { ...formData, tags: cleanedTags };
+
             if (isEditMode && initialData) {
-                await ProductService.updateProduct(initialData.id, formData, changedBy);
+                await ProductService.updateProduct(initialData.id, dataToSave, changedBy);
                 showToast("Product updated successfully");
             } else {
-                await ProductService.createProduct(formData, changedBy);
+                await ProductService.createProduct(dataToSave, changedBy);
                 showToast("Product created successfully");
             }
             setTimeout(() => {
@@ -90,6 +120,15 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
 
     const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData((prev) => ({ ...prev, [e.target.name]: e.target.checked }));
+    };
+
+    const handleTagChange = (index: number, value: string) => {
+        const cleanedValue = cleanInput(value);
+        setFormData((prev) => {
+            const newTags = [...(prev.tags || ["", ""])];
+            newTags[index] = cleanedValue;
+            return { ...prev, tags: newTags };
+        });
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -185,11 +224,31 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                 </select>
                             </div>
 
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                <select
+                                    name="categoryId"
+                                    value={formData.categoryId || ""}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                                    disabled={loadingCategories}
+                                >
+                                    <option value="">Select a Category</option>
+                                    {categories.map((cat) => (
+                                        <option key={cat.id} value={cat.id}>
+                                            {cat.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                {categories.length === 0 && !loadingCategories && (
+                                    <p className="text-xs text-amber-600 mt-1">No active categories found. Create them in Categories menu.</p>
+                                )}
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Is for Sale?</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Available (In Stock)</label>
                                 <div className="flex items-center h-[42px]">
                                     <input
                                         type="checkbox"
@@ -198,7 +257,7 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                         onChange={handleCheckboxChange}
                                         className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                                     />
-                                    <span className="ml-2 text-sm text-gray-600">Available on Public Store</span>
+                                    <span className="ml-2 text-sm text-gray-600">Uncheck to show as "Out of Stock"</span>
                                 </div>
                             </div>
 
@@ -215,6 +274,27 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                     <span className="ml-2 text-sm text-gray-600">Show on Home Page</span>
                                 </div>
                             </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="block text-sm font-medium text-gray-700">Product Tags (Max 2)</label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <input
+                                    type="text"
+                                    value={formData.tags?.[0] || ""}
+                                    onChange={(e) => handleTagChange(0, e.target.value)}
+                                    placeholder="Tag 1 (e.g. Organic)"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                                />
+                                <input
+                                    type="text"
+                                    value={formData.tags?.[1] || ""}
+                                    onChange={(e) => handleTagChange(1, e.target.value)}
+                                    placeholder="Tag 2 (e.g. Fresh)"
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                                />
+                            </div>
+                            <p className="text-xs text-gray-500">These tags will appear on top of the product image.</p>
                         </div>
 
                         <div>

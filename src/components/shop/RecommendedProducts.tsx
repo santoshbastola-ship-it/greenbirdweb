@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRecommendations } from '@/hooks/useRecommendations';
 import { Product } from '@/types';
-import { ShoppingCart, Package } from 'lucide-react';
+import { Plus, Package, Check } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 
 export default function RecommendedProducts() {
@@ -32,7 +33,7 @@ export default function RecommendedProducts() {
     return (
         <div className="mt-12 border-t border-gray-100 pt-12">
             <h2 className="text-xl font-bold text-gray-900 mb-6">You might also like</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {recommendations.map((product) => (
                     <ProductCard
                         key={product.id}
@@ -46,9 +47,18 @@ export default function RecommendedProducts() {
 }
 
 function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }) {
+    const [isAdded, setIsAdded] = useState(false);
+
+    const handleAdd = () => {
+        onAdd();
+        setIsAdded(true);
+        setTimeout(() => setIsAdded(false), 2000);
+    };
+
     return (
-        <div className="group bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300 flex flex-col">
-            <Link href={`/shop/${product.id}`} className="block relative aspect-square overflow-hidden bg-gray-50">
+        <div className="group bg-white rounded-xl border border-gray-100 p-3 hover:shadow-md transition-all duration-300 flex items-center gap-4">
+            {/* Small Product Image */}
+            <Link href={`/shop/${product.id}`} className="block relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-gray-50 border border-gray-100">
                 {product.images?.[0] ? (
                     <img
                         src={product.images[0]}
@@ -57,45 +67,58 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-300">
-                        <Package className="h-10 w-10" />
+                        <Package className="h-6 w-6" />
                     </div>
                 )}
 
                 {product.currentStock <= 0 && (
-                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center">
-                        <span className="bg-gray-900 text-white text-xs font-medium px-2.5 py-1 rounded-full">
-                            Out of Stock
+                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center text-[8px]">
+                        <span className="bg-gray-900 text-white font-bold px-1.5 py-0.5 rounded-full shadow-lg">
+                            OOS
                         </span>
                     </div>
                 )}
             </Link>
 
-            <div className="p-4 flex flex-col flex-1">
-                <Link href={`/shop/${product.id}`} className="block">
-                    <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1 group-hover:text-green-600 transition-colors">
+            {/* Product Details */}
+            <div className="flex-1 min-w-0">
+                <Link href={`/shop/${product.id}`} className="block group/title">
+                    <h3 className="text-sm font-bold text-gray-900 truncate group-hover/title:text-green-600 transition-colors">
                         {product.name}
                     </h3>
-                    <p className="text-xs text-gray-500 mb-3 capitalize">{product.businessType}</p>
+                    <p className="text-[10px] font-medium text-gray-400 capitalize tracking-wide">{product.businessType}</p>
                 </Link>
 
-                <div className="mt-auto flex items-center justify-between gap-3">
-                    <div className="text-sm font-bold text-gray-900">
+                <div className="mt-1 flex items-center gap-2">
+                    <span className="text-sm font-black text-green-700">
                         Rs. {product.currentPrice.toLocaleString()}
-                        <span className="text-xs text-gray-500 font-normal ml-1">/ {product.unit}</span>
-                    </div>
-
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            onAdd();
-                        }}
-                        disabled={product.currentStock <= 0}
-                        className="p-2 bg-green-50 text-green-600 rounded-full hover:bg-green-600 hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Add to Cart"
-                    >
-                        <ShoppingCart className="h-4 w-4" />
-                    </button>
+                    </span>
+                    <span className="text-[10px] text-gray-400 font-medium">/ {product.unit}</span>
                 </div>
+            </div>
+
+            {/* Add Button */}
+            <div className="flex-shrink-0">
+                <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        handleAdd();
+                    }}
+                    disabled={product.currentStock <= 0 || isAdded}
+                    className={`h-10 w-10 rounded-full transition-all duration-300 flex items-center justify-center shadow-sm
+                        ${isAdded
+                            ? 'bg-green-600 text-white shadow-green-200 cursor-default'
+                            : 'bg-green-50 text-green-700 hover:bg-green-600 hover:text-white hover:shadow-md active:scale-95'
+                        }
+                        disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100`}
+                    title={isAdded ? "Added!" : "Add to Cart"}
+                >
+                    {isAdded ? (
+                        <Check className="h-5 w-5" />
+                    ) : (
+                        <Plus className="h-5 w-5" />
+                    )}
+                </button>
             </div>
         </div>
     );

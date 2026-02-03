@@ -71,6 +71,8 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
+import { ServiceWorkerUnregister } from "@/components/ServiceWorkerUnregister";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -81,6 +83,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-gray-50`}
       >
+        <ServiceWorkerUnregister />
         <AuthProvider>
           {children}
         </AuthProvider>

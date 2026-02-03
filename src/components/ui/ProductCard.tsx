@@ -9,7 +9,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-    const hasStock = product.currentStock > 0;
+    const isAvailable = product.isAvailableForSale;
 
     // Fallback image if none provided
     const imageSrc = product.images.length > 0 ? product.images[0] : "/placeholder.png";
@@ -26,11 +26,20 @@ export default function ProductCard({ product }: ProductCardProps) {
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                     />
                 </div>
-                {!hasStock && (
+                {!isAvailable && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                         <span className="bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
                             Out of Stock
                         </span>
+                    </div>
+                )}
+                {product.tags && product.tags.length > 0 && (
+                    <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-10">
+                        {product.tags.map((tag, index) => (
+                            <span key={index} className="bg-white/90 text-[#2D5A27] px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm border border-[#2D5A27]/20">
+                                {tag}
+                            </span>
+                        ))}
                     </div>
                 )}
             </Link>
@@ -55,13 +64,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between mt-4">
-                    {/* Rating placeholder */}
-                    <div className="flex items-center text-yellow-400 text-xs">
-                        <Star className="h-3 w-3 fill-current" />
-                        <span className="ml-1 text-gray-500">4.8</span>
-                    </div>
-
+                <div className="flex items-center justify-end mt-4">
                     <AddToCartButton product={product} />
                 </div>
             </div>

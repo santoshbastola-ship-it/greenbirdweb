@@ -71,22 +71,16 @@ export default function LiveInventory() {
                                 </div>
                                 <div className="mb-2">
                                     <span className="text-5xl font-bold text-[#2D5A27]">
-                                        {loading ? "..." : inventory.eggsInStock}
+                                        {loading ? "..." : "Available"}
                                     </span>
-                                    <span className="text-2xl text-gray-500 ml-2">pcs</span>
                                 </div>
                                 <p className="text-sm text-gray-600">
-                                    Available in stock
+                                    Freshly collected today
                                 </p>
                             </div>
                             <div className="flex flex-col items-end">
-                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${inventory.eggsInStock > 100
-                                        ? 'bg-green-100 text-green-700'
-                                        : inventory.eggsInStock > 50
-                                            ? 'bg-yellow-100 text-yellow-700'
-                                            : 'bg-red-100 text-red-700'
-                                    }`}>
-                                    {inventory.eggsInStock > 100 ? 'In Stock' : inventory.eggsInStock > 50 ? 'Low Stock' : 'Very Low'}
+                                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                    In Stock
                                 </span>
                             </div>
                         </div>
@@ -104,12 +98,11 @@ export default function LiveInventory() {
                                 </div>
                                 <div className="mb-2">
                                     <span className="text-5xl font-bold text-[#5C4033]">
-                                        {loading ? "..." : inventory.activeBhales}
+                                        {loading ? "..." : "Available"}
                                     </span>
-                                    <span className="text-2xl text-gray-500 ml-2">heads</span>
                                 </div>
                                 <p className="text-sm text-gray-600">
-                                    Ready for processing
+                                    Healthy & pasture-raised
                                 </p>
                             </div>
                             <div className="flex flex-col items-end">

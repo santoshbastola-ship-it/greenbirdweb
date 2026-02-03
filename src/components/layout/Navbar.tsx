@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { Menu, ShoppingCart, User, X, Sprout } from "lucide-react";
+import { Menu, ShoppingCart, User, X, Sprout, Bell } from "lucide-react";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import CartBadge from "./CartBadge";
+import { NotificationService } from "@/services/notification.service";
 
 import { useAuth } from "@/context/AuthContext";
 
@@ -15,6 +16,7 @@ export default function Navbar() {
     const profileRef = useRef<HTMLDivElement>(null);
     const pathname = usePathname();
     const { user, dbUser, logout } = useAuth();
+    const [unreadCount, setUnreadCount] = useState(0);
 
     const links = [
         { href: "/", label: "Home" },
@@ -34,11 +36,20 @@ export default function Navbar() {
         }
         document.addEventListener("mousedown", handleClickOutside);
         document.addEventListener("touchstart", handleClickOutside);
+
+        let unsubscribe: (() => void) | undefined;
+        if (user) {
+            unsubscribe = NotificationService.subscribeToUnreadCount(user.uid, (count) => {
+                setUnreadCount(count);
+            });
+        }
+
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
             document.removeEventListener("touchstart", handleClickOutside);
+            if (unsubscribe) unsubscribe();
         };
-    }, []);
+    }, [user]);
 
     return (
         <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
@@ -87,10 +98,20 @@ export default function Navbar() {
                     {/* Right Icons */}
                     <div className="flex items-center space-x-4">
                         {user && (
-                            <Link href="/cart" className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
-                                <ShoppingCart className="h-5 w-5" />
-                                <CartBadge />
-                            </Link>
+                            <div className="flex items-center space-x-2">
+                                <Link href="/notifications" className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+                                    <Bell className="h-5 w-5" />
+                                    {unreadCount > 0 && (
+                                        <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full animate-pulse">
+                                            {unreadCount > 9 ? '9+' : unreadCount}
+                                        </span>
+                                    )}
+                                </Link>
+                                <Link href="/cart" className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+                                    <ShoppingCart className="h-5 w-5" />
+                                    <CartBadge />
+                                </Link>
+                            </div>
                         )}
 
                         {user ? (

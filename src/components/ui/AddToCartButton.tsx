@@ -25,10 +25,13 @@ export default function AddToCartButton({
     // Check if item is already in cart
     const isAdded = items.some(item => item.productId === product.id);
 
+    const isEggs = product.name.toLowerCase().includes('egg');
+    const finalQuantity = isEggs && quantity === 1 ? 30 : quantity;
+
     const handleAdd = (e: React.MouseEvent) => {
         e.preventDefault(); // Prevent link navigation if inside a link
         if (!isAdded) {
-            addItem(product, quantity);
+            addItem(product, finalQuantity);
         }
     };
 
@@ -41,7 +44,7 @@ export default function AddToCartButton({
         return (
             <button
                 onClick={handleAdd}
-                disabled={product.currentStock <= 0}
+                disabled={!product.isAvailableForSale}
                 className={`${className} ${isAdded ? "!bg-[#2D5A27] cursor-default" : "bg-[#5C4033]"} text-white transition-colors duration-300`}
             >
                 {showIcon && <ShoppingBag className="h-4 w-4 mr-2" />}

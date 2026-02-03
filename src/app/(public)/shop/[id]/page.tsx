@@ -1,10 +1,10 @@
 import { ProductService } from "@/services/product.service";
 import { formatProductDescription } from "@/lib/text-helper";
-import { ArrowLeft, Minus, Plus, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import AddToCartButton from "@/components/ui/AddToCartButton";
 import ShareButton from "@/components/ui/ShareButton";
+import ProductQuantitySelector from "@/components/shop/ProductQuantitySelector";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -59,7 +59,12 @@ export default async function ProductDetailsPage({ params }: PageProps) {
                                 <span className="px-3 py-1 bg-[#2D5A27]/10 text-[#2D5A27] rounded-full text-xs font-bold uppercase tracking-wide">
                                     {product.businessType}
                                 </span>
-                                {hasStock ? (
+                                {product.tags && product.tags.map((tag, index) => (
+                                    <span key={index} className="px-3 py-1 bg-white text-[#2D5A27] border border-[#2D5A27]/20 rounded-full text-xs font-bold uppercase tracking-wide shadow-sm">
+                                        {tag}
+                                    </span>
+                                ))}
+                                {product.isAvailableForSale ? (
                                     <span className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold uppercase tracking-wide">
                                         In Stock
                                     </span>
@@ -90,28 +95,11 @@ export default async function ProductDetailsPage({ params }: PageProps) {
                             </div>
 
                             {/* Quantity & Add to Cart */}
-                            <div className="border-t border-gray-100 pt-8 mt-auto">
-                                <div className="flex items-center space-x-6 mb-8">
-                                    <div className="flex items-center border border-gray-200 rounded-lg">
-                                        <button className="p-3 hover:bg-gray-50 text-gray-500"><Minus className="h-4 w-4" /></button>
-                                        <span className="w-12 text-center font-medium">1</span>
-                                        <button className="p-3 hover:bg-gray-50 text-gray-500"><Plus className="h-4 w-4" /></button>
-                                    </div>
-                                    <div className="text-sm text-gray-500">
-                                        {product.currentStock} {product.unit} available
-                                    </div>
-                                </div>
+                            <ProductQuantitySelector product={product} />
 
-                                <AddToCartButton
-                                    product={product}
-                                    fullWidth={true}
-                                    className="w-full bg-[#5C4033] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#2D5A27] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-                                />
-
-                                <div className="mt-6 flex items-center justify-center text-sm text-gray-500">
-                                    <ShieldCheck className="h-4 w-4 mr-2 text-[#2D5A27]" />
-                                    <span>Secure checkout & farm-fresh guarantee</span>
-                                </div>
+                            <div className="mt-6 flex items-center justify-center text-sm text-gray-500">
+                                <ShieldCheck className="h-4 w-4 mr-2 text-[#2D5A27]" />
+                                <span>Secure checkout & farm-fresh guarantee</span>
                             </div>
                         </div>
                     </div>

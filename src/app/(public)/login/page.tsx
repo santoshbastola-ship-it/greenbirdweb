@@ -12,10 +12,23 @@ export default function LoginPage() {
     const [error, setError] = useState("");
 
     const router = useRouter();
-    const { signInWithGoogle, refreshDbUser } = useAuth();
+    const { signInWithGoogle, signInWithGoogleRedirect, refreshDbUser } = useAuth();
 
     useEffect(() => {
         // Check if the page was opened from a sign-in link
+        const handleAuthRedirect = async () => {
+            try {
+                const result = await AuthService.handleRedirectResult();
+                if (result) {
+                    setIsLoading(true);
+                    await refreshDbUser(result.user.uid);
+                    router.push("/shop"); // Default after success
+                }
+            } catch (err) {
+                console.error("Redirect handler error:", err);
+            }
+        };
+
         const handleEmailLinkSignIn = async () => {
             if (AuthService.isSignInWithEmailLink(auth, window.location.href)) {
                 let emailFromStorage = window.localStorage.getItem('emailForSignIn');
@@ -54,6 +67,7 @@ export default function LoginPage() {
             }
         };
 
+        handleAuthRedirect();
         handleEmailLinkSignIn();
     }, [router, refreshDbUser]);
 
@@ -62,6 +76,14 @@ export default function LoginPage() {
         setError("");
 
         try {
+            // Check if mobile/tablet to decide between popup and redirect
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+            if (isMobile) {
+                await signInWithGoogleRedirect();
+                return; // Redirect flows don't continue here
+            }
+
             await signInWithGoogle();
             const redirectTo = new URLSearchParams(window.location.search).get("redirect");
 

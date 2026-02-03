@@ -35,7 +35,7 @@ export const NotificationService = {
     },
 
     // Get notifications for a specific user
-    getUserNotifications: async (userId: string, limitCount: number = 20): Promise<Notification[]> => {
+    getUserNotifications: async (userId: string, limitCount: number = 50): Promise<Notification[]> => {
         try {
             const q = query(
                 collection(db, COLLECTION_NAME),
@@ -45,14 +45,24 @@ export const NotificationService = {
             );
 
             const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    ...data,
-                    // Ensure dates are parsed correctly if needed, though we store as ISO strings usually
-                } as Notification;
-            });
+            const now = new Date();
+
+            return querySnapshot.docs
+                .map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                    } as Notification;
+                })
+                .filter(notification => {
+                    // If validUntil exists, check if it has expired
+                    if (notification.validUntil) {
+                        const expiryDate = new Date(notification.validUntil);
+                        return expiryDate > now;
+                    }
+                    return true;
+                });
         } catch (error) {
             console.error("Error fetching notifications:", error);
             return [];
@@ -232,7 +242,7 @@ export const NotificationService = {
 
             if (adminDocs.length === 0) return;
 
-            // 2. Send In-App Notifications to ALL admins
+            // 2. Send In-App Notifications to ALL admins (including Santosh/Anju)
             const adminIds = adminDocs.map(d => d.id);
             await Promise.all(adminIds.map(adminId =>
                 NotificationService.createNotification({
@@ -247,9 +257,18 @@ export const NotificationService = {
                 })
             ));
 
-            // 3. Send WhatsApp to UNIQUE phone numbers
+            // 3. Send WhatsApp to UNIQUE phone numbers (EXCLUDING Santosh/Anju)
+            const EXCLUDED_NAMES = ["santosh", "anju"];
+
+            const whatsappRecipients = adminDocs.filter(doc => {
+                const data = doc.data();
+                const name = (data.displayName || data.name || "").toLowerCase();
+                // Check if name contains any of the excluded names
+                return !EXCLUDED_NAMES.some(excluded => name.includes(excluded));
+            });
+
             const uniquePhoneAdmins = new Map<string, string>();
-            adminDocs.forEach(doc => {
+            whatsappRecipients.forEach(doc => {
                 const data = doc.data();
                 const phone = data.phoneNumber;
                 if (phone && !uniquePhoneAdmins.has(phone)) {
@@ -272,6 +291,42 @@ export const NotificationService = {
 
         } catch (error) {
             console.error("Error notifying admins:", error);
+        }
+    },
+
+    // Broadcast a notification to all customers
+    createBroadcastNotification: async (notification: Omit<Notification, "id" | "isRead" | "createdAt" | "targetUserId">): Promise<void> => {
+        try {
+            // 1. Fetch all customers
+            const q = query(collection(db, "users"), where("role", "==", "customer"));
+            const customerSnap = await getDocs(q);
+            const customerDocs = customerSnap.docs;
+
+            if (customerDocs.length === 0) return;
+
+            // 2. Create notifications for each customer in batches
+            const batchSize = 500;
+            for (let i = 0; i < customerDocs.length; i += batchSize) {
+                const chunk = customerDocs.slice(i, i + batchSize);
+                const batch = writeBatch(db);
+
+                chunk.forEach(customerDoc => {
+                    const docRef = doc(collection(db, COLLECTION_NAME));
+                    const rawNotification = {
+                        ...notification,
+                        targetUserId: customerDoc.id,
+                        isRead: false,
+                        createdAt: new Date().toISOString(),
+                        timestamp: Timestamp.now(),
+                    };
+                    const sanitized = sanitizeFirestoreData(rawNotification);
+                    batch.set(docRef, sanitized);
+                });
+
+                await batch.commit();
+            }
+        } catch (error) {
+            console.error("Error broadcasting notification:", error);
         }
     }
 };

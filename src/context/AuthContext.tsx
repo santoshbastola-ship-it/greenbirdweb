@@ -13,6 +13,7 @@ interface AuthContextType {
     dbUser: AppUser | null;
     loading: boolean;
     signInWithGoogle: () => Promise<void>;
+    signInWithGoogleRedirect: () => Promise<void>;
     signInWithEmail: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
     refreshDbUser: (uid?: string) => Promise<void>;
@@ -24,6 +25,7 @@ const AuthContext = createContext<AuthContextType>({
     dbUser: null,
     loading: true,
     signInWithGoogle: async () => { },
+    signInWithGoogleRedirect: async () => { },
     signInWithEmail: async () => { },
     logout: async () => { },
     refreshDbUser: async () => { },
@@ -53,6 +55,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             await refreshDbUser(result.user.uid);
         } catch (error: any) {
             console.error("Google sign-in error:", error);
+            throw error;
+        }
+    };
+
+    const signInWithGoogleRedirect = async () => {
+        try {
+            await AuthService.signInWithGoogleRedirect();
+        } catch (error: any) {
+            console.error("Google redirect sign-in error:", error);
             throw error;
         }
     };
@@ -126,6 +137,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             dbUser,
             loading,
             signInWithGoogle,
+            signInWithGoogleRedirect,
             signInWithEmail,
             logout,
             refreshDbUser,

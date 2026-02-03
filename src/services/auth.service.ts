@@ -1,5 +1,7 @@
 import {
     signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     sendEmailVerification,
@@ -39,6 +41,38 @@ export const AuthService = {
             return result;
         } catch (error: any) {
             console.error("Error signing in with Google:", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Sign in with Google Redirect (better for mobile)
+     */
+    signInWithGoogleRedirect: async (): Promise<void> => {
+        try {
+            await signInWithRedirect(auth, googleProvider);
+        } catch (error: any) {
+            console.error("Error signing in with Google Redirect:", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Handle the result of a redirect sign-in
+     */
+    handleRedirectResult: async (): Promise<UserCredential | null> => {
+        try {
+            const result = await getRedirectResult(auth);
+            if (result) {
+                const email = result.user.email || '';
+                await UserService.ensureUserExists(result.user.uid, {
+                    name: result.user.displayName || 'Customer',
+                    email: email,
+                });
+            }
+            return result;
+        } catch (error: any) {
+            console.error("Error handling redirect result:", error);
             throw error;
         }
     },

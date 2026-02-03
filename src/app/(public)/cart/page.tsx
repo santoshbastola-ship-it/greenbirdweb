@@ -14,6 +14,7 @@ import { TransactionType, PaymentStatus, OrderStatus, AppSettings } from "@/type
 import { getTodayNepali } from "@/lib/date-helper";
 import dynamic from 'next/dynamic';
 import RecommendedProducts from "@/components/shop/RecommendedProducts";
+import WhatsAppOptInModal from "@/components/shop/WhatsAppOptInModal";
 
 const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
     ssr: false,
@@ -34,6 +35,7 @@ export default function CartPage() {
     const { items, updateQuantity, removeItem, clearCart } = useCartStore();
     const [mounted, setMounted] = useState(false);
     const [placingOrder, setPlacingOrder] = useState(false);
+    const [orderSuccess, setOrderSuccess] = useState(false);
 
     // Profile form state
     const [phoneNumber, setPhoneNumber] = useState("");
@@ -157,12 +159,12 @@ export default function CartPage() {
                 expectedDeliveryTime: expectedTime
             });
 
+            setOrderSuccess(true);
             clearCart();
             router.push("/shop?orderSuccess=true");
         } catch (error) {
             console.error("Checkout failed", error);
             alert("Failed to place order. Please try again.");
-        } finally {
             setPlacingOrder(false);
         }
     };
@@ -173,6 +175,26 @@ export default function CartPage() {
     const validItems = Array.isArray(items) ? items.filter(item => item && item.productId) : [];
 
     if (validItems.length === 0) {
+        if (orderSuccess) {
+            return (
+                <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+                    <div className="bg-white p-8 rounded-2xl shadow-sm text-center max-w-md w-full">
+                        <div className="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Check className="h-10 w-10 text-green-600" />
+                        </div>
+                        <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Placed!</h1>
+                        <p className="text-gray-600 mb-8">Your order has been recorded successfully. Please check WhatsApp for updates.</p>
+                        <Link
+                            href="/shop"
+                            className="block w-full bg-[#2D5A27] text-white py-3 rounded-xl font-bold hover:bg-[#1e3d1a] transition-colors"
+                        >
+                            Return to Shop
+                        </Link>
+                    </div>
+                    <WhatsAppOptInModal />
+                </div>
+            )
+        }
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
                 <h1 className="text-2xl font-bold text-gray-900 mb-4">Your Cart is Empty</h1>
@@ -201,96 +223,118 @@ export default function CartPage() {
     const total = subtotal + deliveryFee - appDiscount;
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12 pb-32 md:pb-36">
+        <div className="min-h-screen bg-gray-50 py-6 md:py-12 pb-32 md:pb-36">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8">Checkout</h1>
 
-                <div className="flex flex-col lg:flex-row gap-8">
+                <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
                     {/* LEFT COLUMN: Cart Items */}
-                    <div className="flex-1 space-y-6">
+                    <div className="flex-1 space-y-4 md:space-y-6">
                         {/* Cart Items List */}
                         <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
                             <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center">
                                 <span className="bg-green-100 text-green-800 h-7 w-7 md:h-8 md:w-8 rounded-full flex items-center justify-center text-xs md:text-sm mr-2 md:mr-3">1</span>
                                 Review Cart Items
                             </h2>
-                            <div className="space-y-3 md:space-y-6">
-                                {validItems.map((item) => (
-                                    <div key={item.productId} className="flex items-center gap-3 md:gap-4 border-b border-gray-100 pb-3 md:pb-6 last:border-0 last:pb-0">
-                                        {/* Product Image - Smaller on mobile */}
-                                        <div className="h-14 w-14 md:h-20 md:w-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                                            <img
-                                                src={item.imageUrl || "/placeholder.png"}
-                                                alt={item.productName}
-                                                className="h-full w-full object-cover"
-                                            />
-                                        </div>
+                            <div className="space-y-3 md:space-y-4">
+                                {validItems.map((item) => {
+                                    const isEggs = item.productName.toLowerCase().includes('egg');
+                                    const handleIncrement = () => {
+                                        const step = isEggs ? 30 : 1;
+                                        updateQuantity(item.productId, item.quantity + step);
+                                    };
+                                    const handleDecrement = () => {
+                                        const step = isEggs ? 30 : 1;
+                                        updateQuantity(item.productId, Math.max(0, item.quantity - step));
+                                    };
 
-                                        {/* Product Details */}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start gap-2 mb-2">
-                                                <div className="flex-1 min-w-0">
-                                                    <h3 className="text-sm md:text-base font-bold text-gray-900 truncate">{item.productName}</h3>
-                                                    <p className="text-xs md:text-sm text-gray-500">Rs. {item.price} / {item.unit}</p>
-                                                </div>
-                                                <p className="text-sm md:text-base font-bold text-gray-900 whitespace-nowrap">Rs. {item.price * item.quantity}</p>
+                                    return (
+                                        <div key={item.productId} className="flex items-center gap-3 md:gap-4 border-b border-gray-50 pb-3 md:pb-4 last:border-0 last:pb-0">
+                                            {/* Product Image - Smaller on mobile */}
+                                            <div className="h-14 w-14 md:h-16 md:w-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                                <img
+                                                    src={item.imageUrl || "/placeholder.png"}
+                                                    alt={item.productName}
+                                                    className="h-full w-full object-cover"
+                                                />
                                             </div>
 
-                                            {/* Quantity Controls and Remove - Mobile Optimized */}
-                                            <div className="flex items-center justify-between gap-2 md:gap-3">
-                                                {/* Quantity Controls with larger touch targets */}
-                                                <div className="flex items-center bg-gray-50 border-2 border-gray-200 rounded-xl overflow-hidden">
+                                            {/* Product Details */}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start gap-2 mb-1.5">
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="text-sm md:text-base font-bold text-gray-900 truncate">{item.productName}</h3>
+                                                        <p className="text-xs text-gray-500">Rs. {item.price} / {item.unit}</p>
+                                                    </div>
+                                                    <p className="text-sm md:text-base font-bold text-[#2D5A27] whitespace-nowrap">Rs. {(item.price * item.quantity).toFixed(2)}</p>
+                                                </div>
+
+                                                {/* Quantity Controls and Remove - Mobile Optimized */}
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+                                                            <button
+                                                                onClick={handleDecrement}
+                                                                className="p-1.5 md:p-2 hover:bg-gray-100 active:bg-gray-200 text-gray-700 transition-colors touch-manipulation"
+                                                                aria-label="Decrease quantity"
+                                                            >
+                                                                <Minus className="h-4 w-4" />
+                                                            </button>
+                                                            <input
+                                                                type="number"
+                                                                step="0.01"
+                                                                min="0"
+                                                                value={item.quantity}
+                                                                onChange={(e) => {
+                                                                    const val = e.target.value;
+                                                                    if (val === '') {
+                                                                        updateQuantity(item.productId, 0);
+                                                                        return;
+                                                                    }
+                                                                    const parsed = parseFloat(val);
+                                                                    if (!isNaN(parsed)) {
+                                                                        // Round to 2 decimals if needed
+                                                                        const rounded = Math.round(parsed * 100) / 100;
+                                                                        updateQuantity(item.productId, rounded);
+                                                                    }
+                                                                }}
+                                                                className="w-10 text-center font-bold text-sm bg-transparent border-0 focus:outline-none focus:ring-0 rounded-none appearance-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 h-8"
+                                                                aria-label="Quantity"
+                                                            />
+                                                            <button
+                                                                onClick={handleIncrement}
+                                                                className="p-1.5 md:p-2 hover:bg-gray-100 active:bg-gray-200 text-gray-700 transition-colors touch-manipulation"
+                                                                aria-label="Increase quantity"
+                                                            >
+                                                                <Plus className="h-4 w-4" />
+                                                            </button>
+                                                        </div>
+                                                        <span className="text-xs font-bold text-gray-500 lowercase">{item.unit}</span>
+                                                    </div>
+
                                                     <button
-                                                        onClick={() => updateQuantity(item.productId, item.quantity - 1)}
-                                                        className="p-3 md:p-2.5 hover:bg-gray-100 active:bg-gray-200 text-gray-700 transition-colors touch-manipulation"
-                                                        aria-label="Decrease quantity"
+                                                        onClick={() => removeItem(item.productId)}
+                                                        className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                                                        aria-label="Remove item"
                                                     >
-                                                        <Minus className="h-5 w-5 md:h-4 md:w-4" />
-                                                    </button>
-                                                    <input
-                                                        type="number"
-                                                        min="1"
-                                                        value={item.quantity}
-                                                        onChange={(e) => {
-                                                            const newQty = parseInt(e.target.value) || 1;
-                                                            if (newQty > 0) {
-                                                                updateQuantity(item.productId, newQty);
-                                                            }
-                                                        }}
-                                                        className="w-14 md:w-12 text-center font-bold text-base md:text-sm bg-transparent border-0 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-inset rounded-none appearance-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                                        aria-label="Quantity"
-                                                    />
-                                                    <button
-                                                        onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                                                        className="p-3 md:p-2.5 hover:bg-gray-100 active:bg-gray-200 text-gray-700 transition-colors touch-manipulation"
-                                                        aria-label="Increase quantity"
-                                                    >
-                                                        <Plus className="h-5 w-5 md:h-4 md:w-4" />
+                                                        <Trash2 className="h-4 w-4" />
                                                     </button>
                                                 </div>
-                                                <button
-                                                    onClick={() => removeItem(item.productId)}
-                                                    className="p-2.5 md:p-2 text-red-500 hover:text-red-700 hover:bg-red-50 active:bg-red-100 rounded-lg transition-colors touch-manipulation flex items-center gap-1.5"
-                                                    aria-label="Remove item"
-                                                >
-                                                    <Trash2 className="h-5 w-5 md:h-4 md:w-4" />
-                                                    <span className="text-xs md:text-sm font-medium hidden sm:inline">Remove</span>
-                                                </button>
                                             </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     </div>
 
                     {/* Recommended Products */}
-                    <div className="md:col-span-1 lg:col-span-2">
+                    <div className="md:col-span-1 lg:col-span-2 hidden lg:block">
                         <RecommendedProducts />
                     </div>
 
                     {/* RIGHT COLUMN: Shipping & Payment */}
-                    <div className="w-full lg:w-[480px] space-y-6">
+                    <div className="w-full lg:w-[420px] space-y-6">
 
                         {/* Shipping Details */}
                         <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100">
@@ -314,18 +358,22 @@ export default function CartPage() {
                                     </Link>
                                 </div>
                             ) : (
-                                <div className="space-y-4 md:space-y-6">
+                                <div className="space-y-4 md:space-y-5">
                                     {/* Customer Info (Read-only) */}
                                     <div className="bg-gray-50 p-3 md:p-4 rounded-xl border border-gray-100">
-                                        <p className="text-xs text-gray-500 uppercase tracking-widest font-bold mb-1">Customer</p>
-                                        <p className="font-semibold text-gray-900 text-sm md:text-base">{user.displayName || "Valued Customer"}</p>
-                                        <p className="text-xs md:text-sm text-gray-600 truncate">{user.email}</p>
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mb-1">Customer</p>
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <p className="font-semibold text-gray-900 text-sm">{user.displayName || "Valued Customer"}</p>
+                                                <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {/* Phone Number */}
                                     <div>
-                                        <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1.5 md:mb-2 flex items-center">
-                                            <Phone className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2 text-green-600" /> Contact Number
+                                        <label className="block text-xs font-bold text-gray-700 mb-2 flex items-center">
+                                            <Phone className="h-3.5 w-3.5 mr-1.5 text-green-600" /> Contact Number
                                         </label>
                                         <input
                                             type="tel"
@@ -333,15 +381,15 @@ export default function CartPage() {
                                             value={phoneNumber}
                                             onChange={(e) => setPhoneNumber(e.target.value)}
                                             placeholder="Enter your phone number"
-                                            className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none bg-gray-50 focus:bg-white"
+                                            className="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none bg-gray-50 focus:bg-white"
                                         />
                                     </div>
 
                                     {/* Address Selection */}
                                     <div>
-                                        <div className="flex justify-between items-center mb-1.5 md:mb-2">
-                                            <label className="block text-xs md:text-sm font-medium text-gray-700 flex items-center">
-                                                <MapPin className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2 text-green-600" /> Delivery Address
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="block text-xs font-bold text-gray-700 flex items-center">
+                                                <MapPin className="h-3.5 w-3.5 mr-1.5 text-green-600" /> Delivery Address
                                             </label>
                                             {!isAddressMode && (
                                                 <button
@@ -359,52 +407,52 @@ export default function CartPage() {
                                                     type="text"
                                                     value={newAddress}
                                                     onChange={(e) => setNewAddress(e.target.value)}
-                                                    placeholder="Enter full address (e.g. Street, City, Landmark)"
-                                                    className="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                                                    placeholder="Enter full address"
+                                                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                                                     autoFocus
                                                 />
                                                 <div className="flex gap-2">
                                                     <button
                                                         onClick={handleAddAddress}
                                                         disabled={!newAddress.trim()}
-                                                        className="flex-1 bg-green-600 text-white py-2 rounded-lg text-xs md:text-sm font-bold hover:bg-green-700 disabled:opacity-50 transition-colors"
+                                                        className="flex-1 bg-green-600 text-white py-2 rounded-lg text-xs font-bold hover:bg-green-700 disabled:opacity-50 transition-colors"
                                                     >
                                                         Save Address
                                                     </button>
                                                     <button
                                                         onClick={() => setIsAddressMode(false)}
-                                                        className="px-3 md:px-4 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs md:text-sm font-medium"
+                                                        className="px-3 py-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs font-medium"
                                                     >
                                                         Cancel
                                                     </button>
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="space-y-2 md:space-y-3">
+                                            <div className="space-y-2">
                                                 {addresses.length === 0 ? (
                                                     <button
                                                         onClick={() => setIsAddressMode(true)}
-                                                        className="w-full py-6 md:py-8 border-2 border-dashed border-gray-200 rounded-xl text-gray-500 hover:border-green-500 hover:text-green-600 transition-all flex flex-col items-center justify-center gap-2"
+                                                        className="w-full py-6 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 hover:border-green-500 hover:text-green-600 transition-all flex flex-col items-center justify-center gap-2"
                                                     >
-                                                        <PlusCircle className="h-5 w-5 md:h-6 md:w-6" />
-                                                        <span className="font-medium text-sm md:text-base">Add Delivery Address</span>
+                                                        <PlusCircle className="h-5 w-5" />
+                                                        <span className="font-medium text-sm">Add Address</span>
                                                     </button>
                                                 ) : (
                                                     addresses.map((addr, idx) => (
                                                         <div
                                                             key={idx}
                                                             onClick={() => setSelectedAddressIndex(idx)}
-                                                            className={`p-3 md:p-4 rounded-xl border-2 cursor-pointer transition-all flex justify-between items-start ${selectedAddressIndex === idx
+                                                            className={`p-3 rounded-xl border-2 cursor-pointer transition-all flex justify-between items-start group ${selectedAddressIndex === idx
                                                                 ? "border-green-500 bg-green-50/50"
-                                                                : "border-gray-100 hover:border-gray-200"
+                                                                : "border-gray-50 hover:border-gray-100"
                                                                 }`}
                                                         >
-                                                            <div className="flex gap-2 md:gap-3">
-                                                                <div className={`mt-0.5 h-3.5 w-3.5 md:h-4 md:w-4 rounded-full border flex items-center justify-center ${selectedAddressIndex === idx ? "border-green-600" : "border-gray-300"
+                                                            <div className="flex gap-2.5">
+                                                                <div className={`mt-0.5 h-3.5 w-3.5 rounded-full border flex items-center justify-center ${selectedAddressIndex === idx ? "border-green-600" : "border-gray-300"
                                                                     }`}>
-                                                                    {selectedAddressIndex === idx && <div className="h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-green-600" />}
+                                                                    {selectedAddressIndex === idx && <div className="h-1.5 w-1.5 rounded-full bg-green-600" />}
                                                                 </div>
-                                                                <p className="text-xs md:text-sm text-gray-700 leading-snug">{addr}</p>
+                                                                <p className="text-xs text-gray-700 leading-relaxed line-clamp-2">{addr}</p>
                                                             </div>
                                                             <button
                                                                 type="button"
@@ -414,7 +462,7 @@ export default function CartPage() {
                                                                 }}
                                                                 className="text-gray-300 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                                             >
-                                                                <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                                                                <Trash2 className="h-3.5 w-3.5" />
                                                             </button>
                                                         </div>
                                                     ))
@@ -424,48 +472,41 @@ export default function CartPage() {
                                     </div>
 
                                     {/* Delivery Preferences */}
-                                    <div className="space-y-3 md:space-y-4 pt-3 md:pt-4 border-t border-gray-100">
-                                        <h3 className="font-semibold text-sm md:text-base text-gray-900 flex items-center">
-                                            <Truck className="h-3.5 w-3.5 md:h-4 md:w-4 mr-1.5 md:mr-2 text-green-600" /> Delivery Preferences
+                                    <div className="space-y-3 pt-4 border-t border-gray-100">
+                                        <h3 className="font-bold text-xs text-gray-900 uppercase tracking-wider flex items-center">
+                                            <Truck className="h-3.5 w-3.5 mr-1.5 text-green-600" /> Delivery
                                         </h3>
 
-                                        <div className="grid grid-cols-2 gap-3 md:gap-4">
+                                        <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-700 mb-1 flex items-center">
-                                                    <Calendar className="h-3 w-3 mr-1 text-gray-400" /> Expected Date
-                                                </label>
+                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Date</label>
                                                 <div className="nepali-datepicker-container">
                                                     <NepaliDatePicker
                                                         value={expectedDate}
                                                         onChange={(date: string) => setExpectedDate(date)}
                                                         options={{ calenderLocale: "en", valueLocale: "en" }}
-                                                        className="w-full px-2 md:px-3 py-1.5 md:py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-xs md:text-sm"
+                                                        className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-xs"
                                                     />
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-700 mb-1 flex items-center">
-                                                    <Clock className="h-3 w-3 mr-1 text-gray-400" /> Time (Optional)
-                                                </label>
+                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Time</label>
                                                 <input
                                                     type="time"
                                                     value={expectedTime}
                                                     onChange={(e) => setExpectedTime(e.target.value)}
-                                                    className="w-full px-2 md:px-3 py-1.5 md:py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-xs md:text-sm"
+                                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-xs"
                                                 />
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label className="block text-xs font-medium text-gray-700 mb-1">
-                                                Delivery Instructions / Comments (Optional)
-                                            </label>
                                             <textarea
                                                 value={deliveryInstructions}
                                                 onChange={(e) => setDeliveryInstructions(e.target.value)}
                                                 rows={2}
-                                                className="w-full px-2 md:px-3 py-1.5 md:py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-xs md:text-sm resize-none"
-                                                placeholder="e.g. Call upon arrival, leave at gate..."
+                                                className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none resize-none"
+                                                placeholder="Special instructions (e.g. Leave at door)"
                                             />
                                         </div>
                                     </div>
@@ -474,65 +515,61 @@ export default function CartPage() {
                         </div>
 
                         {/* Order Summary */}
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:sticky lg:top-24">
                             <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
 
-                            <div className="space-y-4 mb-8">
-                                <div className="flex justify-between text-gray-600">
+                            <div className="space-y-3 mb-6">
+                                <div className="flex justify-between text-sm text-gray-600">
                                     <span>Subtotal</span>
-                                    <span>Rs. {subtotal}</span>
+                                    <span>Rs. {subtotal.toFixed(2)}</span>
                                 </div>
-                                <div className="flex justify-between text-gray-600">
-                                    <span className="flex items-center"><Truck className="h-4 w-4 mr-1" /> Delivery Fee {subtotal >= appSettings.freeDeliveryThreshold && <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">FREE</span>}</span>
+                                <div className="flex justify-between text-sm text-gray-600">
+                                    <span className="flex items-center">Delivery {subtotal >= appSettings.freeDeliveryThreshold && <span className="ml-2 text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-black uppercase">FREE</span>}</span>
                                     <span className={subtotal >= appSettings.freeDeliveryThreshold ? "line-through opacity-50" : ""}>Rs. {deliveryFee}</span>
                                 </div>
-                                <div className="flex justify-between text-green-600 font-medium">
-                                    <span className="flex items-center">
-                                        App Discount ({appSettings.appDiscountPercentage}% or Rs {appSettings.minAppDiscount})
-                                        {!isVerified && (
-                                            <span className="ml-2 text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                                                Verified Only
-                                            </span>
-                                        )}
-                                    </span>
-                                    <span>- Rs. {appDiscount}</span>
+                                <div className="flex justify-between text-sm text-[#2D5A27] font-bold">
+                                    <span>App Discount</span>
+                                    <span>- Rs. {appDiscount.toFixed(2)}</span>
                                 </div>
                                 <div className="border-t border-gray-100 pt-4 flex justify-between items-center">
-                                    <span className="font-bold text-lg text-gray-900">Total Amount</span>
-                                    <span className="font-bold text-2xl text-green-700">Rs. {total}</span>
+                                    <span className="font-bold text-gray-900">Total</span>
+                                    <span className="font-bold text-2xl text-[#2D5A27]">Rs. {total.toFixed(2)}</span>
                                 </div>
                             </div>
 
-                            <div className="bg-blue-50 p-3 rounded-lg flex items-start gap-3">
-                                <CreditCard className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                                <div>
-                                    <p className="text-sm font-bold text-blue-800">Payment Method</p>
-                                    <p className="text-xs text-blue-600">Cash on Delivery (Standard)</p>
+                            <div className="bg-[#2D5A27]/5 p-4 rounded-xl flex items-center gap-3">
+                                <CreditCard className="h-5 w-5 text-[#2D5A27]" />
+                                <div className="flex-1">
+                                    <p className="text-xs font-bold text-gray-900">Cash on Delivery</p>
+                                    <p className="text-[10px] text-gray-500">Pay when you receive items</p>
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Mobile Recommended Products */}
+                        <div className="lg:hidden pb-10">
+                            <RecommendedProducts />
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Floating Checkout Button */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-2xl z-50 safe-area-bottom">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 md:py-4">
-                    <div className="flex items-center justify-between gap-3 md:gap-4">
-                        {/* Total Amount */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-100 z-50 safe-area-bottom">
+                <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
+                    <div className="flex items-center justify-between gap-4">
                         <div className="flex flex-col">
-                            <span className="text-xs text-gray-500 font-medium">Total Amount</span>
-                            <span className="text-xl md:text-2xl font-bold text-green-700">Rs. {total}</span>
+                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Total Amount</span>
+                            <span className="text-xl font-black text-[#2D5A27]">Rs. {total.toFixed(2)}</span>
                         </div>
 
-                        {/* Checkout Button */}
                         <button
                             onClick={handleCheckout}
                             disabled={placingOrder || !user || addresses.length === 0 || !phoneNumber}
-                            className="bg-[#2D5A27] text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-base md:text-lg hover:bg-[#1e3d1a] transition-all shadow-lg shadow-green-900/20 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed group min-w-[160px] md:min-w-[200px]"
+                            className="bg-[#2D5A27] text-white px-8 py-3.5 rounded-2xl font-bold text-base hover:bg-[#1e3d1a] transition-all shadow-xl shadow-green-900/20 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed group min-w-[160px]"
                         >
                             {placingOrder ? (
-                                "Placing Order..."
+                                <span className="flex items-center"><div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin mr-2" /> Processing...</span>
                             ) : (
                                 <>
                                     Place Order <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -540,11 +577,6 @@ export default function CartPage() {
                             )}
                         </button>
                     </div>
-
-                    {/* Terms text - only show on larger screens */}
-                    <p className="text-xs text-gray-400 text-center mt-2 hidden md:block">
-                        By placing this order, you agree to our Terms of Service.
-                    </p>
                 </div>
             </div>
         </div>
