@@ -98,7 +98,7 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/blog/tetef": {
+    "/blog/welcome": {
       "experimentalBypassFor": [
         {
           "type": "header",
@@ -112,7 +112,7 @@
       ],
       "initialRevalidateSeconds": false,
       "srcRoute": "/blog/[slug]",
-      "dataRoute": "/blog/tetef.rsc",
+      "dataRoute": "/blog/welcome.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -569,30 +569,6 @@
       "initialRevalidateSeconds": false,
       "srcRoute": "/admin/inventory/edit/[id]",
       "dataRoute": "/admin/inventory/edit/JcGw5mkxbYt7IMkQRo3Z.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
-    "/admin/inventory/edit/K9E9YA3oLs18R7rxkRKq": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/admin/inventory/edit/[id]",
-      "dataRoute": "/admin/inventory/edit/K9E9YA3oLs18R7rxkRKq.rsc",
       "allowHeader": [
         "host",
         "x-matched-path",
@@ -1183,8 +1159,8 @@
   },
   "notFoundRoutes": [],
   "preview": {
-    "previewModeId": "5708f5a17c2cd804b21434c736c4ed5c",
-    "previewModeSigningKey": "c8aa80243ee06bf9b9e3580df83b8bb1a9df9d74e05c7198cc1476d717cb6f88",
-    "previewModeEncryptionKey": "e6c743ec1ce9d7d1c949803192db7675a06e0cadab24563db31bccc1d494b762"
+    "previewModeId": "a76600cee2d0f8420e3154f7fb9f2fd2",
+    "previewModeSigningKey": "caeeef7df393b777af02a610841841aaa660a19522b66dcefda7a74bae8f5fe4",
+    "previewModeEncryptionKey": "4ee5bd27cf4a8bafc68cc44094f207b307b60ab591b21f31f54fd6aa4fe2baa5"
   }
 }

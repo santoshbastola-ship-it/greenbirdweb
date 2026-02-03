@@ -158,11 +158,11 @@ export default function EnergyBillsPage() {
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                     <h1 className="text-3xl font-bold text-gray-900">Energy Bills</h1>
                     <button
                         onClick={() => setIsAddModalOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm font-medium"
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm font-medium w-full sm:w-auto"
                     >
                         <Plus className="h-5 w-5" />
                         Add Bill
@@ -187,7 +187,7 @@ export default function EnergyBillsPage() {
                             <button
                                 key={tab.status}
                                 onClick={() => setActiveTab(tab.status)}
-                                className={`flex-1 min-w-[120px] px-6 py-4 text-sm font-medium transition-colors relative ${activeTab === tab.status
+                                className={`flex-1 min-w-[100px] sm:min-w-[120px] px-4 sm:px-6 py-4 text-sm font-medium transition-colors relative whitespace-nowrap ${activeTab === tab.status
                                     ? "text-green-600 border-b-2 border-green-600"
                                     : "text-gray-500 hover:text-gray-700"
                                     }`}
@@ -285,30 +285,32 @@ function BillCard({
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center justify-between gap-3 sm:gap-4">
                 {/* Left: Type and Date */}
-                <div className="min-w-0 flex items-center gap-4">
-                    <div className={`p-3 rounded-full flex-shrink-0 ${styles.bg}`}>
-                        <styles.icon className={`h-6 w-6 ${styles.text}`} />
+                <div className="min-w-0 flex items-start sm:items-center gap-3 sm:gap-4 flex-1">
+                    <div className={`p-2 sm:p-3 rounded-full flex-shrink-0 ${styles.bg} mt-1 sm:mt-0`}>
+                        <styles.icon className={`h-5 w-5 sm:h-6 sm:w-6 ${styles.text}`} />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                         <button
                             onClick={onSelect}
-                            className="font-bold text-gray-900 text-lg hover:text-green-600 hover:underline transition-colors block truncate"
+                            className="font-bold text-gray-900 text-base sm:text-lg hover:text-green-600 hover:underline transition-colors block truncate text-left"
                         >
                             {getEnergyTypeDisplayName(bill.type)}
                         </button>
-                        <div className="flex items-center text-sm text-gray-500 mt-1">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            {bill.month} {bill.year}
-                            <span className="mx-2">•</span>
-                            {entryDateStr}
+                        <div className="flex flex-col sm:flex-row sm:items-center text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">
+                            <span className="flex items-center">
+                                <Calendar className="h-3 w-3 mr-1" />
+                                {bill.month} {bill.year}
+                            </span>
+                            <span className="hidden sm:inline mx-2">•</span>
+                            <span className="mt-0.5 sm:mt-0">{entryDateStr}</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Middle: Details (Hidden on small mobile) */}
-                <div className="hidden sm:block flex-1 px-4">
+                <div className="hidden md:block flex-1 px-4">
                     {dueDateStr && (
                         <div className="flex items-center text-gray-600 text-sm mb-1">
                             <Clock className="h-3 w-3 mr-1 text-orange-500" />
@@ -323,15 +325,15 @@ function BillCard({
                 </div>
 
                 {/* Right: Amount */}
-                <div className="text-right whitespace-nowrap">
-                    <div className={`text-lg font-bold ${amountColorClass}`}>Rs. {bill.amount.toLocaleString()}</div>
+                <div className="text-right flex-shrink-0">
+                    <div className={`text-base sm:text-lg font-bold ${amountColorClass}`}>Rs. {bill.amount.toLocaleString()}</div>
                     {isPartial && remaining > 0 && (
-                        <div className="text-xs font-semibold text-orange-600">
+                        <div className="text-[10px] sm:text-xs font-semibold text-orange-600">
                             Due: {remaining.toLocaleString()}
                         </div>
                     )}
                     <div className="mt-1">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-${isPaid ? "green" : isPartial ? "orange" : "red"
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-${isPaid ? "green" : isPartial ? "orange" : "red"
                             }-100 text-${isPaid ? "green" : isPartial ? "orange" : "red"
                             }-800`}>
                             {getPaymentStatusDisplayName(bill.paymentStatus)}
@@ -339,14 +341,14 @@ function BillCard({
                     </div>
                 </div>
 
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 ml-1 sm:ml-0">
                     {onDelete && (
                         <button
                             onClick={onDelete}
-                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-1.5 sm:p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Delete Bill"
                         >
-                            <Trash2 className="h-5 w-5" />
+                            <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
                         </button>
                     )}
                 </div>
@@ -354,13 +356,19 @@ function BillCard({
 
             {/* Mobile Actions/Details */}
             <div className="sm:hidden mt-3 pt-3 border-t border-gray-50 flex justify-between items-center text-xs">
-                {dueDateStr && (
-                    <span className="text-orange-600 flex items-center">
-                        <Clock className="h-3 w-3 mr-1" />
-                        {dueDateStr}
-                    </span>
-                )}
-                {/* Only show Edit button on mobile if needed, or rely on Modal */}
+                <div className="flex items-center gap-3 overflow-hidden">
+                    {dueDateStr && (
+                        <span className="text-orange-600 flex items-center flex-shrink-0">
+                            <Clock className="h-3 w-3 mr-1" />
+                            {dueDateStr}
+                        </span>
+                    )}
+                    {bill.remarks && (
+                        <span className="text-gray-400 italic truncate">
+                            {bill.remarks}
+                        </span>
+                    )}
+                </div>
             </div>
         </div>
     );

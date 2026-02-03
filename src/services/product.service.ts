@@ -204,12 +204,20 @@ export const ProductService = {
 
     deleteProduct: async (id: string): Promise<void> => {
         try {
-            await deleteDoc(doc(db, COLLECTION_NAME, id));
+            // Fetch product first to get the name for notification
+            const productRef = doc(db, COLLECTION_NAME, id);
+            const productSnap = await getDoc(productRef);
+            let productName = id;
+            if (productSnap.exists()) {
+                productName = (productSnap.data() as Product).name;
+            }
+
+            await deleteDoc(productRef);
 
             // Notify Admins
             await NotificationService.notifyAdmins(
                 "Product Deleted",
-                `Product deleted: ${id}`,
+                `Product deleted: ${productName}`,
                 undefined,
                 'product',
                 '/admin/inventory'

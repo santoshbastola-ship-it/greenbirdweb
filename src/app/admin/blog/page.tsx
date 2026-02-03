@@ -144,7 +144,7 @@ export default function BlogManagementPage() {
                                 post={post}
                                 onEdit={() => handleEdit(post)}
                                 onTogglePublish={() => handleTogglePublish(post)}
-                                onDelete={dbUser?.email === "greenbirdhomestead@gmail.com" ? () => handleDelete(post) : undefined}
+                                onDelete={dbUser?.role === "admin" ? () => handleDelete(post) : undefined}
                             />
                         ))}
                     </div>

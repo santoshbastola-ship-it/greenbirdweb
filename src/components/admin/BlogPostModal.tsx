@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { BlogPost } from "@/types/extra";
 import { BlogService } from "@/services/blog.service";
 import { X, Upload, Save, Loader2 } from "lucide-react";
+import { cleanInput } from "@/lib/input-validation";
 
 interface BlogPostModalProps {
     isOpen: boolean;
@@ -154,7 +155,7 @@ export default function BlogPostModal({ isOpen, onClose, post, onSave }: BlogPos
                                 required
                                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-green-500 focus:border-green-500"
                                 value={formData.title}
-                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                onChange={(e) => setFormData({ ...formData, title: cleanInput(e.target.value) })}
                             />
                         </div>
 
@@ -165,7 +166,7 @@ export default function BlogPostModal({ isOpen, onClose, post, onSave }: BlogPos
                                 required
                                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-green-500 focus:border-green-500"
                                 value={formData.author}
-                                onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                                onChange={(e) => setFormData({ ...formData, author: cleanInput(e.target.value) })}
                             />
                         </div>
 
@@ -203,7 +204,7 @@ export default function BlogPostModal({ isOpen, onClose, post, onSave }: BlogPos
                                 className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-green-500 focus:border-green-500"
                                 placeholder="Add category..."
                                 value={newCategory}
-                                onChange={(e) => setNewCategory(e.target.value)}
+                                onChange={(e) => setNewCategory(cleanInput(e.target.value))}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         e.preventDefault();
@@ -236,7 +237,7 @@ export default function BlogPostModal({ isOpen, onClose, post, onSave }: BlogPos
                             rows={2}
                             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-green-500 focus:border-green-500"
                             value={formData.excerpt}
-                            onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                            onChange={(e) => setFormData({ ...formData, excerpt: cleanInput(e.target.value) })}
                         ></textarea>
                     </div>
 
@@ -263,7 +264,7 @@ export default function BlogPostModal({ isOpen, onClose, post, onSave }: BlogPos
                             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-green-500 focus:border-green-500 font-mono text-sm"
                             placeholder="Write your blog post content here..."
                             value={formData.content}
-                            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                            onChange={(e) => setFormData({ ...formData, content: cleanInput(e.target.value) })}
                         ></textarea>
                     </div>
 

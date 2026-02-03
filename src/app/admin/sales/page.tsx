@@ -53,6 +53,19 @@ export default function SalesListPage() {
         }
     };
 
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to PERMANENTLY delete this transaction?")) return;
+        setLoading(true);
+        try {
+            await TransactionService.deleteTransaction(id);
+            loadTransactions();
+        } catch (error) {
+            console.error(error);
+            alert("Failed to delete transaction");
+            setLoading(false);
+        }
+    };
+
     const isManager = dbUser?.role === 'manager';
 
     const filteredTransactions = transactions.filter(t => {
@@ -176,7 +189,13 @@ export default function SalesListPage() {
                 ) : (
                     <div className="space-y-4">
                         {filteredTransactions.map((t) => (
-                            <TransactionCard key={t.id} transaction={t} onSelect={(tx) => setSelectedId(tx.id)} onUpdate={loadTransactions} />
+                            <TransactionCard
+                                key={t.id}
+                                transaction={t}
+                                onSelect={(tx) => setSelectedId(tx.id)}
+                                onUpdate={loadTransactions}
+                                onDelete={dbUser?.role === 'admin' ? () => handleDelete(t.id) : undefined}
+                            />
                         ))}
                     </div>
                 )}
@@ -194,7 +213,7 @@ export default function SalesListPage() {
     );
 }
 
-function TransactionCard({ transaction, onSelect, onUpdate }: { transaction: TransactionRecord; onSelect: (tx: TransactionRecord) => void; onUpdate: () => void }) {
+function TransactionCard({ transaction, onSelect, onUpdate, onDelete }: { transaction: TransactionRecord; onSelect: (tx: TransactionRecord) => void; onUpdate: () => void; onDelete?: () => void }) {
     const totalAmount = transaction.items.reduce((sum, item) => sum + item.totalPrice, 0) - (transaction.discount || 0);
     const remaining = totalAmount - (transaction.paidAmount || 0);
 
@@ -261,6 +280,18 @@ function TransactionCard({ transaction, onSelect, onUpdate }: { transaction: Tra
                     </div>
 
                     <div className="hidden md:flex items-center gap-1 border-l pl-4">
+                        {onDelete && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onDelete();
+                                }}
+                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors ml-2"
+                                title="Delete Transaction"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -602,7 +633,7 @@ function TransactionDetailsModal({
                             </div>
                         )}
                         <div className="w-px h-6 bg-gray-200 mx-2"></div>
-                        {dbUser?.email === "greenbirdhomestead@gmail.com" && !isEditing && (
+                        {dbUser?.role === "admin" && !isEditing && (
                             <button
                                 onClick={handleDelete}
                                 disabled={isUpdating}

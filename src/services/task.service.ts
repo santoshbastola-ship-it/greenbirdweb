@@ -162,12 +162,22 @@ export const TaskService = {
 
     deleteTask: async (id: string): Promise<void> => {
         try {
-            await deleteDoc(doc(db, COLLECTION_NAME, id));
+            const docRef = doc(db, COLLECTION_NAME, id);
+            const docSnap = await getDoc(docRef);
+            let message = `Task deleted: ${id}`;
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const title = data.title || id;
+                message = `Task "${title}" has been deleted.`;
+            }
+
+            await deleteDoc(docRef);
 
             // Notify Admins
             await NotificationService.notifyAdmins(
                 "Task Deleted",
-                `Task deleted: ${id}`,
+                message,
                 undefined,
                 'task',
                 '/admin/tasks'

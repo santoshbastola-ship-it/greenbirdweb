@@ -8,6 +8,7 @@ import { Calendar, ArrowLeft, Trees, Sprout } from "lucide-react";
 import Link from "next/link";
 import LogoLoader from "@/components/ui/LogoLoader";
 import SingleActivityCarousel from "@/components/ui/SingleActivityCarousel";
+import ShareButton from "@/components/ui/ShareButton";
 
 export default function ActivitiesPage() {
     const [activities, setActivities] = useState<FarmActivity[]>([]);
@@ -158,8 +159,15 @@ export default function ActivitiesPage() {
                                                     </div>
                                                 </div>
 
-                                                <div className="h-12 w-12 rounded-full border border-gray-100 flex items-center justify-center text-gray-300 hover:text-[#2D5A27] hover:border-[#2D5A27] transition-all cursor-crosshair">
-                                                    <Sprout className="h-5 w-5" />
+                                                <div className="flex items-center gap-3">
+                                                    <ShareButton
+                                                        title={activity.title}
+                                                        text={`Check out this activity: ${activity.title} at Greenbird Homestead. Nature's rhythm captured!`}
+                                                        className=""
+                                                    />
+                                                    <div className="h-12 w-12 rounded-full border border-gray-100 flex items-center justify-center text-gray-300 hover:text-[#2D5A27] hover:border-[#2D5A27] transition-all cursor-crosshair">
+                                                        <Sprout className="h-5 w-5" />
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>

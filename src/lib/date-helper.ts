@@ -54,9 +54,13 @@ export function formatDateTime(date: any, formatStr: string = "DD MMM YYYY"): st
             jsDate = new Date(date);
         }
 
-        const hours = jsDate.getHours().toString().padStart(2, '0');
+        let hours = jsDate.getHours();
         const minutes = jsDate.getMinutes().toString().padStart(2, '0');
-        return `${nepaliDate} ${hours}:${minutes}`;
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12; // the hour '0' should be '12'
+
+        return `${nepaliDate}, ${hours}:${minutes} ${ampm}`;
     } catch (e) {
         return nepaliDate;
     }

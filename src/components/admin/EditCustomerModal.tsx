@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X, User as UserIcon, Phone, MapPin, Mail, Save } from "lucide-react";
 import { User, UserRole } from "@/types";
+import { cleanInput } from "@/lib/input-validation";
 
 interface EditCustomerModalProps {
     isOpen: boolean;
@@ -99,7 +100,7 @@ export default function EditCustomerModal({ isOpen, user, onClose, onSubmit }: E
                                 type="text"
                                 id="edit-name"
                                 value={name}
-                                onChange={(e) => setName(e.target.value)}
+                                onChange={(e) => setName(cleanInput(e.target.value))}
                                 disabled={isSubmitting}
                                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all font-medium"
                                 placeholder="Enter customer name"
@@ -114,7 +115,7 @@ export default function EditCustomerModal({ isOpen, user, onClose, onSubmit }: E
                                 type="tel"
                                 id="edit-phone"
                                 value={phoneNumber}
-                                onChange={(e) => setPhoneNumber(e.target.value)}
+                                onChange={(e) => setPhoneNumber(cleanInput(e.target.value))}
                                 disabled={isSubmitting}
                                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all font-medium"
                                 placeholder="e.g. 98xxxxxxxx"
@@ -129,7 +130,7 @@ export default function EditCustomerModal({ isOpen, user, onClose, onSubmit }: E
                                 type="text"
                                 id="edit-address"
                                 value={address}
-                                onChange={(e) => setAddress(e.target.value)}
+                                onChange={(e) => setAddress(cleanInput(e.target.value))}
                                 disabled={isSubmitting}
                                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all font-medium"
                                 placeholder="e.g. Kathmandu, Nepal"
@@ -144,7 +145,7 @@ export default function EditCustomerModal({ isOpen, user, onClose, onSubmit }: E
                                 type="email"
                                 id="edit-email"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(e) => setEmail(cleanInput(e.target.value))}
                                 disabled={isSubmitting}
                                 className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all font-medium"
                                 placeholder="customer@example.com"

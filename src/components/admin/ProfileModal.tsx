@@ -5,6 +5,7 @@ import { X, User, Mail, Lock, Check, Loader2, Save, Eye, EyeOff, Phone, MapPin }
 import { useAuth } from "@/context/AuthContext";
 import { UserService } from "@/services/user.service";
 import { AuthService } from "@/services/auth.service";
+import { cleanInput } from "@/lib/input-validation";
 
 interface AdminProfileModalProps {
     isOpen: boolean;
@@ -136,7 +137,7 @@ export default function AdminProfileModal({ isOpen, onClose }: AdminProfileModal
                                     <input
                                         type="text"
                                         value={name}
-                                        onChange={(e) => setName(e.target.value)}
+                                        onChange={(e) => setName(cleanInput(e.target.value))}
                                         className="w-full pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all"
                                         placeholder="Enter your name"
                                         required
@@ -150,7 +151,7 @@ export default function AdminProfileModal({ isOpen, onClose }: AdminProfileModal
                                     <input
                                         type="tel"
                                         value={phoneNumber}
-                                        onChange={(e) => setPhoneNumber(e.target.value)}
+                                        onChange={(e) => setPhoneNumber(cleanInput(e.target.value))}
                                         className="w-full pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all"
                                         placeholder="Enter phone number"
                                     />
@@ -162,7 +163,7 @@ export default function AdminProfileModal({ isOpen, onClose }: AdminProfileModal
                                     <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                                     <textarea
                                         value={address}
-                                        onChange={(e) => setAddress(e.target.value)}
+                                        onChange={(e) => setAddress(cleanInput(e.target.value))}
                                         className="w-full pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all min-h-[80px]"
                                         placeholder="Enter your address"
                                     />

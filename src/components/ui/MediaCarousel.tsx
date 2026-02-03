@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Play, Pause, Calendar } from "lucide-react";
 import { FarmActivity } from "@/types/extra";
 import { format } from "date-fns";
+import Image from "next/image";
 
 interface MediaCarouselProps {
     activities: FarmActivity[];
@@ -58,19 +59,28 @@ export default function MediaCarousel({ activities }: MediaCarouselProps) {
     return (
         <div className="relative w-full max-w-5xl mx-auto overflow-hidden rounded-3xl bg-gray-900 shadow-2xl aspect-[16/9] md:aspect-[21/9]">
             {/* Background Image (Blurred) */}
-            <div
-                className="absolute inset-0 bg-cover bg-center blur-2xl opacity-30 scale-110"
-                style={{ backgroundImage: `url(${media[mediaIndex].url})` }}
-            />
+            {/* Background Image (Blurred) */}
+            <div className="absolute inset-0">
+                <Image
+                    src={media[mediaIndex].url}
+                    alt="Background blur"
+                    fill
+                    className="object-cover blur-2xl opacity-30 scale-110"
+                    priority={false}
+                />
+            </div>
 
             {/* Media Container */}
             <div className="relative h-full w-full flex items-center justify-center bg-black/40 overflow-hidden">
                 {media[mediaIndex].type === 'image' ? (
-                    <img
+                    <Image
                         key={`${currentIndex}-${mediaIndex}`}
                         src={media[mediaIndex].url}
                         alt={activeActivity.title}
-                        className="h-full w-full object-cover animate-fadeIn hover:scale-105 transition-transform duration-1000"
+                        fill
+                        className="object-cover animate-fadeIn hover:scale-105 transition-transform duration-1000"
+                        sizes="(max-width: 768px) 100vw, 80vw"
+                        priority
                     />
                 ) : (
                     <div className="relative h-full w-full flex items-center justify-center">

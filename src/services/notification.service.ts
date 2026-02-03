@@ -1,6 +1,7 @@
 import { collection, addDoc, query, where, orderBy, limit, getDocs, updateDoc, doc, Timestamp, getDoc, onSnapshot, writeBatch } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Notification, NotificationType, NotificationChannel } from "@/types";
+import { sanitizeFirestoreData } from "@/lib/firestore-utils";
 
 const COLLECTION_NAME = "notifications";
 const WHATSAPP_LOGS_COLLECTION = "whatsapp_logs";
@@ -9,12 +10,14 @@ export const NotificationService = {
     // Create a new notification
     createNotification: async (notification: Omit<Notification, "id" | "isRead" | "createdAt">): Promise<string> => {
         try {
-            const newNotification = {
+            const rawNotification = {
                 ...notification,
                 isRead: false,
                 createdAt: new Date().toISOString(), // Use string for serializability
                 timestamp: Timestamp.now(), // Use Firestore Timestamp for efficient querying
             };
+
+            const newNotification = sanitizeFirestoreData(rawNotification);
 
             const docRef = await addDoc(collection(db, COLLECTION_NAME), newNotification);
 

@@ -10,6 +10,7 @@ import { Toast, ToastType } from "@/components/ui/Toast";
 import { useAuth } from "@/context/AuthContext";
 import { format } from "date-fns";
 import { toNepali, formatDateTime } from "@/lib/date-helper";
+import { cleanInput } from "@/lib/input-validation";
 
 interface ProductFormProps {
     initialData?: Product;
@@ -71,9 +72,18 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
 
+        let finalValue: string | number = value;
+
+        if (type === "number") {
+            finalValue = parseFloat(value);
+        } else {
+            // Clean text inputs to allow only English characters
+            finalValue = cleanInput(value);
+        }
+
         setFormData((prev) => ({
             ...prev,
-            [name]: type === "number" ? parseFloat(value) : value,
+            [name]: finalValue,
         }));
     };
 

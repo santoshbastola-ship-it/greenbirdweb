@@ -3,25 +3,7 @@ import { db } from "@/lib/firebase";
 import { TransactionRecord, TransactionType, OrderStatus, PaymentStatus, PaymentRecord, NotificationType } from "@/types";
 import { NotificationService } from "./notification.service";
 
-// Helper to remove undefined values for Firestore (recursive)
-const sanitizeData = (data: any): any => {
-    if (data === null || typeof data !== 'object') {
-        return data;
-    }
-
-    if (Array.isArray(data)) {
-        return data.map(sanitizeData);
-    }
-
-    const sanitized: any = {};
-    Object.keys(data).forEach(key => {
-        const value = data[key];
-        if (value !== undefined) {
-            sanitized[key] = sanitizeData(value);
-        }
-    });
-    return sanitized;
-};
+import { sanitizeFirestoreData } from "@/lib/firestore-utils";
 
 // Helper to safely parse dates from potentially mixed sources (Timestamp, string, Date, null)
 const parseDate = (d: any): Date => {
@@ -64,7 +46,7 @@ export const TransactionService = {
     createTransaction: async (transaction: Omit<TransactionRecord, "id">): Promise<string> => {
         try {
             // 1. Create the transaction record
-            const sanitizedTransaction = sanitizeData({
+            const sanitizedTransaction = sanitizeFirestoreData({
                 ...transaction,
                 entryTimestamp: new Date().toISOString(), // Ensure serializable date
                 date: new Date(transaction.date).toISOString()
@@ -430,7 +412,7 @@ export const TransactionService = {
             const docRef = doc(db, COLLECTION_NAME, id);
 
             // Prepare update data
-            const updateData: any = sanitizeData({
+            const updateData: any = sanitizeFirestoreData({
                 ...updates,
                 updatedAt: new Date().toISOString()
             });
@@ -487,12 +469,24 @@ export const TransactionService = {
     deleteTransaction: async (id: string): Promise<void> => {
         try {
             const docRef = doc(db, COLLECTION_NAME, id);
+
+            // Fetch doc first to get details for notification
+            const docSnap = await getDoc(docRef);
+            let message = `Transaction #${id} has been deleted.`;
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const billNo = data.billNo || id;
+                const partyName = data.partyName || 'Unknown';
+                message = `Order #${billNo} for ${partyName} has been deleted.`;
+            }
+
             await deleteDoc(docRef);
 
             // Notify Admins
             await NotificationService.notifyAdmins(
-                `Transaction Deleted`,
-                `Transaction #${id} has been deleted.`,
+                `Order Deleted`,
+                message,
                 undefined,
                 'transaction',
                 '/admin/orders'

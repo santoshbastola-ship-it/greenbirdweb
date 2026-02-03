@@ -46,6 +46,67 @@
     --background: #1a1a1a;
     --foreground: #FCF9F1;
   }
+
+  /* Form Input Dark Mode Styles */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="password"],
+  input[type="search"],
+  input[type="url"],
+  textarea,
+  select {
+    background-color: #2a2a2a !important;
+    color: #FCF9F1 !important;
+    border-color: #404040 !important;
+  }
+
+  input[type="text"]::placeholder,
+  input[type="email"]::placeholder,
+  input[type="tel"]::placeholder,
+  input[type="number"]::placeholder,
+  input[type="password"]::placeholder,
+  input[type="search"]::placeholder,
+  input[type="url"]::placeholder,
+  textarea::placeholder {
+    color: #999999 !important;
+  }
+
+  /* Focus states for dark mode */
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  input[type="tel"]:focus,
+  input[type="number"]:focus,
+  input[type="password"]:focus,
+  input[type="search"]:focus,
+  input[type="url"]:focus,
+  textarea:focus,
+  select:focus {
+    background-color: #333333 !important;
+    border-color: #2D5A27 !important;
+  }
+
+  /* Disabled state for dark mode */
+  input:disabled,
+  textarea:disabled,
+  select:disabled {
+    background-color: #1f1f1f !important;
+    color: #666666 !important;
+    border-color: #333333 !important;
+  }
+
+  /* Nepali Date Picker input */
+  .nepali-datepicker-container input {
+    background-color: #2a2a2a !important;
+    color: #FCF9F1 !important;
+    border-color: #404040 !important;
+  }
+
+  .nepali-datepicker-container input:focus {
+    background-color: #333333 !important;
+    border-color: #2D5A27 !important;
+  }
 }
 
 body {

@@ -55,13 +55,13 @@ export default function TestimonialsAdminPage() {
 
     return (
         <div className="space-y-8 pt-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Customer Testimonials</h1>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md shadow-green-100 font-semibold text-sm"
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md shadow-green-100 font-semibold text-sm w-full sm:w-auto"
                 >
                     <Plus className="h-4 w-4" />
                     Add Testimonial

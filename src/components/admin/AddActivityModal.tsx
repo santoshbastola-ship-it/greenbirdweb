@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X, Image as ImageIcon, Loader2, Play, Video } from "lucide-react";
 import { uploadMedia, addActivity } from "@/lib/services/activities";
 import { format } from "date-fns";
+import { cleanInput } from "@/lib/input-validation";
 
 interface AddActivityModalProps {
     onClose: () => void;
@@ -105,7 +106,7 @@ export default function AddActivityModal({ onClose, onSuccess }: AddActivityModa
                                 type="text"
                                 required
                                 value={title}
-                                onChange={(e) => setTitle(e.target.value)}
+                                onChange={(e) => setTitle(cleanInput(e.target.value))}
                                 className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition-all"
                                 placeholder="Harvesting Season 2024"
                             />
@@ -127,7 +128,7 @@ export default function AddActivityModal({ onClose, onSuccess }: AddActivityModa
                         <textarea
                             required
                             value={description}
-                            onChange={(e) => setDescription(e.target.value)}
+                            onChange={(e) => setDescription(cleanInput(e.target.value))}
                             rows={4}
                             className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition-all resize-none"
                             placeholder="Details about what happened on the farm..."

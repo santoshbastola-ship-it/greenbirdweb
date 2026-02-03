@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { User, UserRole } from "@/types";
+import { cleanInput } from "@/lib/input-validation";
 
 interface EditUserModalProps {
     isOpen: boolean;
@@ -109,7 +110,7 @@ export default function EditUserModal({
                             type="text"
                             id="edit-name"
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e) => setName(cleanInput(e.target.value))}
                             disabled={isSubmitting}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100"
                             placeholder="Enter full name"
@@ -154,7 +155,7 @@ export default function EditUserModal({
                             type="text"
                             id="edit-phone"
                             value={phoneNumber}
-                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            onChange={(e) => setPhoneNumber(cleanInput(e.target.value))}
                             disabled={isSubmitting}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100"
                             placeholder="e.g. 9779841..."

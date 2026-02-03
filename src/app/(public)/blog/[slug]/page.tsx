@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Calendar, User, Clock, ArrowLeft, Eye } from "lucide-react";
 import Link from "next/link";
 import ViewCounter from "@/components/blog/ViewCounter";
+import ShareButton from "@/components/ui/ShareButton";
 
 export const dynamicParams = false;
 
@@ -94,11 +95,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     </div>
 
                     <div className="mt-16 pt-10 border-t border-gray-100 flex justify-between items-center">
-                        <div className="flex gap-4">
+                        <div className="flex items-center gap-4">
                             <span className="text-sm font-semibold text-gray-500">Share:</span>
-                            {/* Placeholder social share links */}
-                            <span className="text-gray-400 hover:text-[#5C4033] cursor-pointer">Facebook</span>
-                            <span className="text-gray-400 hover:text-[#5C4033] cursor-pointer">WhatsApp</span>
+                            <ShareButton
+                                title={post.title}
+                                text={`Read this article: ${post.title}`}
+                            />
                         </div>
                     </div>
                 </div>

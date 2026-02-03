@@ -14,6 +14,7 @@ import { toNepali } from "@/lib/date-helper";
 import { useAuth } from "@/context/AuthContext";
 import dynamic from 'next/dynamic';
 import NepaliDate from "nepali-date-converter";
+import { cleanInput } from "@/lib/input-validation";
 
 // Dynamic import for NepaliDatePicker to avoid SSR issues
 const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
@@ -305,7 +306,7 @@ export default function AddEnergyBillModal({ bill, onClose }: AddEnergyBillModal
                         </label>
                         <textarea
                             value={formData.remarks}
-                            onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
+                            onChange={(e) => setFormData({ ...formData, remarks: cleanInput(e.target.value) })}
                             rows={3}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                             placeholder="Add any notes or comments"

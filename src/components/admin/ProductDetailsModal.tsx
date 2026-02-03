@@ -1,5 +1,5 @@
 import { Product } from "@/types";
-import { X, Edit2, Package, Check, ShoppingCart, Home } from "lucide-react";
+import { X, Edit2, Package, Check, ShoppingCart, Home, History } from "lucide-react";
 import Link from "next/link";
 import { toNepali } from "@/lib/date-helper";
 
@@ -153,6 +153,33 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Price History */}
+                            {product.priceHistory && product.priceHistory.length > 0 && (
+                                <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <History className="h-4 w-4 text-gray-500" />
+                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide">Price History</h4>
+                                    </div>
+                                    <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                                        {[...product.priceHistory].reverse().map((history, index) => (
+                                            <div key={index} className="flex items-center justify-between text-sm py-2 border-b border-gray-50 last:border-0 hover:bg-gray-50 px-2 rounded-lg transition-colors">
+                                                <div>
+                                                    <p className="font-bold text-gray-900">Rs. {history.price.toLocaleString()}</p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {new Date(history.date).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                                {history.changedBy && (
+                                                    <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded-full capitalize">
+                                                        {history.changedBy === 'admin' ? 'Admin' : history.changedBy}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

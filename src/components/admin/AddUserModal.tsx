@@ -3,16 +3,18 @@
 import { useState } from "react";
 import { X, Eye, EyeOff } from "lucide-react";
 import { UserRole } from "@/types";
+import { cleanInput } from "@/lib/input-validation";
 
 interface AddUserModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (email: string, name: string, role: UserRole) => Promise<void>;
+    onSubmit: (email: string, name: string, role: UserRole, phoneNumber?: string) => Promise<void>;
 }
 
 export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModalProps) {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [role, setRole] = useState<UserRole>("manager");
@@ -41,12 +43,13 @@ export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModal
 
         setIsSubmitting(true);
         try {
-            await onSubmit(email.trim(), name.trim(), role);
+            await onSubmit(email.trim(), name.trim(), role, phoneNumber.trim());
             setSuccess("User added successfully! They can now log in using their email link.");
             // Reset form after a delay
             setTimeout(() => {
                 setName("");
                 setEmail("");
+                setPhoneNumber("");
                 setRole("manager");
                 setSuccess("");
                 onClose();
@@ -62,6 +65,7 @@ export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModal
         if (!isSubmitting) {
             setName("");
             setEmail("");
+            setPhoneNumber("");
             setPassword("");
             setRole("manager");
             setError("");
@@ -107,7 +111,7 @@ export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModal
                             type="text"
                             id="name"
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e) => setName(cleanInput(e.target.value))}
                             disabled={isSubmitting}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100"
                             placeholder="Enter full name"
@@ -122,7 +126,7 @@ export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModal
                             type="email"
                             id="email"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => setEmail(cleanInput(e.target.value))}
                             disabled={isSubmitting}
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100"
                             placeholder="user@example.com"
@@ -143,6 +147,22 @@ export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModal
                             <option value="admin">Administrator</option>
                             <option value="manager">Farm Manager</option>
                         </select>
+                    </div>
+
+                    <div>
+                        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                            Phone Number (WhatsApp)
+                        </label>
+                        <input
+                            type="text"
+                            id="phone"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(cleanInput(e.target.value))}
+                            disabled={isSubmitting}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100"
+                            placeholder="e.g. 9779841..."
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Include country code (e.g. 977) for WhatsApp notifications.</p>
                     </div>
 
 

@@ -5,6 +5,7 @@ import { X, Save } from "lucide-react";
 import { Product } from "@/types";
 import { ProductService } from "@/services/product.service";
 import { useAuth } from "@/context/AuthContext";
+import { cleanInput } from "@/lib/input-validation";
 
 interface StockUpdateModalProps {
     product: Product;
@@ -130,7 +131,7 @@ export default function StockUpdateModal({ product, onClose, onUpdate }: StockUp
                         <textarea
                             rows={2}
                             value={note}
-                            onChange={(e) => setNote(e.target.value)}
+                            onChange={(e) => setNote(cleanInput(e.target.value))}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
                             placeholder="e.g., New purchase, Damaged goods, Stock correction..."
                         />

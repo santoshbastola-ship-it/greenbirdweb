@@ -207,7 +207,7 @@ export default function InventoryPage() {
                             onView={() => handleProductView(product)}
                             onStockUpdate={() => handleStockUpdate(product)}
                             onStockHistory={() => handleStockHistory(product)}
-                            onDelete={dbUser?.email === "greenbirdhomestead@gmail.com" ? () => handleDelete(product.id) : undefined}
+                            onDelete={dbUser?.role === "admin" ? () => handleDelete(product.id) : undefined}
                             icon={getBusinessIcon(product.businessType)}
                         />
                     ))}

@@ -52,6 +52,19 @@ export default function AdminOrdersPage() {
         }
     };
 
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to PERMANENTLY delete this order?")) return;
+        setLoading(true);
+        try {
+            await TransactionService.deleteTransaction(id);
+            loadOrders();
+        } catch (error) {
+            console.error(error);
+            alert("Failed to delete order");
+            setLoading(false);
+        }
+    };
+
     const isManager = dbUser?.role === 'manager';
 
     const filteredOrders = orders.filter(order => {
@@ -166,7 +179,12 @@ export default function AdminOrdersPage() {
                 ) : (
                     <div className="space-y-4">
                         {filteredOrders.map((order) => (
-                            <OrderCard key={order.id} order={order} onSelect={(order) => setSelectedOrderId(order.id)} />
+                            <OrderCard
+                                key={order.id}
+                                order={order}
+                                onSelect={(order) => setSelectedOrderId(order.id)}
+                                onDelete={dbUser?.role === 'admin' ? () => handleDelete(order.id) : undefined}
+                            />
                         ))}
                     </div>
                 )}
@@ -184,7 +202,7 @@ export default function AdminOrdersPage() {
     );
 }
 
-function OrderCard({ order, onSelect }: { order: TransactionRecord; onSelect: (order: TransactionRecord) => void }) {
+function OrderCard({ order, onSelect, onDelete }: { order: TransactionRecord; onSelect: (order: TransactionRecord) => void; onDelete?: () => void }) {
     const totalAmount = order.items.reduce((sum, item) => sum + item.totalPrice, 0) - (order.discount || 0);
     const remaining = totalAmount - (order.paidAmount || 0);
 
@@ -205,7 +223,7 @@ function OrderCard({ order, onSelect }: { order: TransactionRecord; onSelect: (o
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 hover:shadow-md transition-shadow relative group">
             <div className="flex items-center justify-between gap-4">
                 {/* Left: ID and Date */}
                 <div className="min-w-0">
@@ -243,12 +261,26 @@ function OrderCard({ order, onSelect }: { order: TransactionRecord; onSelect: (o
                 </div>
 
                 {/* Right: Amount */}
-                <div className="text-right whitespace-nowrap">
-                    <div className={`text-lg font-bold ${amountColorClass}`}>Rs. {totalAmount.toLocaleString()}</div>
-                    {remaining > 0 && (order.paidAmount || 0) > 0 && (
-                        <div className="text-xs font-semibold text-orange-600">
-                            Due: {remaining.toLocaleString()}
-                        </div>
+                <div className="text-right whitespace-nowrap flex flex-row items-center gap-2">
+                    <div>
+                        <div className={`text-lg font-bold ${amountColorClass}`}>Rs. {totalAmount.toLocaleString()}</div>
+                        {remaining > 0 && (order.paidAmount || 0) > 0 && (
+                            <div className="text-xs font-semibold text-orange-600">
+                                Due: {remaining.toLocaleString()}
+                            </div>
+                        )}
+                    </div>
+                    {onDelete && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete();
+                            }}
+                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors ml-2"
+                            title="Delete Order"
+                        >
+                            <Trash className="h-4 w-4" />
+                        </button>
                     )}
                 </div>
             </div>
@@ -593,7 +625,7 @@ function OrderDetailsModal({
                             </div>
                         )}
                         <div className="w-px h-6 bg-gray-200 mx-2"></div>
-                        {dbUser?.email === "greenbirdhomestead@gmail.com" && !isEditing && (
+                        {dbUser?.role === "admin" && !isEditing && (
                             <button
                                 onClick={handleDelete}
                                 disabled={isUpdating}

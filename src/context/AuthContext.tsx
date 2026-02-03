@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             await AuthService.signOut();
             setUser(null);
             setDbUser(null);
-            router.push('/');
+            window.location.href = '/';
         } catch (error: any) {
             console.error("Logout error:", error);
             throw error;

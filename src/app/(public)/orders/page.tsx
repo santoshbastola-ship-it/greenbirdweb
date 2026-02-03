@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { Package, Calendar, ChevronRight, X, AlertCircle, Clock, MessageSquare } from "lucide-react";
 import { toNepali } from "@/lib/date-helper";
 import Link from "next/link";
+import ShareButton from "@/components/ui/ShareButton";
 
 
 type FilterStatus = 'all' | OrderStatus;
@@ -168,6 +169,10 @@ function OrderCard({ order, onUpdate }: { order: TransactionRecord; onUpdate: ()
                             </div>
                         </div>
                         <div className="flex items-center space-x-4">
+                            <ShareButton
+                                title={`Order #${order.billNo}`}
+                                text={`I just placed an order #${order.billNo} at Greenbird Homestead!`}
+                            />
                             <StatusBadge status={order.status} />
                             <div className="text-right">
                                 <span className="font-bold text-lg text-gray-900 block">Rs. {getGrandTotal(order).toLocaleString()}</span>

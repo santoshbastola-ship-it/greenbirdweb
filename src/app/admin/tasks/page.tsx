@@ -172,29 +172,29 @@ export default function TasksPage() {
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
                     <div className="flex items-center gap-4">
 
                         <h1 className="text-3xl font-bold text-gray-900">Task Management</h1>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
                         <button
                             onClick={() => setShowMyTasksOnly(!showMyTasksOnly)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors border ${showMyTasksOnly
+                            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-colors border ${showMyTasksOnly
                                 ? "bg-green-100 text-green-700 border-green-200"
                                 : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
                                 }`}
                         >
                             <User className="h-5 w-5" />
-                            <span className="hidden sm:inline">My Tasks</span>
+                            <span className="inline">My Tasks</span>
                         </button>
                         <button
                             onClick={() => setIsAddModalOpen(true)}
-                            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm font-medium"
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm font-medium"
                         >
                             <Plus className="h-5 w-5" />
-                            <span className="hidden sm:inline">Create Task</span>
+                            <span className="inline">Create Task</span>
                         </button>
                     </div>
                 </div>
@@ -307,7 +307,7 @@ function TaskCard({ task, onClick, onToggleStatus, isCompleting, onDelete }: { t
                     task.priority === 'medium' ? 'border-l-blue-400' : 'border-l-gray-300'
                 } border-y-gray-100 border-r-gray-100 ${isCompleting ? 'bg-green-50' : ''}`} // Subtle background change for completing
         >
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-start justify-between gap-4">
                 {/* Left: Checkbox & Title */}
                 <div className="min-w-0 flex items-start gap-4 flex-1">
                     {/* Clickable Circle for Status Toggle */}

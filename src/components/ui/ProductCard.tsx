@@ -17,13 +17,13 @@ export default function ProductCard({ product }: ProductCardProps) {
     return (
         <div className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300">
             <Link href={`/shop/${product.id}`} className="block relative aspect-[4/3] overflow-hidden bg-gray-100">
-                {/* Image would be Next/Image here. For now using div placeholder if no external image config */}
-                {/* Note: Next/Image requires hostname config for external images. */}
                 <div className="w-full h-full relative">
-                    <img
+                    <Image
                         src={imageSrc}
                         alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                     />
                 </div>
                 {!hasStock && (

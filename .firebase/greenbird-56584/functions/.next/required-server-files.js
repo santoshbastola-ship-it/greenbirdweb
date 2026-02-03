@@ -4,7 +4,6 @@ self.__SERVER_FILES_MANIFEST={
     "env": {
       "NEXT_PUBLIC_APP_VERSION": "0.2.0"
     },
-    "webpack": null,
     "typescript": {
       "ignoreBuildErrors": false
     },

@@ -3,6 +3,7 @@ import { ArrowLeft, Minus, Plus, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import AddToCartButton from "@/components/ui/AddToCartButton";
+import ShareButton from "@/components/ui/ShareButton";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -68,7 +69,13 @@ export default async function ProductDetailsPage({ params }: PageProps) {
                                 )}
                             </div>
 
-                            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{product.name}</h1>
+                            <div className="flex items-start justify-between gap-4 mb-4">
+                                <h1 className="text-3xl md:text-4xl font-bold text-gray-900">{product.name}</h1>
+                                <ShareButton
+                                    title={product.name}
+                                    text={`Check out ${product.name} at Greenbird Homestead!`}
+                                />
+                            </div>
 
                             <div className="flex items-baseline mb-6">
                                 <span className="text-3xl font-bold text-[#2D5A27]">Rs. {product.currentPrice}</span>

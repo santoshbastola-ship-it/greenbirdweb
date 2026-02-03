@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { NotificationService } from "@/services/notification.service";
 import { Notification as NotificationType } from "@/types";
 import { Bell, Check, Trash2, X, CheckSquare, Square, Eye, EyeOff } from "lucide-react";
-import { toNepali } from "@/lib/date-helper";
+import { toNepali, formatDateTime } from "@/lib/date-helper";
 import { useRouter } from "next/navigation";
 
 export default function NotificationsPage() {
@@ -295,7 +295,7 @@ export default function NotificationsPage() {
                                             )}
                                         </div>
                                         <p className="text-xs text-gray-400 whitespace-nowrap ml-2">
-                                            {toNepali(notification.createdAt, "DD MMM YYYY, hh:mm A")}
+                                            {formatDateTime(notification.createdAt, "DD MMM YYYY")}
                                         </p>
                                     </div>
                                     <p className={`text-sm ${!notification.isRead ? 'text-gray-900 font-medium' : 'text-gray-600'} mb-3`}>{notification.message}</p>

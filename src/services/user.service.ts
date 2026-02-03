@@ -231,7 +231,7 @@ export const UserService = {
         }
     },
 
-    inviteUser: async (email: string, name: string, role: UserRole): Promise<string> => {
+    inviteUser: async (email: string, name: string, role: UserRole, phoneNumber?: string): Promise<string> => {
         try {
             // Check if user already exists in users collection
             const q = query(collection(db, USERS_COLLECTION), where("email", "==", email));
@@ -245,6 +245,7 @@ export const UserService = {
                 email,
                 name,
                 role,
+                phoneNumber: phoneNumber || null,
                 isActive: true,
                 createdAt: new Date(),
             };

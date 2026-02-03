@@ -10,6 +10,7 @@ import dynamic from 'next/dynamic';
 import NepaliDate from "nepali-date-converter";
 import "nepali-datepicker-reactjs/dist/index.css";
 import { Toast, ToastType } from "@/components/ui/Toast";
+import { cleanInput } from "@/lib/input-validation";
 
 const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
     ssr: false,
@@ -222,7 +223,7 @@ export default function BookingModal({ booking, onClose, onSuccess }: BookingMod
                                         placeholder="Guest's full name"
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 outline-none"
                                         value={newCustomerData.name}
-                                        onChange={(e) => setNewCustomerData({ ...newCustomerData, name: e.target.value })}
+                                        onChange={(e) => setNewCustomerData({ ...newCustomerData, name: cleanInput(e.target.value) })}
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
@@ -234,7 +235,7 @@ export default function BookingModal({ booking, onClose, onSuccess }: BookingMod
                                             placeholder="Phone"
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 outline-none"
                                             value={newCustomerData.phoneNumber}
-                                            onChange={(e) => setNewCustomerData({ ...newCustomerData, phoneNumber: e.target.value })}
+                                            onChange={(e) => setNewCustomerData({ ...newCustomerData, phoneNumber: cleanInput(e.target.value) })}
                                         />
                                     </div>
                                     <div>
@@ -244,7 +245,7 @@ export default function BookingModal({ booking, onClose, onSuccess }: BookingMod
                                             placeholder="Email address"
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 outline-none"
                                             value={newCustomerData.email}
-                                            onChange={(e) => setNewCustomerData({ ...newCustomerData, email: e.target.value })}
+                                            onChange={(e) => setNewCustomerData({ ...newCustomerData, email: cleanInput(e.target.value) })}
                                         />
                                     </div>
                                 </div>
@@ -296,7 +297,7 @@ export default function BookingModal({ booking, onClose, onSuccess }: BookingMod
                         <textarea
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 outline-none h-24 resize-none"
                             value={formData.specialRequests}
-                            onChange={(e) => setFormData({ ...formData, specialRequests: e.target.value })}
+                            onChange={(e) => setFormData({ ...formData, specialRequests: cleanInput(e.target.value) })}
                             placeholder="Any special requirements..."
                         />
                     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Leaf, Utensils, Bird, Trees, Calendar } from "lucide-react";
 import ProductCard from "@/components/ui/ProductCard";
 import { Product } from "@/types";
@@ -50,11 +51,20 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [activitiesData, productsData, testimonialsData] = await Promise.all([
-          getActivities(3),
-          ProductService.getFeaturedProducts(),
-          getTestimonials(6)
-        ]);
+        // Create a timeout promise that rejects after 15 seconds
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error("Request timed out")), 15000);
+        });
+
+        const [activitiesData, productsData, testimonialsData] = await Promise.race([
+          Promise.all([
+            getActivities(3),
+            ProductService.getFeaturedProducts(),
+            getTestimonials(6)
+          ]),
+          timeoutPromise
+        ]) as [FarmActivity[], Product[], Testimonial[]];
+
         setActivities(activitiesData);
         setFeaturedProducts(productsData);
         setTestimonials(testimonialsData.filter(t => t.isPublished));
@@ -74,7 +84,15 @@ export default function Home() {
       <JsonLd data={jsonLdData} />
       {/* Hero Section */}
       <section className="relative bg-[#2D5A27] text-white overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=2940&auto=format&fit=crop')] bg-cover bg-center opacity-30"></div>
+        <div className="absolute inset-0 opacity-30">
+          <Image
+            src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=1200&auto=format&fit=crop"
+            alt="Farm landscape"
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 md:py-56 text-center animate-fadeIn">
           <h1 className="text-4xl md:text-7xl font-bold tracking-tight mb-8 leading-tight">
             Farm Fresh, <span className="text-[#FCF9F1]">Straight to You</span>
@@ -248,10 +266,12 @@ export default function Home() {
                     <div className="flex items-center gap-4">
                       <div className="h-14 w-14 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm transition-transform duration-500 group-hover:scale-110">
                         {testimonial.photoUrl ? (
-                          <img
+                          <Image
                             src={testimonial.photoUrl}
                             alt={testimonial.name}
-                            className="h-full w-full object-cover"
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           />
                         ) : (
                           <div className="h-full w-full flex items-center justify-center bg-gray-100">

@@ -13,6 +13,7 @@ import { SettingsService } from "@/services/settings.service";
 import NepaliDate from "nepali-date-converter";
 import { Toast, ToastType } from "@/components/ui/Toast";
 import EditCustomerModal from "@/components/admin/EditCustomerModal";
+import AddCustomerModal from "@/components/admin/AddCustomerModal";
 import { UserRole } from "@/types";
 
 const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
@@ -46,6 +47,7 @@ export default function NewSalePage() {
     const [showCustomerDropdown, setShowCustomerDropdown] = useState(false);
     const [filteredCustomers, setFilteredCustomers] = useState<User[]>([]);
     const [showEditCustomerModal, setShowEditCustomerModal] = useState(false);
+    const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
 
     // Form state
     const [date, setDate] = useState(() => {
@@ -300,6 +302,13 @@ export default function NewSalePage() {
         }
     };
 
+    const handleAddCustomerSuccess = (newCustomer: User) => {
+        setCustomers(prev => [...prev, newCustomer]);
+        setPartyName(newCustomer.name);
+        setCustomerId(newCustomer.id);
+        showToast("Customer added successfully");
+    };
+
     return (
         <div className="max-w-3xl mx-auto pt-4 pb-20 px-4">
             {toast && (
@@ -398,14 +407,13 @@ export default function NewSalePage() {
                                         </div>
                                     )}
                                 </div>
-                                <Link
-                                    href="/admin/users"
-                                    target="_blank"
+                                <button
+                                    onClick={() => setShowAddCustomerModal(true)}
                                     className="flex items-center justify-center w-11 h-11 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors shadow-sm"
                                     title="Add New Customer"
                                 >
                                     <Plus className="h-5 w-5" />
-                                </Link>
+                                </button>
                             </div>
                         </div>
 
@@ -666,11 +674,18 @@ export default function NewSalePage() {
                 </div>
             </div>
 
+
             <EditCustomerModal
                 isOpen={showEditCustomerModal}
                 user={customerId ? customers.find(c => c.id === customerId) || null : null}
                 onClose={() => setShowEditCustomerModal(false)}
                 onSubmit={handleUpdateCustomer}
+            />
+
+            <AddCustomerModal
+                isOpen={showAddCustomerModal}
+                onClose={() => setShowAddCustomerModal(false)}
+                onSuccess={handleAddCustomerSuccess}
             />
         </div>
 

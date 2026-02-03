@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X, Upload, Loader2, Link as LinkIcon } from "lucide-react";
 import { addTestimonial, uploadTestimonialPhoto } from "@/lib/services/testimonials";
 import { Testimonial } from "@/types/extra";
+import { cleanInput } from "@/lib/input-validation";
 
 interface AddTestimonialModalProps {
     onClose: () => void;
@@ -103,7 +104,7 @@ export default function AddTestimonialModal({ onClose, onSuccess }: AddTestimoni
                                 type="text"
                                 required
                                 value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                onChange={(e) => setFormData({ ...formData, name: cleanInput(e.target.value) })}
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none"
                                 placeholder="John Doe"
                             />
@@ -115,7 +116,7 @@ export default function AddTestimonialModal({ onClose, onSuccess }: AddTestimoni
                                 required
                                 rows={4}
                                 value={formData.content}
-                                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                                onChange={(e) => setFormData({ ...formData, content: cleanInput(e.target.value) })}
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none resize-none"
                                 placeholder="Share the customer's experience..."
                             />
@@ -128,7 +129,7 @@ export default function AddTestimonialModal({ onClose, onSuccess }: AddTestimoni
                             <input
                                 type="url"
                                 value={formData.customerProfileUrl}
-                                onChange={(e) => setFormData({ ...formData, customerProfileUrl: e.target.value })}
+                                onChange={(e) => setFormData({ ...formData, customerProfileUrl: cleanInput(e.target.value) })}
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none"
                                 placeholder="https://facebook.com/johndoe"
                             />

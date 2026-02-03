@@ -72,7 +72,7 @@ export default function UserManagementPage() {
         }
     };
 
-    const handleInviteUser = async (email: string, name: string, role: UserRole) => {
+    const handleInviteUser = async (email: string, name: string, role: UserRole, phoneNumber?: string) => {
         try {
             // Only admin and manager can be created through this interface
             if (role !== 'admin' && role !== 'manager') {
@@ -80,7 +80,7 @@ export default function UserManagementPage() {
             }
 
             // 1. Create user in Firestore (without UID yet)
-            await UserService.inviteUser(email, name, role as 'admin' | 'manager');
+            await UserService.inviteUser(email, name, role as 'admin' | 'manager', phoneNumber);
 
             // 2. Send sign-in link
             await AuthService.sendSignInLink(email);

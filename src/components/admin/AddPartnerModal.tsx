@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
+import { cleanInput } from "@/lib/input-validation";
 
 interface AddPartnerModalProps {
     partnerType: "customer" | "vendor";
@@ -54,7 +55,7 @@ export default function AddPartnerModal({ partnerType, onClose, onAdd }: AddPart
                             required
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
                             value={formData.name}
-                            onChange={e => setFormData({ ...formData, name: e.target.value })}
+                            onChange={e => setFormData({ ...formData, name: cleanInput(e.target.value) })}
                             placeholder="Enter partner name"
                         />
                     </div>
@@ -64,7 +65,7 @@ export default function AddPartnerModal({ partnerType, onClose, onAdd }: AddPart
                             type="tel"
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
                             value={formData.phoneNumber}
-                            onChange={e => setFormData({ ...formData, phoneNumber: e.target.value })}
+                            onChange={e => setFormData({ ...formData, phoneNumber: cleanInput(e.target.value) })}
                             placeholder="Enter phone number"
                         />
                     </div>
@@ -74,7 +75,7 @@ export default function AddPartnerModal({ partnerType, onClose, onAdd }: AddPart
                             type="email"
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
                             value={formData.email}
-                            onChange={e => setFormData({ ...formData, email: e.target.value })}
+                            onChange={e => setFormData({ ...formData, email: cleanInput(e.target.value) })}
                             placeholder="Enter email address"
                         />
                     </div>
@@ -84,7 +85,7 @@ export default function AddPartnerModal({ partnerType, onClose, onAdd }: AddPart
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all resize-none"
                             rows={2}
                             value={formData.address}
-                            onChange={e => setFormData({ ...formData, address: e.target.value })}
+                            onChange={e => setFormData({ ...formData, address: cleanInput(e.target.value) })}
                             placeholder="Enter address"
                         />
                     </div>
@@ -94,7 +95,7 @@ export default function AddPartnerModal({ partnerType, onClose, onAdd }: AddPart
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all resize-none"
                             rows={2}
                             value={formData.remarks}
-                            onChange={e => setFormData({ ...formData, remarks: e.target.value })}
+                            onChange={e => setFormData({ ...formData, remarks: cleanInput(e.target.value) })}
                             placeholder="Additional notes"
                         />
                     </div>

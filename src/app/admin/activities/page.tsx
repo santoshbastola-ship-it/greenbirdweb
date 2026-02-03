@@ -112,7 +112,7 @@ export default function ActivitiesPage() {
                             <ActivityCard
                                 key={activity.id}
                                 activity={activity}
-                                onDelete={dbUser?.email === "greenbirdhomestead@gmail.com" ? handleDelete : undefined}
+                                onDelete={dbUser?.role === "admin" ? handleDelete : undefined}
                                 onToggleStatus={handleToggleStatus}
                             />
                         ))}
