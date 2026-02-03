@@ -11,6 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import { format } from "date-fns";
 import { toNepali, formatDateTime } from "@/lib/date-helper";
 import { cleanInput } from "@/lib/input-validation";
+import RelatedProductsSelector from "./RelatedProductsSelector";
 
 interface ProductFormProps {
     initialData?: Product;
@@ -225,6 +226,16 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                 onChange={handleChange}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
                                 placeholder="Describe your product..."
+                            />
+                            <p className="text-xs text-gray-500 mt-1">Use <strong>**bold**</strong> for bold text. Newlines are preserved.</p>
+                        </div>
+
+                        {/* Related Products Selector */}
+                        <div>
+                            <RelatedProductsSelector
+                                currentProductId={initialData?.id}
+                                selectedIds={formData.relatedProductIds || []}
+                                onChange={(ids) => setFormData(prev => ({ ...prev, relatedProductIds: ids }))}
                             />
                         </div>
                     </div>

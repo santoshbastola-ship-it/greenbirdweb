@@ -1,4 +1,5 @@
 import { Product } from "@/types";
+import { formatProductDescription } from "@/lib/text-helper";
 import { X, Edit2, Package, Check, ShoppingCart, Home, History } from "lucide-react";
 import Link from "next/link";
 import { toNepali } from "@/lib/date-helper";
@@ -70,9 +71,9 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
                             {/* Description */}
                             <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
                                 <h4 className="text-sm font-bold text-gray-900 mb-2">Description</h4>
-                                <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">
-                                    {product.description || "No description available."}
-                                </p>
+                                <div className="text-gray-600 text-sm leading-relaxed">
+                                    {formatProductDescription(product.description || "No description available.")}
+                                </div>
                             </div>
                         </div>
 

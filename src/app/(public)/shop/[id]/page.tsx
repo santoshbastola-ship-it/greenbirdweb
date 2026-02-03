@@ -1,4 +1,5 @@
 import { ProductService } from "@/services/product.service";
+import { formatProductDescription } from "@/lib/text-helper";
 import { ArrowLeft, Minus, Plus, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -83,7 +84,9 @@ export default async function ProductDetailsPage({ params }: PageProps) {
                             </div>
 
                             <div className="prose prose-green mb-8 text-gray-600">
-                                <p>{product.description || "No description available for this product."}</p>
+                                <div className="text-sm leading-relaxed">
+                                    {formatProductDescription(product.description || "No description available for this product.")}
+                                </div>
                             </div>
 
                             {/* Quantity & Add to Cart */}

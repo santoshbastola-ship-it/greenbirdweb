@@ -7,6 +7,6 @@
  * @returns The cleaned string containing only ASCII printable characters
  */
 export const cleanInput = (value: string): string => {
-    // Replace any character that is not in the printable ASCII range (hex 20 to 7E)
-    return value.replace(/[^\x20-\x7E]/g, '');
+    // Replace any character that is not in the printable ASCII range space to tilde, plus newline and carriage return
+    return value.replace(/[^\x20-\x7E\x0A\x0D]/g, '');
 };

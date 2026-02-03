@@ -156,6 +156,7 @@ export interface Product {
     description?: string;
     isAvailableForSale: boolean;
     isFeatured?: boolean;
+    relatedProductIds?: string[]; // IDs of products to recommend when this product is viewed/carted
 }
 
 export interface User {

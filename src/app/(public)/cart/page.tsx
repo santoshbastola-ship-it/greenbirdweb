@@ -13,6 +13,7 @@ import { SettingsService } from "@/services/settings.service";
 import { TransactionType, PaymentStatus, OrderStatus, AppSettings } from "@/types";
 import { getTodayNepali } from "@/lib/date-helper";
 import dynamic from 'next/dynamic';
+import RecommendedProducts from "@/components/shop/RecommendedProducts";
 
 const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
     ssr: false,
@@ -281,6 +282,11 @@ export default function CartPage() {
                                 ))}
                             </div>
                         </div>
+                    </div>
+
+                    {/* Recommended Products */}
+                    <div className="md:col-span-1 lg:col-span-2">
+                        <RecommendedProducts />
                     </div>
 
                     {/* RIGHT COLUMN: Shipping & Payment */}

@@ -530,78 +530,6 @@
         "x-next-revalidate-tag-token"
       ]
     },
-    "/admin/inventory/edit/JbjwMw2iz71DHWLsYmPb": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/admin/inventory/edit/[id]",
-      "dataRoute": "/admin/inventory/edit/JbjwMw2iz71DHWLsYmPb.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
-    "/admin/inventory/edit/JcGw5mkxbYt7IMkQRo3Z": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/admin/inventory/edit/[id]",
-      "dataRoute": "/admin/inventory/edit/JcGw5mkxbYt7IMkQRo3Z.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
-    "/admin/inventory/edit/kVcj9iywEir7OvzpSp3E": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/admin/inventory/edit/[id]",
-      "dataRoute": "/admin/inventory/edit/kVcj9iywEir7OvzpSp3E.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
-    },
     "/admin/inventory": {
       "experimentalBypassFor": [
         {
@@ -1128,39 +1056,12 @@
         "x-next-revalidated-tags",
         "x-next-revalidate-tag-token"
       ]
-    },
-    "/admin/inventory/edit/[id]": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "routeRegex": "^/admin/inventory/edit/([^/]+?)(?:/)?$",
-      "dataRoute": "/admin/inventory/edit/[id].rsc",
-      "fallback": null,
-      "fallbackRouteParams": [],
-      "dataRouteRegex": "^/admin/inventory/edit/([^/]+?)\\.rsc$",
-      "prefetchDataRoute": null,
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
     }
   },
   "notFoundRoutes": [],
   "preview": {
-    "previewModeId": "a76600cee2d0f8420e3154f7fb9f2fd2",
-    "previewModeSigningKey": "caeeef7df393b777af02a610841841aaa660a19522b66dcefda7a74bae8f5fe4",
-    "previewModeEncryptionKey": "4ee5bd27cf4a8bafc68cc44094f207b307b60ab591b21f31f54fd6aa4fe2baa5"
+    "previewModeId": "07083030bdb702881141343ea4ca53a5",
+    "previewModeSigningKey": "f72f5f618627c75b45f8fbf33611327577fbdd73296893b6012b5b5bfc584fde",
+    "previewModeEncryptionKey": "311db8b641eea5709f8f07703b0d838bce8e2f35ccc8913161589d0bb50aba3f"
   }
 }

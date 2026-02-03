@@ -6,12 +6,7 @@ interface PageProps {
     params: Promise<{ id: string }>;
 }
 
-export async function generateStaticParams() {
-    const products = await ProductService.getAllProducts();
-    return products.map((product) => ({
-        id: product.id,
-    }));
-}
+export const dynamic = "force-dynamic";
 
 
 export default async function EditProductPage({ params }: PageProps) {
