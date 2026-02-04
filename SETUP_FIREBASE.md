@@ -63,6 +63,16 @@ This guide will help you connect your database and install the application on yo
    *   Click **Get started**.
    *   Select **Start in test mode**.
    *   Click **Done**.
+4. **Service Account (For Push Notifications)**:
+   *   Go to **Project settings** (gear icon) > **Service accounts**.
+   *   Click **Generate new private key**.
+   *   Open the downloaded JSON file.
+   *   Add these to your `.env.local` file:
+       ```env
+       FIREBASE_CLIENT_EMAIL=client_email_from_json
+       FIREBASE_PRIVATE_KEY="private_key_from_json"
+       ```
+   *   **Note**: Wrap the private key in quotes. It contains newlines (`\n`), which are handled by the app.
 
 ---
 

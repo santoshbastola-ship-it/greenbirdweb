@@ -22,6 +22,7 @@ import {
     ShoppingBag,
     MessageSquare,
     Bell,
+    ChevronDown,
     LucideIcon,
 } from "lucide-react";
 import clsx from "clsx";
@@ -43,6 +44,7 @@ export default function AdminSidebar() {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
     const { logout, dbUser } = useAuth();
 
     const isManager = dbUser?.role === "manager";
@@ -123,6 +125,28 @@ export default function AdminSidebar() {
         }))
         .filter((section) => section.items.length > 0);
 
+    const toggleSection = (title: string) => {
+        setExpandedSections(prev => ({
+            ...prev,
+            [title]: !prev[title]
+        }));
+    };
+
+    const expandAll = () => {
+        const allExpanded = visibleSections.reduce((acc, section) => {
+            if (section.title) acc[section.title] = true;
+            return acc;
+        }, {} as Record<string, boolean>);
+        setExpandedSections(allExpanded);
+    };
+
+    const collapseAll = () => {
+        setExpandedSections({});
+    };
+
+    const isAllExpanded = visibleSections.every(s => !s.title || expandedSections[s.title]);
+    const hasTitles = visibleSections.some(s => s.title);
+
     return (
         <>
             {/* Mobile Trigger */}
@@ -176,47 +200,77 @@ export default function AdminSidebar() {
                     </div>
 
                     {/* Nav Links */}
-                    <nav className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
-                        {visibleSections.map((section, index) => (
-                            <div key={index}>
-                                {!isCollapsed && section.title && (
-                                    <h3 className="mb-2 px-4 text-xs font-semibold text-green-400 uppercase tracking-wider">
-                                        {section.title}
-                                    </h3>
-                                )}
-                                <div className="space-y-1">
-                                    {section.items.map((link) => {
-                                        const Icon = link.icon;
-                                        return (
-                                            <Link
-                                                key={link.href}
-                                                href={link.href}
-                                                onClick={() => setIsOpen(false)}
-                                                className={clsx(
-                                                    "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors group relative",
-                                                    isActive(link.href)
-                                                        ? "bg-green-800 text-white shadow-sm"
-                                                        : "text-green-100 hover:bg-green-800/50 hover:text-white"
-                                                )}
-                                            >
-                                                <Icon
-                                                    className={clsx(
-                                                        "h-5 w-5 flex-shrink-0",
-                                                        !isCollapsed && "mr-3"
-                                                    )}
-                                                />
-                                                {!isCollapsed && <span>{link.label}</span>}
-                                                {isCollapsed && (
-                                                    <div className="absolute left-full ml-2 px-2 py-1 bg-green-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
-                                                        {link.label}
-                                                    </div>
-                                                )}
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
+                    <nav className="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
+                        {!isCollapsed && hasTitles && (
+                            <div className="px-4 mb-4 flex items-center justify-between">
+                                <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">
+                                    Navigation
+                                </span>
+                                <button
+                                    onClick={isAllExpanded ? collapseAll : expandAll}
+                                    className="text-[10px] font-medium text-green-400 hover:text-white transition-colors uppercase tracking-wider"
+                                >
+                                    {isAllExpanded ? "Collapse All" : "Expand All"}
+                                </button>
                             </div>
-                        ))}
+                        )}
+
+                        {visibleSections.map((section, index) => {
+                            const isSectionExpanded = !section.title || expandedSections[section.title];
+
+                            return (
+                                <div key={index} className="space-y-1">
+                                    {!isCollapsed && section.title && (
+                                        <button
+                                            onClick={() => toggleSection(section.title!)}
+                                            className="flex items-center justify-between w-full mb-1 px-4 py-1 text-xs font-semibold text-green-400 uppercase tracking-wider hover:text-white transition-colors rounded-md hover:bg-green-800/30 group"
+                                        >
+                                            <span>{section.title}</span>
+                                            <ChevronDown
+                                                className={clsx(
+                                                    "h-3 w-3 transition-transform duration-200",
+                                                    isSectionExpanded ? "rotate-0" : "-rotate-90"
+                                                )}
+                                            />
+                                        </button>
+                                    )}
+                                    <div className={clsx(
+                                        "space-y-1 transition-all duration-300 overflow-hidden",
+                                        isSectionExpanded || isCollapsed ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
+                                    )}>
+                                        {section.items.map((link) => {
+                                            const Icon = link.icon;
+                                            return (
+                                                <Link
+                                                    key={link.href}
+                                                    href={link.href}
+                                                    onClick={() => setIsOpen(false)}
+                                                    className={clsx(
+                                                        "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors group relative",
+                                                        isActive(link.href)
+                                                            ? "bg-green-800 text-white shadow-sm"
+                                                            : "text-green-100 hover:bg-green-800/50 hover:text-white"
+                                                    )}
+                                                >
+                                                    <Icon
+                                                        className={clsx(
+                                                            "h-5 w-5 flex-shrink-0",
+                                                            !isCollapsed && "mr-3"
+                                                        )}
+                                                    />
+                                                    {!isCollapsed && <span>{link.label}</span>}
+                                                    {isCollapsed && (
+                                                        <div className="absolute left-full ml-2 px-2 py-1 bg-green-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                                                            {link.label}
+                                                        </div>
+                                                    )}
+                                                </Link>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </nav>
 
                     {/* Footer / Logout */}

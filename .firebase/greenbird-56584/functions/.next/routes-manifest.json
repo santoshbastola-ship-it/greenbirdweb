@@ -239,6 +239,12 @@
       "namedRegex": "^/api/debug/customer\\-phone(?:/)?$"
     },
     {
+      "page": "/api/notifications/push",
+      "regex": "^/api/notifications/push(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/api/notifications/push(?:/)?$"
+    },
+    {
       "page": "/api/whatsapp/notification",
       "regex": "^/api/whatsapp/notification(?:/)?$",
       "routeKeys": {},
@@ -297,6 +303,12 @@
       "regex": "^/notifications(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/notifications(?:/)?$"
+    },
+    {
+      "page": "/order-success",
+      "regex": "^/order\\-success(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/order\\-success(?:/)?$"
     },
     {
       "page": "/orders",
