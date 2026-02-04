@@ -78,24 +78,33 @@ export default function BookingPage() {
                     <div className="space-y-8">
                         <div>
                             <h1 className="text-4xl md:text-5xl font-bold text-[#2D5A27] mb-6 font-primary uppercase tracking-tight">
-                                Book Your <span className="text-[#5C4033]">Homestead</span> Stay
+                                Book Your <span className="text-[#5C4033]">Homestead</span> Visit
                             </h1>
-                            <p className="text-xl text-gray-600 leading-relaxed font-geist">
-                                Experience authentic farm life in the heart of the Kathmandu valley.
-                                Wake up to the sound of nature and enjoy farm-fresh meals collected
-                                by your own hands.
-                            </p>
+                            <div className="space-y-4 font-geist">
+                                <p className="text-xl text-gray-600 leading-relaxed">
+                                    Experience authentic farm life in the heart of the Kathmandu Valley.
+                                    Immerse yourself in the sounds of nature and enjoy farm-fresh meals collected
+                                    by your own hands.
+                                </p>
+                                <p className="text-base text-gray-600 leading-relaxed bg-[#2D5A27]/5 p-4 rounded-xl border-l-4 border-[#2D5A27]">
+                                    <span className="font-bold text-[#2D5A27] block mb-1">Note</span>
+                                    While we do not currently offer overnight accommodations, we invite you to enjoy our day activities until late evening.
+                                    <span className="block mt-2 text-sm opacity-90">
+                                        🚗 Pick-up and drop-off services available at Rs 100 per km.
+                                    </span>
+                                </p>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <FeatureCard
                                 icon={<Calendar className="h-6 w-6 text-[#2D5A27]" />}
                                 title="Flexible Dates"
-                                description="Adjust your stay as per availability with our easy booking system."
+                                description="Adjust your visit as per availability with our easy booking system."
                             />
                             <FeatureCard
                                 icon={<Users className="h-6 w-6 text-[#2D5A27]" />}
-                                title="Group Stays"
+                                title="Group Visits"
                                 description="We welcome families and small groups for a unified farm experience."
                             />
                         </div>
@@ -113,7 +122,7 @@ export default function BookingPage() {
                                 </li>
                                 <li className="flex items-center gap-3 text-gray-600">
                                     <div className="h-2 w-2 bg-[#5C4033] rounded-full"></div>
-                                    Clean, cozy rural accommodation
+                                    Authentic rural atmosphere
                                 </li>
                             </ul>
                         </div>

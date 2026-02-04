@@ -11,11 +11,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function NotificationsPage() {
-    const { user } = useAuth();
+    const { user, requestNotificationPermission } = useAuth();
     const router = useRouter();
     const [notifications, setNotifications] = useState<NotificationType[]>([]);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
+    const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
     // Confirmation Modal State
     const [confirmModal, setConfirmModal] = useState<{
@@ -85,7 +86,7 @@ export default function NotificationsPage() {
 
     const formatNotificationDate = (date: any) => {
         try {
-            return formatDateTime(date, "DD MMM YYYY, hh:mm A");
+            return formatDateTime(date, "DD MMM YYYY");
         } catch (e) {
             return "Just now";
         }
@@ -122,7 +123,7 @@ export default function NotificationsPage() {
         );
     }
 
-    const [filter, setFilter] = useState<'all' | 'unread'>('all');
+
 
     // Filter notifications based on the selected filter
     const filteredNotifications = notifications.filter(n => {
@@ -140,9 +141,17 @@ export default function NotificationsPage() {
                         </div>
                         Notifications
                     </h1>
-                    <p className="text-gray-500 mt-2 font-medium">
-                        Stay updated with your orders and latest offers
-                    </p>
+                    <div className="flex flex-col gap-2">
+                        <p className="text-gray-500 mt-2 font-medium">
+                            Stay updated with your orders and latest offers
+                        </p>
+                        <button
+                            onClick={() => requestNotificationPermission()}
+                            className="w-fit text-xs font-bold text-green-600 hover:text-green-700 underline"
+                        >
+                            Enable Push Notifications
+                        </button>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -151,8 +160,8 @@ export default function NotificationsPage() {
                         <button
                             onClick={() => setFilter('all')}
                             className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === 'all'
-                                    ? 'bg-white text-gray-900 shadow-sm'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                ? 'bg-white text-gray-900 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             All
@@ -160,14 +169,14 @@ export default function NotificationsPage() {
                         <button
                             onClick={() => setFilter('unread')}
                             className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${filter === 'unread'
-                                    ? 'bg-white text-green-600 shadow-sm'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                ? 'bg-white text-green-600 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-700'
                                 }`}
                         >
                             Unread
                             <span className={`px-1.5 py-0.5 rounded text-[10px] ${filter === 'unread'
-                                    ? 'bg-green-100 text-green-600'
-                                    : 'bg-gray-200 text-gray-600'
+                                ? 'bg-green-100 text-green-600'
+                                : 'bg-gray-200 text-gray-600'
                                 }`}>
                                 {notifications.filter(n => !n.isRead).length}
                             </span>

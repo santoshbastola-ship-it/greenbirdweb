@@ -5,6 +5,9 @@ import { Product } from '@/types';
 import { Plus, Package, Check } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuth } from '@/context/AuthContext';
+import ShareButton from '@/components/ui/ShareButton';
+
+import { FRESH_EGGS_PRODUCT_ID } from '@/lib/constants';
 
 export default function RecommendedProducts() {
     const { recommendations, loading } = useRecommendations();
@@ -35,13 +38,17 @@ export default function RecommendedProducts() {
         <div className="mt-12 border-t border-gray-100 pt-12">
             <h2 className="text-xl font-bold text-gray-900 mb-6">You might also like</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {recommendations.map((product) => (
-                    <ProductCard
-                        key={product.id}
-                        product={product}
-                        onAdd={() => addItem(product, 1)}
-                    />
-                ))}
+                {recommendations.map((product) => {
+                    const isEggs = product.id === FRESH_EGGS_PRODUCT_ID;
+                    const quantity = isEggs ? 30 : 1;
+                    return (
+                        <ProductCard
+                            key={product.id}
+                            product={product}
+                            onAdd={() => addItem(product, quantity)}
+                        />
+                    );
+                })}
             </div>
         </div>
     );
@@ -61,23 +68,33 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
     return (
         <div className="group bg-white rounded-xl border border-gray-100 p-3 hover:shadow-md transition-all duration-300 flex items-center gap-4">
             {/* Small Product Image */}
-            <Link href={`/shop/${product.id}`} className="block relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-gray-50 border border-gray-100">
-                {product.images?.[0] ? (
-                    <img
-                        src={product.images[0]}
-                        alt={product.name}
-                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+            <div className="relative h-20 w-20 flex-shrink-0">
+                <Link href={`/shop/${product.id}`} className="block w-full h-full overflow-hidden rounded-lg bg-gray-50 border border-gray-100">
+                    {product.images?.[0] ? (
+                        <img
+                            src={product.images[0]}
+                            alt={product.name}
+                            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-300">
+                            <Package className="h-6 w-6" />
+                        </div>
+                    )}
+                </Link>
+
+                {/* Share Button Overlay */}
+                <div className="absolute top-0 right-0 z-30 scale-75 origin-top-right">
+                    <ShareButton
+                        title={product.name}
+                        text={`Check out ${product.name} at Greenbird Homestead!`}
+                        url={`${typeof window !== 'undefined' ? window.location.origin : ''}/shop/${product.id}`}
+                        className="bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
                     />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-300">
-                        <Package className="h-6 w-6" />
-                    </div>
-                )}
-
-
+                </div>
 
                 {product.tags && product.tags.length > 0 && (
-                    <div className="absolute top-1 left-1 flex flex-wrap gap-0.5 z-20">
+                    <div className="absolute top-1 left-1 flex flex-wrap gap-0.5 z-20 pointer-events-none">
                         {product.tags.map((tag, index) => (
                             <span key={index} className="bg-white/90 text-[#2D5A27] px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm border border-[#2D5A27]/20">
                                 {tag}
@@ -87,13 +104,13 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
                 )}
 
                 {product.currentStock <= 0 && (
-                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center text-[8px] z-10">
+                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center text-[8px] z-10 pointer-events-none">
                         <span className="bg-gray-900 text-white font-bold px-1.5 py-0.5 rounded-full shadow-lg">
                             OOS
                         </span>
                     </div>
                 )}
-            </Link>
+            </div>
 
             {/* Product Details */}
             <div className="flex-1 min-w-0">

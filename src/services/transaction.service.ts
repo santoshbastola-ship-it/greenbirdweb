@@ -59,17 +59,24 @@ export const TransactionService = {
                 const ProductServiceModule = await import("./product.service");
                 const ProductService = ProductServiceModule.ProductService;
 
-                await Promise.all(transaction.items.map(async (item) => {
-                    const action = transaction.type === TransactionType.Sale ? 'remove' : 'add';
-                    const note = `${transaction.type} - Bill: ${transaction.billNo}`;
+                // ONLY update stock if:
+                // 1. It is NOT a sale (e.g. Purchase - add stock)
+                // 2. OR it IS a sale AND the status is ALREADY Delivered (e.g. Manual Sale)
+                const shouldUpdateStock = transaction.type !== TransactionType.Sale || transaction.status === OrderStatus.Delivered;
 
-                    try {
-                        await ProductService.updateProductStock(item.productId, action, item.quantity, note);
-                    } catch (stockError) {
-                        console.error(`Failed to update stock for product ${item.productId}:`, stockError);
-                        // We don't throw here to avoid failing the whole transaction if stock update fails
-                    }
-                }));
+                if (shouldUpdateStock) {
+                    await Promise.all(transaction.items.map(async (item) => {
+                        const action = transaction.type === TransactionType.Sale ? 'remove' : 'add';
+                        const note = `${transaction.type} - Bill: ${transaction.billNo}`;
+
+                        try {
+                            await ProductService.updateProductStock(item.productId, action, item.quantity, note);
+                        } catch (stockError) {
+                            console.error(`Failed to update stock for product ${item.productId}:`, stockError);
+                            // We don't throw here to avoid failing the whole transaction if stock update fails
+                        }
+                    }));
+                }
             } catch (serviceLoadError) {
                 console.error("Failed to load ProductService for stock update:", serviceLoadError);
             }
@@ -92,7 +99,7 @@ export const TransactionService = {
                     title: "Order Placed Successfully",
                     message: `Your order #${transaction.billNo} has been placed.${WHATSAPP_SUPPORT_FOOTER}`,
                     type: 'success',
-                    channels: ['in-app', 'whatsapp'],
+                    channels: ['in-app', 'whatsapp', 'push'],
                     relatedEntityId: docRef.id,
                     relatedEntityType: 'transaction'
                 });
@@ -280,6 +287,66 @@ export const TransactionService = {
                 updatedAt: new Date().toISOString()
             };
 
+            // Handle Stock Updates if status changed to/from Delivered for Sales
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                // Only for Sales
+                if (data.type === TransactionType.Sale) {
+                    const oldStatus = data.status;
+
+                    // If changing TO Delivered (and wasn't before) -> REMOVE Stock
+                    if (status === OrderStatus.Delivered && oldStatus !== OrderStatus.Delivered) {
+                        try {
+                            const ProductServiceModule = await import("./product.service");
+                            const ProductService = ProductServiceModule.ProductService;
+
+                            const items = data.items || [];
+                            await Promise.all(items.map(async (item: any) => {
+                                try {
+                                    // Remove stock because it is now Delivered
+                                    await ProductService.updateProductStock(
+                                        item.productId,
+                                        'remove',
+                                        item.quantity,
+                                        `Order ${data.billNo} Delivered`
+                                    );
+                                } catch (err) {
+                                    console.error(`Failed to deduct stock for ${item.productId} on delivery:`, err);
+                                }
+                            }));
+                        } catch (err) {
+                            console.error("Failed to load ProductService for stock update:", err);
+                        }
+                    }
+
+                    // If changing FROM Delivered (and was Delivered) -> ADD Stock back (e.g. Returned/Cancelled)
+                    if (oldStatus === OrderStatus.Delivered && status !== OrderStatus.Delivered) {
+                        try {
+                            const ProductServiceModule = await import("./product.service");
+                            const ProductService = ProductServiceModule.ProductService;
+
+                            const items = data.items || [];
+                            await Promise.all(items.map(async (item: any) => {
+                                try {
+                                    // Add stock back because it is no longer Delivered
+                                    await ProductService.updateProductStock(
+                                        item.productId,
+                                        'add',
+                                        item.quantity,
+                                        `Order ${data.billNo} status changed from Delivered to ${status}`
+                                    );
+                                } catch (err) {
+                                    console.error(`Failed to return stock for ${item.productId} on status change:`, err);
+                                }
+                            }));
+                        } catch (err) {
+                            console.error("Failed to load ProductService for stock update:", err);
+                        }
+                    }
+                }
+            }
+
             const newLog = {
                 id: Date.now().toString(),
                 date: new Date().toISOString(),
@@ -301,12 +368,16 @@ export const TransactionService = {
                         let title = '';
                         let message = '';
                         let type: 'info' | 'success' | 'warning' = 'info';
+                        let whatsappTemplate: string | undefined;
+                        let whatsappTemplateParams: string[] | undefined;
 
                         switch (status) {
                             case 'cancelled':
                                 title = 'Order Cancelled';
                                 message = `Your order #${data.billNo} has been cancelled.${reason ? ` Reason: ${reason}` : ''}${WHATSAPP_SUPPORT_FOOTER}`;
                                 type = 'warning';
+                                whatsappTemplate = 'order_cancelled';
+                                whatsappTemplateParams = [data.billNo, reason || 'Cancelled by user'];
                                 break;
                             case 'delivered':
                                 title = 'Order Delivered!';
@@ -334,10 +405,23 @@ export const TransactionService = {
                             title,
                             message,
                             type,
-                            channels: ['in-app', 'whatsapp'],
+                            channels: ['in-app', 'whatsapp', 'push'],
                             relatedEntityId: id,
-                            relatedEntityType: 'transaction'
+                            relatedEntityType: 'transaction',
+                            whatsappTemplate,
+                            whatsappTemplateParams
                         });
+
+                        // Notify Admins if Cancelled
+                        if (status === 'cancelled') {
+                            await NotificationService.notifyAdmins(
+                                `Order Cancelled`,
+                                `Order #${data.billNo} has been cancelled. Reason: ${reason || 'N/A'}`,
+                                id,
+                                'transaction',
+                                '/admin/orders'
+                            );
+                        }
                     }
                 }
             } catch (notifyError) {
@@ -382,7 +466,7 @@ export const TransactionService = {
                             title,
                             message,
                             type: 'success',
-                            channels: ['in-app', 'whatsapp'],
+                            channels: ['in-app', 'whatsapp', 'push'],
                             relatedEntityId: id,
                             relatedEntityType: 'transaction'
                         });
@@ -395,7 +479,7 @@ export const TransactionService = {
             // Notify Admins
             await NotificationService.notifyAdmins(
                 `Payment Updated`,
-                `Payment for Order #${id} updated. New Status: ${paymentStatus}, Paid: ${paidAmount}`,
+                `Payment for Order #${id} updated. New Status: ${paymentStatus.replace(/([a-z])([A-Z])/g, '$1 $2')}, Paid: Rs ${paidAmount.toLocaleString()}`,
                 id,
                 'transaction',
                 '/admin/orders'

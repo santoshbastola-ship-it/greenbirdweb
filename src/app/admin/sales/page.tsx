@@ -367,6 +367,18 @@ function TransactionDetailsModal({
     onDelete: (id: string) => Promise<void>;
     setConfirmModal: (modal: any) => void;
 }) {
+    // Helper to format date for picker (YYYY-MM-DD from Date or string)
+    const formatDateForPicker = (d: any) => {
+        try {
+            if (!d) return "";
+            const nepaliDate = new NepaliDate(new Date(d));
+            return nepaliDate.format("YYYY-MM-DD");
+        } catch (e) {
+            console.error("Date parsing error", e);
+            return "";
+        }
+    };
+
     const [isUpdating, setIsUpdating] = useState(false);
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [showPaymentDialog, setShowPaymentDialog] = useState(false);
@@ -564,6 +576,12 @@ function TransactionDetailsModal({
             if (editForm.partyName !== transaction.partyName) {
                 changes.push(`Party Name changed to ${editForm.partyName}`);
             }
+            // Check for date change
+            const originalDateStr = new NepaliDate(new Date(transaction.date)).format("YYYY-MM-DD");
+            const newDateStr = new NepaliDate(new Date(editForm.date)).format("YYYY-MM-DD");
+            if (originalDateStr !== newDateStr) {
+                changes.push(`Date changed from ${originalDateStr} to ${newDateStr}`);
+            }
 
             if (changes.length === 0) {
                 setIsEditing(false);
@@ -582,6 +600,7 @@ function TransactionDetailsModal({
             await TransactionService.updateTransaction(transaction.id, {
                 items: editForm.items,
                 partyName: editForm.partyName,
+                date: editForm.date, // Include updated date
                 logs: [...(transaction.logs || []), newLog],
             });
 
@@ -743,8 +762,30 @@ function TransactionDetailsModal({
                             </div>
                         </div>
 
-                        {/* Status Info */}
-                        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                        {/* Date & Status Info */}
+                        <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-4">
+                            <div>
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Order Date</h4>
+                                {isEditing ? (
+                                    <div className="relative">
+                                        <NepaliDatePicker
+                                            inputClassName="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none"
+                                            value={formatDateForPicker(editForm.date)}
+                                            onChange={(value: string) => {
+                                                // Convert Nepali YYYY-MM-DD to JS Date
+                                                const jsDate = new NepaliDate(value).toJsDate();
+                                                setEditForm({ ...editForm, date: jsDate });
+                                            }}
+                                            options={{ calenderLocale: "en", valueLocale: "en" }}
+                                        />
+                                    </div>
+                                ) : (
+                                    <p className="font-medium text-gray-900 flex items-center gap-2">
+                                        <Calendar className="h-4 w-4 text-gray-400" />
+                                        {toNepali(transaction.date, "DD MMM YYYY")}
+                                    </p>
+                                )}
+                            </div>
                             <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-4">Status & Payment</h4>
                             <div className="space-y-4">
                                 <div>

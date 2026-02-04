@@ -6,7 +6,7 @@ import { doc, getDoc } from "firebase/firestore";
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
-        const { toUserId, title, body: messageBody } = body;
+        const { toUserId, title, body: messageBody, templateName, templateParams } = body;
 
         console.log(`[API] Processing WhatsApp notification for User ${toUserId}`);
 
@@ -39,8 +39,8 @@ export async function POST(req: NextRequest) {
         const result = await WhatsappService.sendMessage(
             phoneNumber,
             content,
-            undefined,
-            undefined
+            templateName,
+            templateParams
             // Note: Removed skipIfClosed to ensure customer notifications are delivered
             // If window is closed, will use template message (small cost, but ensures delivery)
         );

@@ -109,8 +109,13 @@ export default function NewSalePage() {
 
     const addToCart = (product: Product) => {
         const existing = cart.find(item => item.productId === product.id);
+
+        // Custom logic for eggs
+        const isEgg = product.name.toLowerCase().includes("egg");
+        const step = isEgg ? 30 : 1;
+
         if (existing) {
-            updateQuantity(product.id, existing.quantity + 1);
+            updateQuantity(product.id, existing.quantity + step);
         } else {
             const priceUnit = product.priceUnit || product.unit;
             setCart([...cart, {
@@ -119,9 +124,9 @@ export default function NewSalePage() {
                 unit: product.unit,
                 priceUnit: priceUnit,
                 price: product.currentPrice,
-                quantity: 1,
+                quantity: step, // Default to 30 for eggs, 1 for others
                 pricingQuantity: (product.unit === priceUnit) ? 1 : 0, // Default to 0 if units differ to force input
-                total: product.currentPrice
+                total: product.currentPrice * (product.unit === priceUnit ? step : 1) // Initial total calculation
             }]);
         }
     };
@@ -508,7 +513,11 @@ export default function NewSalePage() {
                                                         </div>
                                                         <div className="flex items-center bg-gray-50 rounded-lg border border-gray-200 h-10 p-1">
                                                             <button
-                                                                onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                                                                onClick={() => {
+                                                                    const isEgg = item.productName.toLowerCase().includes("egg");
+                                                                    const step = isEgg ? 30 : 1;
+                                                                    updateQuantity(item.productId, item.quantity - step);
+                                                                }}
                                                                 className="w-10 h-full flex items-center justify-center hover:bg-white rounded-md text-gray-500 font-bold transition-all active:scale-90"
                                                             >
                                                                 -
@@ -522,7 +531,11 @@ export default function NewSalePage() {
                                                                 title={`Quantity in ${item.unit}`}
                                                             />
                                                             <button
-                                                                onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                                                                onClick={() => {
+                                                                    const isEgg = item.productName.toLowerCase().includes("egg");
+                                                                    const step = isEgg ? 30 : 1;
+                                                                    updateQuantity(item.productId, item.quantity + step);
+                                                                }}
                                                                 className="w-10 h-full flex items-center justify-center hover:bg-white rounded-md text-green-600 font-bold transition-all active:scale-90"
                                                             >
                                                                 +

@@ -240,14 +240,14 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                 >
                                     <option value="">Select a Category</option>
                                     {categories
-                                        .filter(cat => !cat.businessType || cat.businessType === formData.businessType)
+                                        .filter(cat => !cat.businessType || cat.businessType?.toLowerCase() === (formData.businessType || "").toLowerCase())
                                         .map((cat) => (
                                             <option key={cat.id} value={cat.id}>
                                                 {cat.name}
                                             </option>
                                         ))}
                                 </select>
-                                {categories.filter(cat => !cat.businessType || cat.businessType === formData.businessType).length === 0 && !loadingCategories && (
+                                {categories.filter(cat => !cat.businessType || cat.businessType?.toLowerCase() === (formData.businessType || "").toLowerCase()).length === 0 && !loadingCategories && (
                                     <p className="text-xs text-amber-600 mt-1">No active categories found for {formData.businessType}. Create them in Categories menu.</p>
                                 )}
                             </div>

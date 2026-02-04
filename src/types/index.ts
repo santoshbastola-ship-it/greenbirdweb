@@ -184,6 +184,7 @@ export interface User {
     address?: string;
     addresses?: string[];
     remarks?: string; // Additional notes about the partner
+    fcmToken?: string; // Firebase Cloud Messaging Token
 }
 
 export interface CartItem {
@@ -251,7 +252,7 @@ export interface AppSettings {
 
 // Notifications
 export type NotificationType = 'info' | 'success' | 'warning' | 'error';
-export type NotificationChannel = 'in-app' | 'whatsapp' | 'email';
+export type NotificationChannel = 'in-app' | 'whatsapp' | 'email' | 'push';
 
 export interface Notification {
     id: string;
@@ -267,6 +268,8 @@ export interface Notification {
     route?: string; // In-app route to navigate to
     validUntil?: string | Date; // Expiry date for the notification
     imageUrl?: string; // Image for the notification (e.g., for offers)
+    whatsappTemplate?: string; // Template name from config
+    whatsappTemplateParams?: string[]; // Params for the template
 }
 
 export interface BroadcastHistory {

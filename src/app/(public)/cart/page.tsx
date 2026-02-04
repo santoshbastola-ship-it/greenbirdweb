@@ -14,7 +14,8 @@ import { TransactionType, PaymentStatus, OrderStatus, AppSettings } from "@/type
 import { getTodayNepali } from "@/lib/date-helper";
 import dynamic from 'next/dynamic';
 import RecommendedProducts from "@/components/shop/RecommendedProducts";
-import WhatsAppOptInModal from "@/components/shop/WhatsAppOptInModal";
+import { FRESH_EGGS_PRODUCT_ID } from "@/lib/constants";
+
 
 const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
     ssr: false,
@@ -35,7 +36,7 @@ export default function CartPage() {
     const { items, updateQuantity, removeItem, clearCart } = useCartStore();
     const [mounted, setMounted] = useState(false);
     const [placingOrder, setPlacingOrder] = useState(false);
-    const [orderSuccess, setOrderSuccess] = useState(false);
+
 
     // Profile form state
     const [phoneNumber, setPhoneNumber] = useState("");
@@ -43,6 +44,7 @@ export default function CartPage() {
     const [newAddress, setNewAddress] = useState("");
     const [selectedAddressIndex, setSelectedAddressIndex] = useState(0);
     const [isAddressMode, setIsAddressMode] = useState(false); // To toggle adding new address
+    const [showValidationErrors, setShowValidationErrors] = useState(false);
 
     // Delivery Preferences
     const [deliveryInstructions, setDeliveryInstructions] = useState("");
@@ -100,12 +102,21 @@ export default function CartPage() {
         }
 
         if (!phoneNumber) {
-            alert("Please provide a phone number for delivery updates.");
+            setShowValidationErrors(true);
+            const phoneInput = document.getElementById('phone-input');
+            if (phoneInput) {
+                phoneInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                phoneInput.focus();
+            }
             return;
         }
 
         if (addresses.length === 0) {
-            alert("Please add at least one delivery address.");
+            setShowValidationErrors(true);
+            const addressSection = document.getElementById('address-section');
+            if (addressSection) {
+                addressSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
             return;
         }
 
@@ -159,9 +170,10 @@ export default function CartPage() {
                 expectedDeliveryTime: expectedTime
             });
 
-            setOrderSuccess(true);
             clearCart();
-            router.push("/shop?orderSuccess=true");
+
+            // Redirect to dedicated success page
+            router.push("/order-success");
         } catch (error) {
             console.error("Checkout failed", error);
             alert("Failed to place order. Please try again.");
@@ -175,36 +187,25 @@ export default function CartPage() {
     const validItems = Array.isArray(items) ? items.filter(item => item && item.productId) : [];
 
     if (validItems.length === 0) {
-        if (orderSuccess) {
-            return (
-                <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-                    <div className="bg-white p-8 rounded-2xl shadow-sm text-center max-w-md w-full">
-                        <div className="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <Check className="h-10 w-10 text-green-600" />
+        return (
+            <div className="min-h-screen bg-gray-50 py-12 pb-32">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col items-center justify-center text-center mb-12">
+                        <div className="h-24 w-24 bg-green-50 rounded-full flex items-center justify-center mb-6">
+                            <ShoppingBag className="h-10 w-10 text-green-600" />
                         </div>
-                        <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Placed!</h1>
-                        <p className="text-gray-600 mb-8">Your order has been recorded successfully. Please check WhatsApp for updates.</p>
+                        <h1 className="text-2xl font-bold text-gray-900 mb-2">Your Cart is Empty</h1>
+                        <p className="text-gray-500 mb-8 max-w-md">Looks like you haven't added anything to your cart yet. Browse our products to find something you'll love.</p>
                         <Link
                             href="/shop"
-                            className="block w-full bg-[#2D5A27] text-white py-3 rounded-xl font-bold hover:bg-[#1e3d1a] transition-colors"
+                            className="bg-green-600 text-white px-8 py-3 rounded-full font-bold hover:bg-green-700 transition-colors shadow-lg shadow-green-900/10"
                         >
-                            Return to Shop
+                            Start Shopping
                         </Link>
                     </div>
-                    <WhatsAppOptInModal />
+
+                    <RecommendedProducts />
                 </div>
-            )
-        }
-        return (
-            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-                <h1 className="text-2xl font-bold text-gray-900 mb-4">Your Cart is Empty</h1>
-                <p className="text-gray-500 mb-8">Looks like you haven't added anything yet.</p>
-                <Link
-                    href="/shop"
-                    className="bg-green-600 text-white px-8 py-3 rounded-full font-bold hover:bg-green-700 transition-colors"
-                >
-                    Start Shopping
-                </Link>
             </div>
         );
     }
@@ -238,7 +239,7 @@ export default function CartPage() {
                             </h2>
                             <div className="space-y-3 md:space-y-4">
                                 {validItems.map((item) => {
-                                    const isEggs = item.productName.toLowerCase().includes('egg');
+                                    const isEggs = item.productId === FRESH_EGGS_PRODUCT_ID;
                                     const handleIncrement = () => {
                                         const step = isEggs ? 30 : 1;
                                         updateQuantity(item.productId, item.quantity + step);
@@ -326,12 +327,12 @@ export default function CartPage() {
                                 })}
                             </div>
                         </div>
-                    </div>
 
-                    {/* Recommended Products */}
-                    <div className="md:col-span-1 lg:col-span-2 hidden lg:block">
+                        {/* Recommended Products - Now in the same column */}
                         <RecommendedProducts />
                     </div>
+
+
 
                     {/* RIGHT COLUMN: Shipping & Payment */}
                     <div className="w-full lg:w-[420px] space-y-6">
@@ -376,20 +377,35 @@ export default function CartPage() {
                                             <Phone className="h-3.5 w-3.5 mr-1.5 text-green-600" /> Contact Number
                                         </label>
                                         <input
+                                            id="phone-input"
                                             type="tel"
                                             required
                                             value={phoneNumber}
-                                            onChange={(e) => setPhoneNumber(e.target.value)}
+                                            onChange={(e) => {
+                                                setPhoneNumber(e.target.value);
+                                                if (e.target.value) setShowValidationErrors(false);
+                                            }}
                                             placeholder="Enter your phone number"
-                                            className="w-full px-4 py-2.5 text-sm rounded-xl border border-gray-200 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all outline-none bg-gray-50 focus:bg-white"
+                                            className={`w-full px-4 py-2.5 text-sm rounded-xl border focus:ring-2 focus:border-transparent transition-all outline-none bg-gray-50 focus:bg-white ${showValidationErrors && !phoneNumber
+                                                    ? "border-red-500 ring-red-200 focus:ring-red-500"
+                                                    : "border-gray-200 focus:ring-green-500"
+                                                }`}
                                         />
+                                        {showValidationErrors && !phoneNumber && (
+                                            <p className="text-red-500 text-xs mt-1 font-medium animate-in slide-in-from-top-1">
+                                                Please enter your phone number
+                                            </p>
+                                        )}
                                     </div>
 
                                     {/* Address Selection */}
-                                    <div>
+                                    <div id="address-section">
                                         <div className="flex justify-between items-center mb-2">
-                                            <label className="block text-xs font-bold text-gray-700 flex items-center">
-                                                <MapPin className="h-3.5 w-3.5 mr-1.5 text-green-600" /> Delivery Address
+                                            <label className={`block text-xs font-bold flex items-center ${showValidationErrors && addresses.length === 0 ? "text-red-500" : "text-gray-700"
+                                                }`}>
+                                                <MapPin className={`h-3.5 w-3.5 mr-1.5 ${showValidationErrors && addresses.length === 0 ? "text-red-500" : "text-green-600"
+                                                    }`} />
+                                                Delivery Address
                                             </label>
                                             {!isAddressMode && (
                                                 <button
@@ -432,10 +448,15 @@ export default function CartPage() {
                                                 {addresses.length === 0 ? (
                                                     <button
                                                         onClick={() => setIsAddressMode(true)}
-                                                        className="w-full py-6 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 hover:border-green-500 hover:text-green-600 transition-all flex flex-col items-center justify-center gap-2"
+                                                        className={`w-full py-6 border-2 border-dashed rounded-xl transition-all flex flex-col items-center justify-center gap-2 ${showValidationErrors
+                                                                ? "border-red-300 bg-red-50 text-red-500 hover:border-red-400 hover:bg-red-100"
+                                                                : "border-gray-200 text-gray-400 hover:border-green-500 hover:text-green-600"
+                                                            }`}
                                                     >
                                                         <PlusCircle className="h-5 w-5" />
-                                                        <span className="font-medium text-sm">Add Address</span>
+                                                        <span className="font-medium text-sm">
+                                                            {showValidationErrors ? "Add Delivery Address (Required)" : "Add Address"}
+                                                        </span>
                                                     </button>
                                                 ) : (
                                                     addresses.map((addr, idx) => (
@@ -546,10 +567,7 @@ export default function CartPage() {
                             </div>
                         </div>
 
-                        {/* Mobile Recommended Products */}
-                        <div className="lg:hidden pb-10">
-                            <RecommendedProducts />
-                        </div>
+
                     </div>
                 </div>
             </div>
@@ -565,8 +583,11 @@ export default function CartPage() {
 
                         <button
                             onClick={handleCheckout}
-                            disabled={placingOrder || !user || addresses.length === 0 || !phoneNumber}
-                            className="bg-[#2D5A27] text-white px-8 py-3.5 rounded-2xl font-bold text-base hover:bg-[#1e3d1a] transition-all shadow-xl shadow-green-900/20 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed group min-w-[160px]"
+                            disabled={placingOrder}
+                            className={`px-8 py-3.5 rounded-2xl font-bold text-base transition-all shadow-xl flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed group min-w-[160px] ${placingOrder
+                                    ? "bg-gray-400 cursor-not-allowed shadow-none"
+                                    : "bg-[#2D5A27] text-white hover:bg-[#1e3d1a] shadow-green-900/20"
+                                }`}
                         >
                             {placingOrder ? (
                                 <span className="flex items-center"><div className="h-4 w-4 border-2 border-white/20 border-t-white rounded-full animate-spin mr-2" /> Processing...</span>

@@ -4,13 +4,14 @@ import { useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import AddToCartButton from "@/components/ui/AddToCartButton";
 import { Product } from "@/types";
+import { FRESH_EGGS_PRODUCT_ID } from "@/lib/constants";
 
 interface ProductQuantitySelectorProps {
     product: Product;
 }
 
 export default function ProductQuantitySelector({ product }: ProductQuantitySelectorProps) {
-    const isEggs = product.name.toLowerCase().includes('egg');
+    const isEggs = product.id === FRESH_EGGS_PRODUCT_ID;
     const [quantity, setQuantity] = useState(isEggs ? 30 : 1);
 
     const handleIncrement = () => {

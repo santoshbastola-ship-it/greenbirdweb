@@ -262,11 +262,11 @@ function ProductCard({
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 hover:shadow-md transition-all duration-200">
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-3">
                 {/* Left Section: Image & Basic Info */}
                 <button
                     onClick={onView}
-                    className="flex items-center gap-3 flex-1 min-w-0 group text-left"
+                    className="flex items-center gap-3 w-full sm:flex-1 min-w-0 group text-left"
                 >
                     <div className="h-10 w-10 flex-shrink-0 bg-gray-50 rounded-lg overflow-hidden border border-gray-100 flex items-center justify-center">
                         {product.images?.[0] ? (
@@ -279,9 +279,9 @@ function ProductCard({
                             <Package className="h-5 w-5 text-gray-400" />
                         )}
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-gray-900 text-sm truncate">
+                            <h3 className="font-semibold text-gray-900 text-sm leading-snug">
                                 {product.name}
                             </h3>
                         </div>
@@ -290,50 +290,52 @@ function ProductCard({
                 </button>
 
                 {/* Right Section: Price & Stock */}
-                <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto pl-[52px] sm:pl-0">
                     {/* Price */}
-                    <div className="text-right">
+                    <div className="text-left sm:text-right">
                         <div className="text-sm font-bold text-gray-900">
                             Rs. {product.currentPrice.toLocaleString()} <span className="text-xs text-gray-500 font-normal">/ {product.priceUnit}</span>
                         </div>
                     </div>
 
-                    {/* Status Icons */}
-                    <div className="flex items-center gap-1">
-                        <div title={product.isAvailableForSale ? "Available for Sale" : "Not for Sale"}>
-                            <ShoppingCart className={`h-4 w-4 ${product.isAvailableForSale ? "text-green-600" : "text-gray-300"}`} />
+                    <div className="flex items-center gap-3">
+                        {/* Status Icons */}
+                        <div className="flex items-center gap-1">
+                            <div title={product.isAvailableForSale ? "Available for Sale" : "Not for Sale"}>
+                                <ShoppingCart className={`h-4 w-4 ${product.isAvailableForSale ? "text-green-600" : "text-gray-300"}`} />
+                            </div>
+                            <div title={product.isFeatured ? "Featured on Home" : "Not Featured"}>
+                                <Home className={`h-4 w-4 ${product.isFeatured ? "text-blue-600" : "text-gray-300"}`} />
+                            </div>
                         </div>
-                        <div title={product.isFeatured ? "Featured on Home" : "Not Featured"}>
-                            <Home className={`h-4 w-4 ${product.isFeatured ? "text-blue-600" : "text-gray-300"}`} />
-                        </div>
-                    </div>
 
-                    {/* Delete Button */}
-                    {onDelete && (
+                        {/* Delete Button */}
+                        {onDelete && (
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    onDelete();
+                                }}
+                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Delete Product"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </button>
+                        )}
+
+                        {/* Stock Pill */}
                         <button
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                onDelete();
+                                onStockUpdate();
                             }}
-                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Delete Product"
+                            className={`px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap transition-transform active:scale-95 ${stockColorClass}`}
                         >
-                            <Trash2 className="h-4 w-4" />
+                            {product.currentStock} {product.unit}
                         </button>
-                    )}
-
-                    {/* Stock Pill */}
-                    <button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            onStockUpdate();
-                        }}
-                        className={`px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap transition-transform active:scale-95 ${stockColorClass}`}
-                    >
-                        {product.currentStock} {product.unit}
-                    </button>
+                    </div>
                 </div>
             </div>
         </div>

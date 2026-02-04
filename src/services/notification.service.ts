@@ -23,7 +23,18 @@ export const NotificationService = {
 
             // If channel includes WhatsApp, try to send it
             if (notification.channels?.includes('whatsapp')) {
-                await NotificationService.sendWhatsappNotification(notification.targetUserId, notification.title, notification.message);
+                await NotificationService.sendWhatsappNotification(
+                    notification.targetUserId,
+                    notification.title,
+                    notification.message,
+                    notification.whatsappTemplate,
+                    notification.whatsappTemplateParams
+                );
+            }
+
+            // If channel includes Push, try to send it
+            if (notification.channels?.includes('push')) {
+                await NotificationService.sendPushNotification(notification.targetUserId, notification.title, notification.message, notification.imageUrl, notification.relatedEntityId ? { id: notification.relatedEntityId, type: notification.relatedEntityType } : undefined);
             }
 
             return docRef.id;
@@ -172,18 +183,31 @@ export const NotificationService = {
 
     // STUB: Send WhatsApp Notification
     // Send WhatsApp Notification (Zero-Cost Optimization)
-    sendWhatsappNotification: async (toUserId: string, title: string, body: string): Promise<void> => {
+    sendWhatsappNotification: async (toUserId: string, title: string, body: string, templateName?: string, templateParams?: string[]): Promise<void> => {
         try {
             // Call API route to handle secure server-side sending
             // This prevents "process.env" issues on the client-side
             await fetch('/api/whatsapp/notification', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ toUserId, title, body })
+                body: JSON.stringify({ toUserId, title, body, templateName, templateParams })
             });
 
         } catch (error) {
             console.error("Error sending WhatsApp notification:", error);
+        }
+    },
+
+    // Send Push Notification
+    sendPushNotification: async (toUserId: string, title: string, body: string, imageUrl?: string, data?: any): Promise<void> => {
+        try {
+            await fetch('/api/notifications/push', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ toUserId, title, body, imageUrl, data })
+            });
+        } catch (error) {
+            console.error("Error sending Push notification:", error);
         }
     },
 

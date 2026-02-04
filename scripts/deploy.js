@@ -67,7 +67,7 @@ const main = () => {
 
     // 5. Deploy
     console.log('Deploying to Firebase...');
-    runCommand('npx firebase deploy --only hosting');
+    runCommand('npx firebase deploy');
 
     console.log(`\nSuccessfully deployed version ${newVersion}!`);
 };

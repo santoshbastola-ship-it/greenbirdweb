@@ -2,6 +2,7 @@
 
 import { useCartStore } from "@/store/useCartStore";
 import { Product } from "@/types";
+import { FRESH_EGGS_PRODUCT_ID } from "@/lib/constants";
 import { ShoppingBag } from "lucide-react";
 import { useState } from "react";
 
@@ -25,7 +26,7 @@ export default function AddToCartButton({
     // Check if item is already in cart
     const isAdded = items.some(item => item.productId === product.id);
 
-    const isEggs = product.name.toLowerCase().includes('egg');
+    const isEggs = product.id === FRESH_EGGS_PRODUCT_ID;
     const finalQuantity = isEggs && quantity === 1 ? 30 : quantity;
 
     const handleAdd = (e: React.MouseEvent) => {

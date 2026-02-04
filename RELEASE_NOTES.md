@@ -1,5 +1,9 @@
 # Release Notes
 
+## [0.2.2] - 2026-02-03
+- Reorganized admin menu, updated notification messages, and fixed category filters
+
+
 ## [0.2.1] - 2026-02-03
 - Integrated various features: categories, notifications, UI improvements, and quantity decimal support
 

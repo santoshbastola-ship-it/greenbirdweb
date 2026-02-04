@@ -22,10 +22,22 @@ import {
     ShoppingBag,
     MessageSquare,
     Bell,
+    LucideIcon,
 } from "lucide-react";
 import clsx from "clsx";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+
+type NavItem = {
+    href: string;
+    label: string;
+    icon: LucideIcon;
+};
+
+type NavSection = {
+    title?: string;
+    items: NavItem[];
+};
 
 export default function AdminSidebar() {
     const pathname = usePathname();
@@ -33,46 +45,83 @@ export default function AdminSidebar() {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const { logout, dbUser } = useAuth();
 
-    const isManager = dbUser?.role === 'manager';
+    const isManager = dbUser?.role === "manager";
 
-    const links = [
-        { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-        { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
-        { href: "/admin/tasks", label: "Tasks", icon: ClipboardList },
-        { href: "/admin/energy", label: "Energy Bills", icon: Zap },
-        { href: "/admin/stock-update", label: "Stock Update", icon: Package },
-        { href: "/admin/inventory", label: "Product & Price", icon: Package },
-        { href: "/admin/categories", label: "Categories", icon: ClipboardList },
-        { href: "/admin/sales", label: "Sales & Purchase", icon: ShoppingCart },
-        { href: "/admin/partners", label: "Partners", icon: Users },
-        { href: "/admin/reports", label: "Reports", icon: BarChart3 },
-        { href: "/admin/blog", label: "Blog", icon: FileText },
-        { href: "/admin/activities", label: "Farm Activities", icon: Activity },
-        { href: "/admin/bookings", label: "Bookings", icon: CalendarDays },
-        { href: "/admin/testimonials", label: "Testimonials", icon: MessageSquare },
-        { href: "/admin/users", label: "Users", icon: Users },
-        { href: "/admin/notifications/push", label: "Push Notifications", icon: Bell },
-        { href: "/admin/settings", label: "Settings", icon: Settings },
+    const menuSections: NavSection[] = [
+        {
+            items: [
+                { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+            ],
+        },
+        {
+            title: "Sales & Orders",
+            items: [
+                { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
+                { href: "/admin/sales", label: "Sales & Purchase", icon: ShoppingCart },
+                { href: "/admin/bookings", label: "Bookings", icon: CalendarDays },
+            ],
+        },
+        {
+            title: "Inventory",
+            items: [
+                { href: "/admin/inventory", label: "Product & Price", icon: Package },
+                { href: "/admin/stock-update", label: "Stock Update", icon: Package },
+                { href: "/admin/categories", label: "Categories", icon: ClipboardList },
+            ],
+        },
+        {
+            title: "Farm Operations",
+            items: [
+                { href: "/admin/activities", label: "Farm Activities", icon: Activity },
+                { href: "/admin/tasks", label: "Tasks", icon: ClipboardList },
+                { href: "/admin/energy", label: "Energy Bills", icon: Zap },
+            ],
+        },
+        {
+            title: "Marketing & Content",
+            items: [
+                { href: "/admin/partners", label: "Partners", icon: Users },
+                { href: "/admin/notifications/push", label: "Push Notifications", icon: Bell },
+                { href: "/admin/blog", label: "Blog", icon: FileText },
+                { href: "/admin/testimonials", label: "Testimonials", icon: MessageSquare },
+            ],
+        },
+        {
+            title: "System",
+            items: [
+                { href: "/admin/users", label: "Users", icon: Users },
+                { href: "/admin/reports", label: "Reports", icon: BarChart3 },
+                { href: "/admin/settings", label: "Settings", icon: Settings },
+            ],
+        },
     ];
 
     const isActive = (path: string) => pathname === path || pathname.startsWith(`${path}/`);
 
-    const visibleLinks = links.filter(link => {
-        // Restricted for Farm Managers
-        const restrictedForManager = [
-            "/admin/reports",
-            "/admin/blog",
-            "/admin/activities",
-            "/admin/users",
-            "/admin/settings"
-        ];
+    // Filter logic
+    const restrictedForManager = [
+        "/admin/reports",
+        "/admin/blog",
+        "/admin/activities",
+        "/admin/users",
+        "/admin/settings",
+    ];
 
-        if (isManager && restrictedForManager.includes(link.href)) {
-            return false;
-        }
+    const filterItems = (items: NavItem[]) => {
+        return items.filter((link) => {
+            if (isManager && restrictedForManager.includes(link.href)) {
+                return false;
+            }
+            return true;
+        });
+    };
 
-        return true;
-    });
+    const visibleSections = menuSections
+        .map((section) => ({
+            ...section,
+            items: filterItems(section.items),
+        }))
+        .filter((section) => section.items.length > 0);
 
     return (
         <>
@@ -118,36 +167,56 @@ export default function AdminSidebar() {
                             className="hidden md:flex ml-2 p-1.5 rounded-lg hover:bg-green-800 text-green-100 items-center justify-center transition-colors"
                             title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                         >
-                            {isCollapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
+                            {isCollapsed ? (
+                                <ChevronRight className="h-5 w-5" />
+                            ) : (
+                                <ChevronLeft className="h-5 w-5" />
+                            )}
                         </button>
                     </div>
 
                     {/* Nav Links */}
-                    <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                        {visibleLinks.map((link) => {
-                            const Icon = link.icon;
-                            return (
-                                <Link
-                                    key={link.href}
-                                    href={link.href}
-                                    onClick={() => setIsOpen(false)}
-                                    className={clsx(
-                                        "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors group relative",
-                                        isActive(link.href)
-                                            ? "bg-green-800 text-white shadow-sm"
-                                            : "text-green-100 hover:bg-green-800/50 hover:text-white"
-                                    )}
-                                >
-                                    <Icon className={clsx("h-5 w-5 flex-shrink-0", !isCollapsed && "mr-3")} />
-                                    {!isCollapsed && <span>{link.label}</span>}
-                                    {isCollapsed && (
-                                        <div className="absolute left-full ml-2 px-2 py-1 bg-green-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
-                                            {link.label}
-                                        </div>
-                                    )}
-                                </Link>
-                            );
-                        })}
+                    <nav className="flex-1 px-4 py-6 space-y-6 overflow-y-auto">
+                        {visibleSections.map((section, index) => (
+                            <div key={index}>
+                                {!isCollapsed && section.title && (
+                                    <h3 className="mb-2 px-4 text-xs font-semibold text-green-400 uppercase tracking-wider">
+                                        {section.title}
+                                    </h3>
+                                )}
+                                <div className="space-y-1">
+                                    {section.items.map((link) => {
+                                        const Icon = link.icon;
+                                        return (
+                                            <Link
+                                                key={link.href}
+                                                href={link.href}
+                                                onClick={() => setIsOpen(false)}
+                                                className={clsx(
+                                                    "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors group relative",
+                                                    isActive(link.href)
+                                                        ? "bg-green-800 text-white shadow-sm"
+                                                        : "text-green-100 hover:bg-green-800/50 hover:text-white"
+                                                )}
+                                            >
+                                                <Icon
+                                                    className={clsx(
+                                                        "h-5 w-5 flex-shrink-0",
+                                                        !isCollapsed && "mr-3"
+                                                    )}
+                                                />
+                                                {!isCollapsed && <span>{link.label}</span>}
+                                                {isCollapsed && (
+                                                    <div className="absolute left-full ml-2 px-2 py-1 bg-green-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                                                        {link.label}
+                                                    </div>
+                                                )}
+                                            </Link>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
                     </nav>
 
                     {/* Footer / Logout */}
@@ -156,7 +225,12 @@ export default function AdminSidebar() {
                             onClick={() => logout()}
                             className="flex items-center w-full px-4 py-2 text-sm font-medium text-green-200 hover:text-white transition-colors group relative"
                         >
-                            <LogOut className={clsx("h-5 w-5 flex-shrink-0", !isCollapsed && "mr-3")} />
+                            <LogOut
+                                className={clsx(
+                                    "h-5 w-5 flex-shrink-0",
+                                    !isCollapsed && "mr-3"
+                                )}
+                            />
                             {!isCollapsed && <span>Sign Out</span>}
                             {isCollapsed && (
                                 <div className="absolute left-full ml-2 px-2 py-1 bg-green-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">

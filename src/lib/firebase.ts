@@ -25,4 +25,14 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 
-export { app, db, auth, storage };
+// Initialize Messaging (only on client side)
+let messaging: any = null;
+if (typeof window !== "undefined") {
+    import("firebase/messaging").then(({ getMessaging }) => {
+        messaging = getMessaging(app);
+    }).catch(err => {
+        console.log('Firebase Messaging not supported');
+    });
+}
+
+export { app, db, auth, storage, messaging };
