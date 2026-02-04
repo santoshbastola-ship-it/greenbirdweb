@@ -42,6 +42,11 @@ export async function POST(req: NextRequest) {
             message.notification.imageUrl = imageUrl;
         }
 
+        if (!adminMessaging) {
+            console.error("[Push] Admin SDK not initialized (missing keys).");
+            return NextResponse.json({ error: "Server configuration missing for push notifications" }, { status: 503 });
+        }
+
         const response = await adminMessaging.send(message);
         console.log(`[Push] Successfully sent message to ${toUserId}:`, response);
 
