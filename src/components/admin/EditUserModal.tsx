@@ -196,7 +196,7 @@ export default function EditUserModal({
                             )}
                             <button
                                 type="button"
-                                onClick={() => handleAction(() => onToggleStatus(user.id, user.isActive))}
+                                onClick={() => handleAction(() => onToggleStatus(user.id, user.isActive ?? false))}
                                 disabled={isSubmitting}
                                 className={`w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors border ${user.isActive
                                     ? "text-orange-600 bg-orange-50 hover:bg-orange-100 border-orange-100"
