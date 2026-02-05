@@ -1,5 +1,5 @@
 export type BusinessType = 'livestock' | 'crop' | 'product' | 'asset';
-export type StockUnit = 'kg' | 'pcs' | 'ltr' | 'crate' | 'carton';
+export type StockUnit = string;
 export type UserRole = 'admin' | 'manager' | 'customer';
 
 export enum TransactionType {
@@ -58,6 +58,11 @@ export interface TransactionRecord {
     deliveryInstructions?: string;
     expectedDeliveryDate?: string | Date;
     expectedDeliveryTime?: string;
+    deliveryLocation?: {
+        lat: number;
+        lng: number;
+        address?: string;
+    };
     soldBy: string;
     enteredBy: string; // User ID
     entryTimestamp: Date | string;
@@ -137,6 +142,18 @@ export interface Category {
     isActive: boolean;
 }
 
+export type UnitType = 'stock' | 'price' | 'both';
+
+export interface Unit {
+    id: string;
+    name: string;
+    type: UnitType;
+    isActive: boolean;
+    allowDecimals: boolean;
+    createdAt: Date | string;
+    updatedAt: Date | string;
+}
+
 export interface StockHistoryEntry {
     id: string;
     productId: string;
@@ -179,10 +196,15 @@ export interface User {
     partnerType?: "customer" | "vendor"; // Type of partner
     totalTransactionAmount?: number; // Total volume of transactions
     createdAt: Date;
-    isActive: boolean;
     phoneNumber?: string;
     address?: string;
     addresses?: string[];
+    isActive?: boolean;
+    deliveryLocation?: {
+        lat: number;
+        lng: number;
+        address?: string;
+    };
     remarks?: string; // Additional notes about the partner
     fcmToken?: string; // Firebase Cloud Messaging Token
 }
