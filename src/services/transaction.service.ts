@@ -1,6 +1,6 @@
 import { collection, addDoc, getDocs, query, where, orderBy, doc, getDoc, updateDoc, deleteDoc, arrayUnion } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { TransactionRecord, TransactionType, OrderStatus, PaymentStatus, PaymentRecord, NotificationType } from "@/types";
+import { TransactionRecord, TransactionType, OrderStatus, PaymentStatus, PaymentRecord, NotificationType, SalesItem } from "@/types";
 import { NotificationService } from "./notification.service";
 
 import { sanitizeFirestoreData } from "@/lib/firestore-utils";
@@ -39,7 +39,13 @@ const safeLogs = (logs: any) => {
 
 
 const COLLECTION_NAME = "transactions";
-const WHATSAPP_SUPPORT_FOOTER = "\n\n_(Automated message. For support, chat with us at https://wa.me/9779765142494)_";
+const WHATSAPP_SUPPORT_FOOTER = "\n\nFor support, chat with us at https://wa.me/9779765142494";
+
+// Helper to format item list for messages
+const formatItemsList = (items: SalesItem[]): string => {
+    if (!items || items.length === 0) return "";
+    return items.map(i => i.productName).join(', ');
+};
 
 export const TransactionService = {
     // Create a new transaction (Sale or Purchase)
@@ -94,10 +100,11 @@ export const TransactionService = {
 
             // Also notify the customer if it is a Sale and customerId is present
             if (transaction.type === TransactionType.Sale && transaction.customerId) {
+                const itemList = formatItemsList(transaction.items);
                 await NotificationService.createNotification({
                     targetUserId: transaction.customerId,
                     title: "Order Placed Successfully",
-                    message: `Your order #${transaction.billNo} has been placed.${WHATSAPP_SUPPORT_FOOTER}`,
+                    message: `Thank you. Your order ${transaction.billNo} ( ${itemList} ) has been placed successfully.${WHATSAPP_SUPPORT_FOOTER}`,
                     type: 'success',
                     channels: ['in-app', 'whatsapp', 'push'],
                     relatedEntityId: docRef.id,
@@ -371,32 +378,34 @@ export const TransactionService = {
                         let whatsappTemplate: string | undefined;
                         let whatsappTemplateParams: string[] | undefined;
 
+                        const itemList = formatItemsList(data.items || []);
+
                         switch (status) {
                             case 'cancelled':
                                 title = 'Order Cancelled';
-                                message = `Your order #${data.billNo} has been cancelled.${reason ? ` Reason: ${reason}` : ''}${WHATSAPP_SUPPORT_FOOTER}`;
+                                message = `Your order ${data.billNo} ( ${itemList} ) has been cancelled.${reason ? ` Reason: ${reason}` : ''}${WHATSAPP_SUPPORT_FOOTER}`;
                                 type = 'warning';
                                 whatsappTemplate = 'order_cancelled';
                                 whatsappTemplateParams = [data.billNo, reason || 'Cancelled by user'];
                                 break;
                             case 'delivered':
                                 title = 'Order Delivered!';
-                                message = `Your order #${data.billNo} has been delivered! Thank you for shopping with Greenbird Homestead. 🌱${WHATSAPP_SUPPORT_FOOTER}`;
+                                message = `Your order ${data.billNo} ( ${itemList} ) has been delivered! Thank you for shopping with Greenbird Homestead. 🌱${WHATSAPP_SUPPORT_FOOTER}`;
                                 type = 'success';
                                 break;
                             case 'accepted':
                                 title = 'Order Confirmed';
-                                message = `Your order #${data.billNo} has been confirmed and is being prepared.${WHATSAPP_SUPPORT_FOOTER}`;
+                                message = `Your order ${data.billNo} ( ${itemList} ) has been confirmed and is being prepared.${WHATSAPP_SUPPORT_FOOTER}`;
                                 type = 'success';
                                 break;
                             case 'open':
                                 title = 'Order Received';
-                                message = `Your order #${data.billNo} has been received and is being reviewed.${WHATSAPP_SUPPORT_FOOTER}`;
+                                message = `Your order ${data.billNo} ( ${itemList} ) has been received and is being reviewed.${WHATSAPP_SUPPORT_FOOTER}`;
                                 type = 'info';
                                 break;
                             default:
                                 title = 'Order Status Updated';
-                                message = `Your order #${data.billNo} is now ${status}.${reason ? ` ${reason}` : ''}${WHATSAPP_SUPPORT_FOOTER}`;
+                                message = `Your order ${data.billNo} ( ${itemList} ) is now ${status}.${reason ? ` ${reason}` : ''}${WHATSAPP_SUPPORT_FOOTER}`;
                                 type = 'info';
                         }
 
@@ -459,7 +468,7 @@ export const TransactionService = {
                     if (data.customerId) {
                         const isPaid = paymentStatus === PaymentStatus.PaidCash || paymentStatus === PaymentStatus.PaidOnline;
                         const title = `Payment ${isPaid ? 'Received' : 'Updated'}`;
-                        const message = `Payment for order #${data.billNo} has been updated. Total paid: Rs ${paidAmount.toLocaleString()}. Status: ${paymentStatus}.${WHATSAPP_SUPPORT_FOOTER}`;
+                        const message = `Payment for order ${data.billNo} has been updated. Total paid: Rs ${paidAmount.toLocaleString()}. Status: ${paymentStatus}.${WHATSAPP_SUPPORT_FOOTER}`;
 
                         await NotificationService.createNotification({
                             targetUserId: data.customerId,

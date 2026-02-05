@@ -285,7 +285,15 @@ function ProductCard({
                                 {product.name}
                             </h3>
                         </div>
-
+                        <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+                                {product.categoryName || product.businessType}
+                            </span>
+                            <span className="text-gray-300">•</span>
+                            <span className="text-[10px] text-gray-500 font-medium">
+                                Unit: {product.unit}
+                            </span>
+                        </div>
                     </div>
                 </button>
 

@@ -68,7 +68,7 @@ export default function AdminSidebar() {
             items: [
                 { href: "/admin/inventory", label: "Product & Price", icon: Package },
                 { href: "/admin/stock-update", label: "Stock Update", icon: Package },
-                { href: "/admin/categories", label: "Categories", icon: ClipboardList },
+                { href: "/admin/categories", label: "Categories & Unit", icon: ClipboardList },
             ],
         },
         {

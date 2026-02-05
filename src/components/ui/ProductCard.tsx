@@ -16,7 +16,9 @@ export default function ProductCard({ product }: ProductCardProps) {
     const isAdminOrManager = dbUser?.role === 'admin' || dbUser?.role === 'manager';
 
     // Fallback image if none provided
-    const imageSrc = product.images.length > 0 ? product.images[0] : "/placeholder.png";
+    const imageSrc = (product.images && Array.isArray(product.images) && product.images.length > 0)
+        ? product.images[0]
+        : "/placeholder.png";
 
     return (
         <div className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 relative">
@@ -37,7 +39,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                         title={product.name}
                         text={`Check out ${product.name} at Greenbird Homestead!`}
                         url={`${typeof window !== 'undefined' ? window.location.origin : ''}/shop/${product.id}`}
-                        className="scale-90 opacity-0 group-hover:opacity-100 transition-all duration-300"
+                        className="scale-90 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-300"
                     />
                 </div>
 

@@ -13,7 +13,8 @@ import { toNepali, formatDateTime } from "@/lib/date-helper";
 import { cleanInput } from "@/lib/input-validation";
 import RelatedProductsSelector from "./RelatedProductsSelector";
 import { CategoryService } from "@/services/category.service";
-import { Category } from "@/types";
+import { UnitService } from "@/services/unit.service";
+import { Category, Unit } from "@/types";
 import { useEffect } from "react";
 
 interface ProductFormProps {
@@ -31,6 +32,8 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
     const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loadingCategories, setLoadingCategories] = useState(true);
+    const [units, setUnits] = useState<Unit[]>([]);
+    const [loadingUnits, setLoadingUnits] = useState(true);
 
     const [formData, setFormData] = useState<Partial<Product>>(() => {
         if (initialData) {
@@ -55,17 +58,23 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
     });
 
     useEffect(() => {
-        const fetchCategories = async () => {
+        const fetchData = async () => {
             try {
-                const data = await CategoryService.getActiveCategories();
-                setCategories(data);
+                const [catData, unitData] = await Promise.all([
+                    CategoryService.getActiveCategories(),
+                    UnitService.getActiveUnits()
+                ]);
+                setCategories(catData);
+                setUnits(unitData);
             } catch (error) {
-                console.error("Error fetching categories:", error);
+                console.error("Error fetching data:", error);
+                showToast("Failed to fetch categories/units", "error");
             } finally {
                 setLoadingCategories(false);
+                setLoadingUnits(false);
             }
         };
-        fetchCategories();
+        fetchData();
     }, []);
 
     const showToast = (message: string, type: ToastType = 'success') => {
@@ -356,12 +365,29 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                     value={formData.priceUnit}
                                     onChange={handleChange}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                                    disabled={loadingUnits}
                                 >
-                                    <option value="kg">Per Kg</option>
-                                    <option value="pcs">Per Piece</option>
-                                    <option value="ltr">Per Liter</option>
-                                    <option value="crate">Per Crate</option>
-                                    <option value="carton">Per Carton</option>
+                                    <option value="">Select Price Unit</option>
+                                    {/* Show current value if it's not in the dynamic list */}
+                                    {formData.priceUnit && !units.some(u => u.name === formData.priceUnit) && (
+                                        <option value={formData.priceUnit}>Per {formData.priceUnit}</option>
+                                    )}
+                                    {units
+                                        .filter(u => u.type === 'price' || u.type === 'both')
+                                        .map(u => (
+                                            <option key={u.id} value={u.name}>Per {u.name}</option>
+                                        ))
+                                    }
+                                    {/* Legacy defaults if no units exist yet */}
+                                    {units.length === 0 && !loadingUnits && (
+                                        <>
+                                            <option value="kg">Per Kg</option>
+                                            <option value="pcs">Per Piece</option>
+                                            <option value="ltr">Per Liter</option>
+                                            <option value="crate">Per Crate</option>
+                                            <option value="carton">Per Carton</option>
+                                        </>
+                                    )}
                                 </select>
                             </div>
 
@@ -372,12 +398,29 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                     value={formData.unit}
                                     onChange={handleChange}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                                    disabled={loadingUnits}
                                 >
-                                    <option value="kg">Kg</option>
-                                    <option value="pcs">Pieces</option>
-                                    <option value="ltr">Liters</option>
-                                    <option value="crate">Crates</option>
-                                    <option value="carton">Cartons</option>
+                                    <option value="">Select Stock Unit</option>
+                                    {/* Show current value if it's not in the dynamic list */}
+                                    {formData.unit && !units.some(u => u.name === formData.unit) && (
+                                        <option value={formData.unit}>{formData.unit}</option>
+                                    )}
+                                    {units
+                                        .filter(u => u.type === 'stock' || u.type === 'both')
+                                        .map(u => (
+                                            <option key={u.id} value={u.name}>{u.name}</option>
+                                        ))
+                                    }
+                                    {/* Legacy defaults if no units exist yet */}
+                                    {units.length === 0 && !loadingUnits && (
+                                        <>
+                                            <option value="kg">Kg</option>
+                                            <option value="pcs">Pieces</option>
+                                            <option value="ltr">Liters</option>
+                                            <option value="crate">Crates</option>
+                                            <option value="carton">Cartons</option>
+                                        </>
+                                    )}
                                 </select>
                             </div>
                         </div>

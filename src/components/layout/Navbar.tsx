@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import CartBadge from "./CartBadge";
 import { NotificationService } from "@/services/notification.service";
+import SearchInput from "@/components/common/SearchInput";
 
 import { useAuth } from "@/context/AuthContext";
 
@@ -56,22 +57,27 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-20 items-center">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center">
+                    <Link href="/" className="flex items-center shrink-0">
                         <img
                             src="/images/logo.png"
                             alt="Greenbird Homestead"
-                            className="h-16 w-auto object-contain"
+                            className="h-10 sm:h-12 md:h-16 w-auto object-contain"
                         />
                     </Link>
 
-                    {/* Desktop Links */}
-                    <div className="hidden md:flex space-x-8">
+                    {/* Search Field - Visible on all screens */}
+                    <div className="flex-1 max-w-xl mx-2 md:mx-4">
+                        <SearchInput />
+                    </div>
+
+                    {/* Desktop Links - Hidden on small screens, shown on large */}
+                    <div className="hidden lg:flex space-x-6">
                         {links.map((link) => (
                             <Link
                                 key={link.href}
                                 href={link.href}
                                 className={clsx(
-                                    "text-sm font-medium transition-colors duration-200",
+                                    "text-sm font-medium transition-colors duration-200 whitespace-nowrap",
                                     isActive(link.href)
                                         ? "text-[#2D5A27]"
                                         : "text-gray-600 hover:text-[#2D5A27]"
@@ -80,19 +86,6 @@ export default function Navbar() {
                                 {link.label}
                             </Link>
                         ))}
-                        {(dbUser?.role === 'admin' || dbUser?.role === 'manager') && (
-                            <Link
-                                href="/admin"
-                                className={clsx(
-                                    "text-sm font-medium transition-colors duration-200",
-                                    isActive("/admin")
-                                        ? "text-green-600"
-                                        : "text-green-600 hover:text-green-700"
-                                )}
-                            >
-                                Admin Dashboard
-                            </Link>
-                        )}
                     </div>
 
                     {/* Right Icons */}
@@ -127,7 +120,7 @@ export default function Navbar() {
                                             (user.displayName || "U").charAt(0).toUpperCase()
                                         )}
                                     </div>
-                                    <span className="hidden md:block font-medium text-sm">
+                                    <span className="hidden lg:block font-medium text-sm">
                                         Hi, {user.displayName?.split(" ")[0] || "User"}
                                     </span>
                                 </button>
@@ -178,8 +171,8 @@ export default function Navbar() {
                                 )}
                             </div>
                         ) : (
-                            <Link href="/login" className="flex items-center space-x-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-bold hover:bg-green-700 transition-colors">
-                                <User className="h-4 w-4" />
+                            <Link href="/login" className="flex items-center space-x-1 px-3 py-1.5 sm:px-4 sm:py-2 bg-green-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-green-700 transition-colors shrink-0">
+                                <User className="h-3 w-3 sm:h-4 sm:h-4" />
                                 <span>Login</span>
                             </Link>
                         )}
@@ -199,6 +192,17 @@ export default function Navbar() {
             {isOpen && (
                 <div className="md:hidden border-t border-gray-100 bg-white">
                     <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                        {(dbUser?.role === 'admin' || dbUser?.role === 'manager') && (
+                            <Link
+                                href="/admin"
+                                onClick={() => setIsOpen(false)}
+                                className={clsx(
+                                    "block px-3 py-2 rounded-md text-base font-medium transition-colors text-green-600 hover:bg-green-50"
+                                )}
+                            >
+                                Admin Dashboard
+                            </Link>
+                        )}
                         {links.map((link) => (
                             <Link
                                 key={link.href}

@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { X, Save } from "lucide-react";
-import { Product } from "@/types";
+import { Product, Unit } from "@/types";
 import { ProductService } from "@/services/product.service";
+import { UnitService } from "@/services/unit.service";
 import { useAuth } from "@/context/AuthContext";
 import { cleanInput } from "@/lib/input-validation";
+import { useEffect } from "react";
 
 interface StockUpdateModalProps {
     product: Product;
@@ -20,14 +22,34 @@ export default function StockUpdateModal({ product, onClose, onUpdate }: StockUp
     const [quantity, setQuantity] = useState<string>("");
     const [note, setNote] = useState("");
     const [loading, setLoading] = useState(false);
+    const [allowDecimals, setAllowDecimals] = useState(true);
     const { user, dbUser } = useAuth();
+
+    useEffect(() => {
+        const fetchUnitInfo = async () => {
+            try {
+                const units = await UnitService.getActiveUnits();
+                const unitInfo = units.find(u => u.name.toLowerCase() === product.unit.toLowerCase());
+                if (unitInfo) {
+                    setAllowDecimals(unitInfo.allowDecimals !== false);
+                }
+            } catch (err) {
+                console.error("Error fetching unit info:", err);
+            }
+        };
+        fetchUnitInfo();
+    }, [product.unit]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const qty = parseFloat(quantity);
+        let qty = parseFloat(quantity);
         if (isNaN(qty) || qty <= 0) {
             alert("Please enter a valid quantity");
             return;
+        }
+
+        if (!allowDecimals) {
+            qty = Math.floor(qty);
         }
 
         setLoading(true);
@@ -113,10 +135,14 @@ export default function StockUpdateModal({ product, onClose, onUpdate }: StockUp
                             <input
                                 type="number"
                                 required
-                                min="0.01"
-                                step="0.01"
+                                min={allowDecimals ? "0.01" : "1"}
+                                step={allowDecimals ? "0.01" : "1"}
                                 value={quantity}
-                                onChange={(e) => setQuantity(e.target.value)}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (!allowDecimals && val.includes('.')) return;
+                                    setQuantity(val);
+                                }}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
                                 placeholder="0.00"
                             />

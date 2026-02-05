@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { TransactionService } from "@/services/transaction.service";
 import { TransactionRecord, OrderStatus, TransactionType, PaymentStatus, PaymentRecord, OrderLog, Product, SalesItem, BusinessType, User as UserType } from "@/types";
-import { Plus, Check, X, Calendar, Clock, MapPin, User, Search, Filter, Download, ShoppingBag, CreditCard, AlertCircle, Edit2, Save, Trash, RotateCcw, ChevronDown, Package, ArrowUpRight, ArrowDownLeft, Share2, Loader2, ArrowLeft, Trash2 } from "lucide-react";
+import { Plus, Check, X, Calendar, Clock, MapPin, User, Search, Filter, Download, ShoppingBag, CreditCard, AlertCircle, Edit2, Save, Trash, RotateCcw, ChevronDown, Package, ArrowUpRight, ArrowDownLeft, Share2, Loader2, ArrowLeft, Trash2, ExternalLink } from "lucide-react";
 import { toNepali, formatDateTime } from "@/lib/date-helper";
 import NepaliDate from "nepali-date-converter";
 import dynamic from 'next/dynamic';
@@ -758,6 +758,20 @@ function TransactionDetailsModal({
                                     <span className="w-1 h-1 rounded-full bg-gray-400"></span> {transaction.customerPhone}
                                 </p>}
                                 {transaction.deliveryAddress && <p className="text-sm text-gray-600 mt-2">{transaction.deliveryAddress}</p>}
+                                {transaction.deliveryLocation && (
+                                    <div className="mt-2 pt-2 border-t border-gray-100">
+                                        <a
+                                            href={`https://www.google.com/maps/search/?api=1&query=${transaction.deliveryLocation.lat},${transaction.deliveryLocation.lng}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-xs text-blue-600 font-bold flex items-center gap-1.5 hover:text-blue-700 transition-colors"
+                                        >
+                                            <MapPin className="h-3.5 w-3.5" />
+                                            View on Map
+                                            <ExternalLink className="h-3 w-3" />
+                                        </a>
+                                    </div>
+                                )}
                                 <p className="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-200">Entered By: {transaction.enteredBy}</p>
                             </div>
                         </div>

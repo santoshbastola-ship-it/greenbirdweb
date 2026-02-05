@@ -62,7 +62,11 @@ function ProductListContent({ initialProducts }: ProductListContentProps) {
 
             {products.length === 0 && (
                 <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
-                    <p className="text-gray-500 text-lg">No products found in this category.</p>
+                    <p className="text-gray-500 text-lg">
+                        {searchParams.get('search')
+                            ? `No products found matching "${searchParams.get('search')}"`
+                            : "No products found in this category."}
+                    </p>
                     <Link
                         href="/shop"
                         className="text-[#2D5A27] font-medium hover:underline mt-2 inline-block"

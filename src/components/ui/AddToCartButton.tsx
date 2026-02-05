@@ -58,7 +58,7 @@ export default function AddToCartButton({
     return (
         <button
             onClick={handleAdd}
-            disabled={product.currentStock <= 0}
+            disabled={!product.isAvailableForSale}
             className={`${baseClasses} ${defaultClasses} ${isAdded ? "!bg-[#2D5A27] cursor-default" : ""}`}
         >
             {showIcon && <ShoppingBag className="h-3 w-3" />}

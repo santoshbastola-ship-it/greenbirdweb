@@ -18,6 +18,7 @@ export const ProductService = {
 
             return products.map(p => ({
                 ...p,
+                images: Array.isArray(p.images) ? p.images : [],
                 categoryName: p.categoryId ? categoryMap.get(p.categoryId) : undefined
             }));
         } catch (error) {
@@ -45,6 +46,8 @@ export const ProductService = {
                         product.categoryName = catSnap.data().name;
                     }
                 }
+                // Normalize images
+                product.images = Array.isArray(product.images) ? product.images : [];
                 return product;
             } else {
                 return null;
@@ -59,7 +62,11 @@ export const ProductService = {
         try {
             const q = query(collection(db, COLLECTION_NAME), where("businessType", "==", category));
             const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+            return querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                images: Array.isArray((doc.data() as any).images) ? (doc.data() as any).images : []
+            } as Product));
         } catch (error) {
             console.error("Error fetching category:", error);
             return [];
@@ -279,7 +286,11 @@ export const ProductService = {
         try {
             const q = query(collection(db, COLLECTION_NAME), where("isFeatured", "==", true));
             const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+            return querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                images: Array.isArray((doc.data() as any).images) ? (doc.data() as any).images : []
+            } as Product));
         } catch (error) {
             console.error("Error fetching featured products:", error);
             return [];

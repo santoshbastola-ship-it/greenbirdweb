@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { ProductService } from "@/services/product.service";
 import { UserService } from "@/services/user.service";
 import { TransactionService } from "@/services/transaction.service";
-import { Product, StockUnit, TransactionType, PaymentStatus, OrderStatus, User } from "@/types";
+import { UnitService } from "@/services/unit.service";
+import { Product, StockUnit, TransactionType, PaymentStatus, OrderStatus, User, Unit } from "@/types";
 import { ArrowLeft, Plus, Trash2, Save, Search, Calendar, User as UserIcon, Tag, CreditCard, ShoppingBag, Info, Edit } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -63,6 +64,7 @@ export default function NewSalePage() {
     const [admins, setAdmins] = useState<User[]>([]);
     const [customDeliveryFee, setCustomDeliveryFee] = useState<string>("");
     const [deliveryFee, setDeliveryFee] = useState(0);
+    const [units, setUnits] = useState<Unit[]>([]);
 
     // Toast state
     const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
@@ -78,14 +80,16 @@ export default function NewSalePage() {
 
     const loadData = async () => {
         try {
-            const [productsData, customersData, adminsData] = await Promise.all([
+            const [productsData, customersData, adminsData, unitData] = await Promise.all([
                 ProductService.getAllProducts(),
                 UserService.getAllCustomers(),
-                UserService.getAllUsers()
+                UserService.getAllUsers(),
+                UnitService.getActiveUnits()
             ]);
             setProducts(productsData);
             setCustomers(customersData);
             setAdmins(adminsData);
+            setUnits(unitData);
 
 
             const settings = await SettingsService.getSettings();
@@ -146,8 +150,20 @@ export default function NewSalePage() {
         setCart(cart.map(item => {
             if (item.productId !== id) return item;
 
-            const newQuantity = qty >= 0 ? qty : 0;
-            const newPricingQuantity = priceQty !== undefined ? priceQty : item.pricingQuantity;
+            // Check decimal restrictions
+            const stockUnitInfo = units.find(u => u.name.toLowerCase() === item.unit.toLowerCase());
+            const priceUnitInfo = units.find(u => u.name.toLowerCase() === item.priceUnit.toLowerCase());
+
+            let newQuantity = qty >= 0 ? qty : 0;
+            if (stockUnitInfo && stockUnitInfo.allowDecimals === false) {
+                newQuantity = Math.floor(newQuantity);
+            }
+
+            let newPricingQuantity = priceQty !== undefined ? priceQty : item.pricingQuantity;
+            if (priceUnitInfo && priceUnitInfo.allowDecimals === false && priceQty !== undefined) {
+                newPricingQuantity = Math.floor(newPricingQuantity);
+            }
+
             const newDesc = desc !== undefined ? desc : item.description;
 
             // Calculate Total
@@ -526,6 +542,7 @@ export default function NewSalePage() {
                                                                 type="number"
                                                                 className="flex-1 min-w-0 text-center text-sm border-0 focus:ring-0 p-0 font-bold bg-transparent"
                                                                 value={item.quantity}
+                                                                step={units.find(u => u.name.toLowerCase() === item.unit.toLowerCase())?.allowDecimals === false ? "1" : "0.01"}
                                                                 onChange={(e) => updateQuantity(item.productId, parseFloat(e.target.value) || 0)}
                                                                 onFocus={(e) => e.target.select()}
                                                                 title={`Quantity in ${item.unit}`}
@@ -554,6 +571,7 @@ export default function NewSalePage() {
                                                                     type="number"
                                                                     className="w-full text-center text-sm border-0 focus:ring-0 p-0 font-bold bg-transparent text-gray-700"
                                                                     value={item.pricingQuantity}
+                                                                    step={units.find(u => u.name.toLowerCase() === item.priceUnit.toLowerCase())?.allowDecimals === false ? "1" : "0.01"}
                                                                     onChange={(e) => updateQuantity(item.productId, item.quantity, parseFloat(e.target.value) || 0)}
                                                                     onFocus={(e) => e.target.select()}
                                                                     placeholder="0"

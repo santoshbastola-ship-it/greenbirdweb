@@ -8,6 +8,7 @@ import { Bell, Check, Trash2, X, CheckSquare, Square, Eye, EyeOff } from "lucide
 import { toNepali, formatDateTime } from "@/lib/date-helper";
 import { useRouter } from "next/navigation";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import { Toast, ToastType } from "@/components/ui/Toast";
 
 export default function NotificationsPage() {
     const { user } = useAuth();
@@ -16,7 +17,13 @@ export default function NotificationsPage() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'unread'>('unread');
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
     const [actionLoading, setActionLoading] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
+
+    const showToast = (message: string, type: ToastType = "success") => {
+        setToast({ message, type });
+    };
 
     // Confirmation Modal State
     const [confirmModal, setConfirmModal] = useState<{
@@ -180,27 +187,19 @@ export default function NotificationsPage() {
     };
 
     // Global Actions
-    const handleMarkAllAsRead = () => {
+    const handleMarkAllAsRead = async () => {
         if (!user) return;
-        setConfirmModal({
-            isOpen: true,
-            title: "Mark All as Read",
-            message: "Are you sure you want to mark ALL notifications as read?",
-            confirmText: "Mark all as Read",
-            variant: "success",
-            onConfirm: async () => {
-                setConfirmModal(prev => ({ ...prev, isOpen: false }));
-                setActionLoading(true);
-                try {
-                    await NotificationService.markAllAsRead(user.uid);
-                    loadNotifications();
-                } catch (error) {
-                    console.error("Error marking all as read:", error);
-                } finally {
-                    setActionLoading(false);
-                }
-            }
-        });
+        setActionLoading(true);
+        try {
+            await NotificationService.markAllAsRead(user.uid);
+            loadNotifications();
+            showToast("All notifications marked as read");
+        } catch (error) {
+            console.error("Error marking all as read:", error);
+            showToast("Failed to mark all as read", "error");
+        } finally {
+            setActionLoading(false);
+        }
     };
 
     const filteredNotifications = notifications.filter(n => {
@@ -399,6 +398,14 @@ export default function NotificationsPage() {
                 variant={confirmModal.variant}
                 isLoading={actionLoading}
             />
+
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
         </div>
     );
 }

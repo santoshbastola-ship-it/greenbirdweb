@@ -182,7 +182,13 @@ export default function QuickStockUpdatePage() {
                                                 {product.name}
                                             </h3>
                                             <div className="flex items-center gap-2 mt-0.5">
-                                                <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">{product.businessType}</span>
+                                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+                                                    {product.categoryName || product.businessType}
+                                                </span>
+                                                <span className="text-gray-300">•</span>
+                                                <span className="text-[10px] text-gray-500 font-medium">
+                                                    Unit: {product.unit}
+                                                </span>
                                                 <span className="text-gray-300">•</span>
                                                 <span className="text-[10px] text-gray-400">
                                                     Last: {product.stockHistory && product.stockHistory.length > 0

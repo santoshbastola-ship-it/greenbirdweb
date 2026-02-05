@@ -5,6 +5,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import ShareButton from "@/components/ui/ShareButton";
 import ProductQuantitySelector from "@/components/shop/ProductQuantitySelector";
+import ProductImageGallery from "@/components/shop/ProductImageGallery";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -30,11 +31,10 @@ export default async function ProductDetailsPage({ params }: PageProps) {
         notFound();
     }
 
-    const imageSrc = product.images.length > 0 ? product.images[0] : "/placeholder.png";
     const hasStock = product.currentStock > 0;
 
     return (
-        <div className="min-h-screen bg-[#FCF9F1] py-12">
+        <div className="min-h-screen bg-[#FCF9F1] py-12 pb-32">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <Link href="/shop" className="inline-flex items-center text-gray-500 hover:text-[#2D5A27] mb-8 transition-colors">
                     <ArrowLeft className="h-4 w-4 mr-1" /> Back to Shop
@@ -44,12 +44,10 @@ export default async function ProductDetailsPage({ params }: PageProps) {
                     <div className="grid grid-cols-1 md:grid-cols-2">
 
                         {/* Image Section */}
-                        <div className="bg-gray-100 relative aspect-square md:aspect-auto group overflow-hidden rounded-3xl md:rounded-l-3xl md:rounded-r-none">
-                            {/* Next/Image optimize later */}
-                            <img
-                                src={imageSrc}
-                                alt={product.name}
-                                className="w-full h-full object-cover"
+                        <div className="relative group overflow-hidden">
+                            <ProductImageGallery
+                                images={product.images}
+                                productName={product.name}
                             />
                             {/* Tags Overlay */}
                             {product.tags && product.tags.length > 0 && (
@@ -73,11 +71,11 @@ export default async function ProductDetailsPage({ params }: PageProps) {
                                 )}
                                 {product.isAvailableForSale ? (
                                     <span className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-bold uppercase tracking-wide">
-                                        In Stock
+                                        Available
                                     </span>
                                 ) : (
                                     <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold uppercase tracking-wide">
-                                        Out of Stock
+                                        Not Available
                                     </span>
                                 )}
                             </div>
@@ -95,14 +93,16 @@ export default async function ProductDetailsPage({ params }: PageProps) {
                                 <span className="text-gray-500 ml-2">/ {product.unit}</span>
                             </div>
 
+                            {/* Quantity & Add to Cart */}
+                            <div className="mb-8">
+                                <ProductQuantitySelector product={product} />
+                            </div>
+
                             <div className="prose prose-green mb-8 text-gray-600">
                                 <div className="text-sm leading-relaxed">
                                     {formatProductDescription(product.description || "No description available for this product.")}
                                 </div>
                             </div>
-
-                            {/* Quantity & Add to Cart */}
-                            <ProductQuantitySelector product={product} />
 
                             <div className="mt-6 flex items-center justify-center text-sm text-gray-500">
                                 <ShieldCheck className="h-4 w-4 mr-2 text-[#2D5A27]" />

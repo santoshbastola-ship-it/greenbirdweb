@@ -15,7 +15,7 @@ export default function CheckoutButton() {
 
     if (!mounted || items.length === 0) return null;
 
-    const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
+    const itemCount = items.length;
 
     return (
         <Link
