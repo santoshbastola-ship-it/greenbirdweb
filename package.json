@@ -1,6 +1,6 @@
 {
   "name": "greenbird-pwa",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
@@ -11,6 +11,7 @@
     "deploy": "git push && npm run build && firebase deploy --only hosting"
   },
   "dependencies": {
+    "@types/google.maps": "^3.58.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "firebase": "^12.8.0",

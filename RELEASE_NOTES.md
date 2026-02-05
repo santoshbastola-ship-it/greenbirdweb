@@ -1,5 +1,32 @@
 # Release Notes
 
+## [0.2.3] - 2026-02-05
+### Product Experience
+- Redesigned Product Detail page with floating "Add to Cart" button and improved quantity selection.
+- Cleaned up product gallery by removing numerical counters in favor of dot indicators.
+- Minimized footer on product pages for better focus.
+
+### Checkout & Location
+- Refined delivery location selection with reverse geocoding for pinned locations.
+- Improved UX by making saved addresses and pinned locations mutually exclusive during selection.
+
+### User Interface
+- Moved mobile search bar to the top navigation for better accessibility.
+- Improved notification system with auto-disappearing toast messages.
+- Standardized notification date and time formatting.
+- Enhanced product list display with category and unit information in a single row.
+
+### Admin Enhancements
+- Added collapsible sections to the admin menu for better organization.
+- Implemented unit-based decimal restrictions for product quantities.
+
+### Communication
+- Updated WhatsApp message templates for order confirmations and support.
+
+### Bug Fixes
+- Fixed Firebase Admin initialization for environments with missing keys.
+- Resolved build errors in cart and payment modules.
+
 ## [0.2.2] - 2026-02-03
 - Reorganized admin menu, updated notification messages, and fixed category filters
 
