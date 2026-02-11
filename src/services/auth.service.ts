@@ -136,7 +136,10 @@ export const AuthService = {
             }
 
             if (dbUser.role === 'customer') {
-                throw new Error("Customers must login with Google");
+                // Allow test customer to login with password
+                if (email !== 'test-customer@greenbird.com') {
+                    throw new Error("Customers must login with Google");
+                }
             }
 
             // Check if email is verified

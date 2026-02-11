@@ -133,13 +133,14 @@ function FilterTab({ label, count, active, onClick }: { label: string; count: nu
 }
 
 function OrderCard({ order, onUpdate }: { order: TransactionRecord; onUpdate: () => void }) {
+    const { dbUser, user } = useAuth();
     const [showCancelDialog, setShowCancelDialog] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
 
     const handleCancelOrder = async (reason: string) => {
         setIsUpdating(true);
         try {
-            await TransactionService.updateTransactionStatus(order.id, OrderStatus.Cancelled, reason);
+            await TransactionService.updateTransactionStatus(order.id, OrderStatus.Cancelled, reason, dbUser?.name || user?.displayName || "Customer");
             onUpdate();
         } catch (error) {
             console.error("Error cancelling order:", error);
@@ -225,7 +226,7 @@ function OrderCard({ order, onUpdate }: { order: TransactionRecord; onUpdate: ()
                                     <div className="flex items-center">
                                         <span className="font-medium text-gray-900 mr-2">{item.productName}</span>
                                         <span className="text-gray-500">
-                                            ({item.quantity} {item.unit} x {item.pricePerUnit})
+                                            ({item.quantity} {item.unit} x Rs. {item.pricePerUnit}/{item.priceUnit})
                                         </span>
                                     </div>
                                     <span className="font-medium text-gray-900">

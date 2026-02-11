@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function NotificationsPage() {
-    const { user, requestNotificationPermission } = useAuth();
+    const { user, requestNotificationPermission, loading: authLoading } = useAuth();
     const router = useRouter();
     const [notifications, setNotifications] = useState<NotificationType[]>([]);
     const [loading, setLoading] = useState(true);
@@ -42,12 +42,14 @@ export default function NotificationsPage() {
     });
 
     useEffect(() => {
+        if (authLoading) return;
+
         if (!user) {
             router.push("/login?redirect=/notifications");
             return;
         }
         loadNotifications();
-    }, [user]);
+    }, [user, authLoading]);
 
     const loadNotifications = async () => {
         if (!user) return;

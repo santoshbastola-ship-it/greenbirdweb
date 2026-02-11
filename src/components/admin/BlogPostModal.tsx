@@ -5,6 +5,9 @@ import { BlogPost } from "@/types/extra";
 import { BlogService } from "@/services/blog.service";
 import { X, Upload, Save, Loader2 } from "lucide-react";
 import { cleanInput } from "@/lib/input-validation";
+import ImageCropperModal from "./ImageCropperModal";
+
+import { useAuth } from "@/context/AuthContext";
 
 interface BlogPostModalProps {
     isOpen: boolean;
@@ -14,9 +17,14 @@ interface BlogPostModalProps {
 }
 
 export default function BlogPostModal({ isOpen, onClose, post, onSave }: BlogPostModalProps) {
+    const { dbUser } = useAuth();
+    const triggeredBy = dbUser?.name || "Admin";
     const [saving, setSaving] = useState(false);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [newCategory, setNewCategory] = useState("");
+
+    // Cropping States
+    const [croppingImage, setCroppingImage] = useState<{ src: string; file: File } | null>(null);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -65,6 +73,31 @@ export default function BlogPostModal({ isOpen, onClose, post, onSave }: BlogPos
             .replace(/ +/g, '-');
     };
 
+    const handleImageSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            setCroppingImage({
+                src: reader.result as string,
+                file: file
+            });
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const onCropComplete = (croppedBlob: Blob) => {
+        if (!croppingImage) return;
+
+        const croppedFile = new File([croppedBlob], croppingImage.file.name, {
+            type: 'image/jpeg'
+        });
+
+        setImageFile(croppedFile);
+        setCroppingImage(null);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
@@ -86,9 +119,9 @@ export default function BlogPostModal({ isOpen, onClose, post, onSave }: BlogPos
             };
 
             if (post) {
-                await BlogService.updatePost(post.id, postData as Partial<BlogPost>);
+                await BlogService.updatePost(post.id, postData as Partial<BlogPost>, triggeredBy);
             } else {
-                await BlogService.createPost(postData);
+                await BlogService.createPost(postData, triggeredBy);
             }
 
             onSave();
@@ -107,6 +140,14 @@ export default function BlogPostModal({ isOpen, onClose, post, onSave }: BlogPos
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 overflow-y-auto">
             <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl animate-in fade-in zoom-in duration-200 my-auto">
                 <div className="flex items-center justify-between p-6 border-b border-gray-100 sticky top-0 bg-white rounded-t-2xl z-10">
+                    {croppingImage && (
+                        <ImageCropperModal
+                            imageSrc={croppingImage.src}
+                            aspect={16 / 9}
+                            onCropComplete={onCropComplete}
+                            onClose={() => setCroppingImage(null)}
+                        />
+                    )}
                     <h2 className="text-xl font-bold text-gray-900">
                         {post ? "Edit Post" : "Create New Post"}
                     </h2>
@@ -123,7 +164,7 @@ export default function BlogPostModal({ isOpen, onClose, post, onSave }: BlogPos
                             <input
                                 type="file"
                                 className="absolute inset-0 opacity-0 cursor-pointer"
-                                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
+                                onChange={handleImageSelection}
                                 accept="image/*"
                             />
                             {(imageFile || formData.imageUrl) ? (
@@ -133,7 +174,7 @@ export default function BlogPostModal({ isOpen, onClose, post, onSave }: BlogPos
                                         className="w-full h-full object-cover rounded-lg"
                                         alt="Preview"
                                     />
-                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity rounded-lg">
                                         <Upload className="h-8 w-8 text-white" />
                                     </div>
                                 </div>
@@ -281,8 +322,17 @@ export default function BlogPostModal({ isOpen, onClose, post, onSave }: BlogPos
                             disabled={saving}
                             className="flex-1 px-6 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 disabled:opacity-70 flex items-center justify-center"
                         >
-                            {saving ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Save className="h-5 w-5 mr-2" />}
-                            {post ? "Save Changes" : "Publish Post"}
+                            {saving ? (
+                                <>
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                    <span>Saving...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-5 w-5" />
+                                    <span>{post ? "Save Changes" : "Publish Post"}</span>
+                                </>
+                            )}
                         </button>
                     </div>
                 </form>

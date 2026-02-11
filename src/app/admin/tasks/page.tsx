@@ -84,7 +84,7 @@ export default function TasksPage() {
         setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
 
         try {
-            await TaskService.updateTask(task.id, { status: newStatus });
+            await TaskService.updateTask(task.id, { status: newStatus }, dbUser?.name || "Admin");
         } catch (error) {
             console.error("Failed to update status", error);
             // Revert on error
@@ -97,7 +97,7 @@ export default function TasksPage() {
         if (!confirm("Are you sure you want to delete this task?")) return;
 
         try {
-            await TaskService.deleteTask(id);
+            await TaskService.deleteTask(id, dbUser?.name || "Admin");
             setTasks(tasks.filter(t => t.id !== id));
         } catch (error) {
             console.error("Failed to delete task", error);
@@ -207,7 +207,7 @@ export default function TasksPage() {
                     onStartDateChange={setStartDate}
                     endDate={endDate}
                     onEndDateChange={setEndDate}
-                    placeholder="Search by Task Title or Assignee..."
+                    placeholder="Search"
                 />
 
                 {/* Tabs */}

@@ -59,7 +59,7 @@ export function calculateRevenueMetrics(
 
     const total = rangeTransactions.reduce((sum, t) => {
         const itemsTotal = t.items.reduce((s, item) => s + item.totalPrice, 0);
-        return sum + (itemsTotal - (t.discount || 0));
+        return sum + (itemsTotal - (t.discount || 0) + (t.deliveryFee || 0));
     }, 0);
 
     const transactionCount = rangeTransactions.length;
@@ -79,7 +79,7 @@ export function calculateRevenueMetrics(
 
         const comparisonTotal = comparisonTransactions.reduce((sum, t) => {
             const itemsTotal = t.items.reduce((s, item) => s + item.totalPrice, 0);
-            return sum + (itemsTotal - (t.discount || 0));
+            return sum + (itemsTotal - (t.discount || 0) + (t.deliveryFee || 0));
         }, 0);
 
         change = total - comparisonTotal;
@@ -191,7 +191,7 @@ export function getOrderStatistics(transactions: TransactionRecord[]): OrderStat
             stats.pendingPayment++;
 
             // Calculate receivable amount (total - paid)
-            const total = order.items.reduce((sum, item) => sum + item.totalPrice, 0) - (order.discount || 0);
+            const total = order.items.reduce((sum, item) => sum + item.totalPrice, 0) - (order.discount || 0) + (order.deliveryFee || 0);
             const remaining = total - (order.paidAmount || 0);
             stats.pendingReceivable += remaining;
         }
@@ -213,7 +213,7 @@ export function getOrderStatistics(transactions: TransactionRecord[]): OrderStat
             purchase.paymentStatus === PaymentStatus.PartialOnline) {
 
             // Calculate payable amount (total - paid)
-            const total = purchase.items.reduce((sum, item) => sum + item.totalPrice, 0) - (purchase.discount || 0);
+            const total = purchase.items.reduce((sum, item) => sum + item.totalPrice, 0) - (purchase.discount || 0) + (purchase.deliveryFee || 0);
             const remaining = total - (purchase.paidAmount || 0);
             stats.pendingPayable += remaining;
         }

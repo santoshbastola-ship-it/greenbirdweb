@@ -6,6 +6,7 @@ import { NotificationService } from "@/services/notification.service";
 import { Notification as NotificationType } from "@/types";
 import { Bell, Check, Trash2, X, CheckSquare, Square, Eye, EyeOff } from "lucide-react";
 import { toNepali, formatDateTime } from "@/lib/date-helper";
+import { formatTextWithLinks } from "@/lib/text-helper";
 import { useRouter } from "next/navigation";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import { Toast, ToastType } from "@/components/ui/Toast";
@@ -352,12 +353,14 @@ export default function NotificationsPage() {
                                             {formatDateTime(notification.createdAt, "DD MMM YYYY")}
                                         </p>
                                     </div>
-                                    <p className={`text-sm ${!notification.isRead ? 'text-gray-900 font-medium' : 'text-gray-600'} mb-3`}>{notification.message}</p>
+                                    <div className={`text-sm ${!notification.isRead ? 'text-gray-900 font-medium' : 'text-gray-600'} mb-3`}>
+                                        {formatTextWithLinks(notification.message)}
+                                    </div>
 
                                 </div>
 
                                 {/* Individual Actions */}
-                                <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="flex flex-col gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                     {!notification.isRead ? (
                                         <button
                                             onClick={() => handleMarkAsRead(notification.id)}

@@ -49,7 +49,7 @@ const formatItemsList = (items: SalesItem[]): string => {
 
 export const TransactionService = {
     // Create a new transaction (Sale or Purchase)
-    createTransaction: async (transaction: Omit<TransactionRecord, "id">): Promise<string> => {
+    createTransaction: async (transaction: Omit<TransactionRecord, "id">, triggeredBy?: string): Promise<string> => {
         try {
             // 1. Create the transaction record
             const sanitizedTransaction = sanitizeFirestoreData({
@@ -95,7 +95,8 @@ export const TransactionService = {
                 message,
                 docRef.id,
                 'transaction',
-                '/admin/orders'
+                '/admin/orders',
+                triggeredBy
             );
 
             // Also notify the customer if it is a Sale and customerId is present
@@ -136,7 +137,8 @@ export const TransactionService = {
                     updatedAt: data.updatedAt ? parseDate(data.updatedAt) : undefined,
                     payments: safePayments(data.payments),
                     logs: safeLogs(data.logs),
-                    items: Array.isArray(data.items) ? data.items : []
+                    items: Array.isArray(data.items) ? data.items : [],
+                    documentUrls: Array.isArray(data.documentUrls) ? data.documentUrls : []
                 } as TransactionRecord;
             });
         } catch (error) {
@@ -161,7 +163,8 @@ export const TransactionService = {
                     updatedAt: data.updatedAt ? parseDate(data.updatedAt) : undefined,
                     payments: safePayments(data.payments),
                     logs: safeLogs(data.logs),
-                    items: Array.isArray(data.items) ? data.items : []
+                    items: Array.isArray(data.items) ? data.items : [],
+                    documentUrls: Array.isArray(data.documentUrls) ? data.documentUrls : []
                 } as TransactionRecord;
             } else {
                 return null;
@@ -195,7 +198,8 @@ export const TransactionService = {
                         updatedAt: data.updatedAt ? parseDate(data.updatedAt) : undefined,
                         payments: safePayments(data.payments),
                         logs: safeLogs(data.logs),
-                        items: Array.isArray(data.items) ? data.items : []
+                        items: Array.isArray(data.items) ? data.items : [],
+                        documentUrls: Array.isArray(data.documentUrls) ? data.documentUrls : []
                     } as TransactionRecord;
                 })
                 .filter(record => record.type === TransactionType.Sale)
@@ -228,7 +232,8 @@ export const TransactionService = {
                     updatedAt: data.updatedAt ? parseDate(data.updatedAt) : undefined,
                     payments: safePayments(data.payments),
                     logs: safeLogs(data.logs),
-                    items: Array.isArray(data.items) ? data.items : []
+                    items: Array.isArray(data.items) ? data.items : [],
+                    documentUrls: Array.isArray(data.documentUrls) ? data.documentUrls : []
                 } as TransactionRecord;
             });
 
@@ -276,7 +281,8 @@ export const TransactionService = {
                     updatedAt: data.updatedAt ? parseDate(data.updatedAt) : undefined,
                     payments: safePayments(data.payments),
                     logs: safeLogs(data.logs),
-                    items: Array.isArray(data.items) ? data.items : []
+                    items: Array.isArray(data.items) ? data.items : [],
+                    documentUrls: Array.isArray(data.documentUrls) ? data.documentUrls : []
                 } as TransactionRecord;
             });
         } catch (error) {
@@ -286,7 +292,7 @@ export const TransactionService = {
     },
 
     // Update Transaction Status (e.g. for Admin to change Order Status)
-    updateTransactionStatus: async (id: string, status: OrderStatus, reason?: string): Promise<void> => {
+    updateTransactionStatus: async (id: string, status: OrderStatus, reason?: string, triggeredBy?: string): Promise<void> => {
         try {
             const docRef = doc(db, COLLECTION_NAME, id);
             const updateData: any = {
@@ -316,7 +322,8 @@ export const TransactionService = {
                                         item.productId,
                                         'remove',
                                         item.quantity,
-                                        `Order ${data.billNo} Delivered`
+                                        `Order ${data.billNo} Delivered`,
+                                        triggeredBy || 'System'
                                     );
                                 } catch (err) {
                                     console.error(`Failed to deduct stock for ${item.productId} on delivery:`, err);
@@ -341,7 +348,8 @@ export const TransactionService = {
                                         item.productId,
                                         'add',
                                         item.quantity,
-                                        `Order ${data.billNo} status changed from Delivered to ${status}`
+                                        `Order ${data.billNo} status changed from Delivered to ${status}`,
+                                        triggeredBy || 'System'
                                     );
                                 } catch (err) {
                                     console.error(`Failed to return stock for ${item.productId} on status change:`, err);
@@ -359,7 +367,7 @@ export const TransactionService = {
                 date: new Date().toISOString(),
                 action: "Status Updated",
                 details: `Status changed to ${status}${reason ? `. Reason: ${reason}` : ''}`,
-                changedBy: "Admin"
+                changedBy: triggeredBy || "Admin"
             };
 
             updateData.logs = arrayUnion(newLog);
@@ -428,7 +436,8 @@ export const TransactionService = {
                                 `Order #${data.billNo} has been cancelled. Reason: ${reason || 'N/A'}`,
                                 id,
                                 'transaction',
-                                '/admin/orders'
+                                '/admin/orders',
+                                triggeredBy
                             );
                         }
                     }
@@ -441,7 +450,7 @@ export const TransactionService = {
         }
     },
     // Update Payment Status and Amount
-    updatePaymentStatus: async (id: string, paymentStatus: PaymentStatus, paidAmount: number, payments: PaymentRecord[]): Promise<void> => {
+    updatePaymentStatus: async (id: string, paymentStatus: PaymentStatus, paidAmount: number, payments: PaymentRecord[], triggeredBy?: string): Promise<void> => {
         try {
             const docRef = doc(db, COLLECTION_NAME, id);
             const newLog = {
@@ -449,7 +458,7 @@ export const TransactionService = {
                 date: new Date().toISOString(),
                 action: "Payment Recorded",
                 details: `Payment updated. Total paid amount is now Rs ${paidAmount.toLocaleString()}`,
-                changedBy: "Admin"
+                changedBy: triggeredBy || "Admin"
             };
 
             await updateDoc(docRef, {
@@ -485,14 +494,30 @@ export const TransactionService = {
                 console.error("Failed to send payment update notification:", notifyError);
             }
 
-            // Notify Admins
-            await NotificationService.notifyAdmins(
-                `Payment Updated`,
-                `Payment for Order #${id} updated. New Status: ${paymentStatus.replace(/([a-z])([A-Z])/g, '$1 $2')}, Paid: Rs ${paidAmount.toLocaleString()}`,
-                id,
-                'transaction',
-                '/admin/orders'
-            );
+            // Notify Admins with more readable format and billNo
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const billNo = data.billNo || id;
+                    const statusDisplay = paymentStatus.replace(/([a-z])([A-Z])/g, '$1 $2');
+
+                    const adminMessage = `Payment Received for Order #${billNo} from ${data.partyName}\n\n` +
+                        `💰 Amount: Rs ${paidAmount.toLocaleString()}\n` +
+                        `📌 New Status: ${statusDisplay}`;
+
+                    await NotificationService.notifyAdmins(
+                        `Payment Received: #${billNo}`,
+                        adminMessage,
+                        id,
+                        'transaction',
+                        '/admin/orders',
+                        triggeredBy
+                    );
+                }
+            } catch (adminNotifyError) {
+                console.error("Failed to send admin payment update notification:", adminNotifyError);
+            }
         } catch (error) {
             console.error("Error updating payment status:", error);
             throw error;
@@ -500,7 +525,7 @@ export const TransactionService = {
     },
 
     // Update Transaction Details (Edit Order) with Log
-    updateTransaction: async (id: string, updates: Partial<TransactionRecord>, logEntry?: any): Promise<void> => {
+    updateTransaction: async (id: string, updates: Partial<TransactionRecord>, logEntry?: any, triggeredBy?: string): Promise<void> => {
         try {
             const docRef = doc(db, COLLECTION_NAME, id);
 
@@ -550,7 +575,8 @@ export const TransactionService = {
                 `Transaction #${id} has been updated.`,
                 id,
                 'transaction',
-                '/admin/orders'
+                '/admin/orders',
+                triggeredBy
             );
         } catch (error) {
             console.error("Error updating transaction:", error);
@@ -559,7 +585,7 @@ export const TransactionService = {
     },
 
     // Delete Transaction
-    deleteTransaction: async (id: string): Promise<void> => {
+    deleteTransaction: async (id: string, triggeredBy?: string): Promise<void> => {
         try {
             const docRef = doc(db, COLLECTION_NAME, id);
 
@@ -582,7 +608,8 @@ export const TransactionService = {
                 message,
                 undefined,
                 'transaction',
-                '/admin/orders'
+                '/admin/orders',
+                triggeredBy
             );
         } catch (error) {
             console.error("Error deleting transaction:", error);

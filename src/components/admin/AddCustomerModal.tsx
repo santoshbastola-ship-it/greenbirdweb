@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, User as UserIcon, Phone, MapPin, Mail, Save } from "lucide-react";
+import { X, User as UserIcon, Phone, MapPin, Mail, Save, Loader2 } from "lucide-react";
 import { User } from "@/types";
 import { UserService } from "@/services/user.service";
 import { cleanInput } from "@/lib/input-validation";
@@ -180,7 +180,17 @@ export default function AddCustomerModal({ isOpen, onClose, onSuccess }: AddCust
                             disabled={isSubmitting}
                             className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isSubmitting ? "Creating..." : <><Save className="h-5 w-5" /> Create Customer</>}
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                    <span>Creating...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-5 w-5" />
+                                    <span>Create Customer</span>
+                                </>
+                            )}
                         </button>
                     </div>
                 </form>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, CreditCard, Edit2 } from "lucide-react";
+import { X, CreditCard, Edit2, Paperclip, ExternalLink } from "lucide-react";
 import { EnergyBill, PaymentStatus } from "@/types";
 import { toNepali } from "@/lib/date-helper";
 import { updatePaymentStatus, getEnergyTypeDisplayName, calculateRemainingAmount, getPaymentStatusDisplayName } from "@/services/energyService";
@@ -68,7 +68,7 @@ export default function EnergyBillDetailsModal({
                 payments: payments
             }));
 
-            await updatePaymentStatus(currentBill.id, newStatus, payAmount, payments);
+            await updatePaymentStatus(currentBill.id, newStatus, payAmount, payments, dbUser?.name || "Admin");
             onUpdate();
         } catch (error) {
             console.error("Error updating payment status:", error);
@@ -166,6 +166,35 @@ export default function EnergyBillDetailsModal({
                         </div>
                     )}
 
+                    {/* Documents Section */}
+                    {currentBill.documentUrls && currentBill.documentUrls.length > 0 && (
+                        <div>
+                            <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <Paperclip className="h-3 w-3" /> Bill Documents
+                            </h4>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                {currentBill.documentUrls.map((url, idx) => (
+                                    <a
+                                        key={idx}
+                                        href={url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="group relative aspect-square rounded-xl overflow-hidden border border-gray-100 bg-gray-50 hover:border-green-200 transition-all shadow-sm"
+                                    >
+                                        <img
+                                            src={url}
+                                            alt={`Document ${idx + 1}`}
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                        />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <ExternalLink className="h-5 w-5 text-white" />
+                                        </div>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Payment History */}
                     {currentBill.payments && currentBill.payments.length > 0 && (
                         <div>
@@ -199,6 +228,7 @@ export default function EnergyBillDetailsModal({
                             <PaymentStatusDropdown
                                 currentStatus={currentBill.paymentStatus}
                                 onChange={handlePaymentStatusChange}
+                                isUpdating={isUpdating}
                                 color={
                                     (currentBill.paymentStatus === PaymentStatus.PaidCash || currentBill.paymentStatus === PaymentStatus.PaidOnline) ? "green" :
                                         (currentBill.paymentStatus === PaymentStatus.PartialCash || currentBill.paymentStatus === PaymentStatus.PartialOnline) ? "orange" : "red"
@@ -294,7 +324,7 @@ export default function EnergyBillDetailsModal({
                                                 }));
 
                                                 // Update Backend
-                                                await updatePaymentStatus(currentBill.id, newStatus, finalPaidAmount, newPayments);
+                                                await updatePaymentStatus(currentBill.id, newStatus, finalPaidAmount, newPayments, dbUser?.name || "Admin");
 
                                                 onUpdate();
                                                 amountInput.value = "";
@@ -325,6 +355,6 @@ export default function EnergyBillDetailsModal({
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

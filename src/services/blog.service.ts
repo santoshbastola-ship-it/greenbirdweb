@@ -16,6 +16,7 @@ import {
 import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { BlogPost } from "@/types/extra";
 import { NotificationService } from "./notification.service";
+import { optimizeImage } from "@/lib/image-optimizer";
 
 
 const BLOG_COLLECTION = "blog_posts";
@@ -59,6 +60,11 @@ export const BlogService = {
     async getPublishedPosts(): Promise<BlogPost[]> {
         try {
             if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'replace_me') {
+                console.error("FIREBASE_API_KEY is missing or invalid. Blog posts cannot be fetched.");
+                // During build time (SSG), we want to fail loudly if keys are missing so we don't deploy an empty blog.
+                if (typeof window === 'undefined') {
+                    throw new Error("FIREBASE_API_KEY is missing during build. Cannot fetch blog posts.");
+                }
                 return [];
             }
 
@@ -125,7 +131,7 @@ export const BlogService = {
     /**
      * Create a new blog post
      */
-    async createPost(post: Omit<BlogPost, "id">): Promise<string> {
+    async createPost(post: Omit<BlogPost, "id">, triggeredBy?: string): Promise<string> {
         const blogRef = collection(db, BLOG_COLLECTION);
         const docRef = await addDoc(blogRef, {
             ...post,
@@ -141,7 +147,8 @@ export const BlogService = {
             `New blog post created: ${post.title}`,
             docRef.id,
             'blog',
-            '/admin/blog'
+            '/admin/blog',
+            triggeredBy
         );
 
         return docRef.id;
@@ -150,7 +157,7 @@ export const BlogService = {
     /**
      * Update an existing blog post
      */
-    async updatePost(id: string, post: Partial<BlogPost>): Promise<void> {
+    async updatePost(id: string, post: Partial<BlogPost>, triggeredBy?: string): Promise<void> {
         const postRef = doc(db, BLOG_COLLECTION, id);
         const updateData: any = { ...post };
 
@@ -166,14 +173,15 @@ export const BlogService = {
             `Blog post updated: ${id}`,
             id,
             'blog',
-            '/admin/blog'
+            '/admin/blog',
+            triggeredBy
         );
     },
 
     /**
      * Delete a blog post and its image from storage
      */
-    async deletePost(id: string, imageUrl?: string): Promise<void> {
+    async deletePost(id: string, imageUrl?: string, triggeredBy?: string): Promise<void> {
         // Delete from Firestore
         await deleteDoc(doc(db, BLOG_COLLECTION, id));
 
@@ -193,7 +201,8 @@ export const BlogService = {
             `Blog post deleted: ${id}`,
             undefined,
             'blog',
-            '/admin/blog'
+            '/admin/blog',
+            triggeredBy
         );
     },
 
@@ -201,8 +210,11 @@ export const BlogService = {
      * Upload blog cover image
      */
     async uploadImage(file: File): Promise<string> {
-        const storageRef = ref(storage, `blog/${Date.now()}_${file.name}`);
-        const snapshot = await uploadBytes(storageRef, file);
+        // Optimize image before upload
+        const optimizedFile = await optimizeImage(file, 'blog');
+
+        const storageRef = ref(storage, `blog/${Date.now()}_${optimizedFile.name.split('.')[0]}.webp`);
+        const snapshot = await uploadBytes(storageRef, optimizedFile);
         return await getDownloadURL(snapshot.ref);
     },
 

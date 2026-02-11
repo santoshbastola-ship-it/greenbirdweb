@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { User, UserRole } from "@/types";
 import { cleanInput } from "@/lib/input-validation";
 
@@ -167,9 +167,16 @@ export default function EditUserModal({
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium flex items-center justify-center gap-2"
                         >
-                            {isSubmitting ? "Saving..." : "Save Changes"}
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span>Saving...</span>
+                                </>
+                            ) : (
+                                "Save Changes"
+                            )}
                         </button>
                         <button
                             type="button"

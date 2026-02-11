@@ -66,6 +66,11 @@ export const NotificationService = {
                         ...data,
                     } as Notification;
                 })
+                .sort((a, b) => {
+                    const dateA = new Date(a.createdAt).getTime();
+                    const dateB = new Date(b.createdAt).getTime();
+                    return dateB - dateA; // Descending order
+                })
                 .filter(notification => {
                     // If validUntil exists, check if it has expired
                     if (notification.validUntil) {
@@ -256,65 +261,84 @@ export const NotificationService = {
         }
     },
 
-    // Notify all admins (In-App + WhatsApp)
-    notifyAdmins: async (title: string, message: string, relatedEntityId?: string, relatedEntityType?: any, route?: string): Promise<void> => {
+    // Notify all admins and managers (In-App + WhatsApp)
+    notifyAdmins: async (title: string, message: string, relatedEntityId?: string, relatedEntityType?: any, route?: string, triggeredBy?: string): Promise<void> => {
         try {
-            // 1. Fetch all admins
-            const q = query(collection(db, "users"), where("role", "==", "admin"));
-            const adminSnap = await getDocs(q);
-            const adminDocs = adminSnap.docs;
+            console.log(`[NotificationService] notifyAdmins called. Title: ${title}, ID: ${relatedEntityId}`);
 
-            if (adminDocs.length === 0) return;
+            if (triggeredBy) {
+                message += ` (Triggered by: ${triggeredBy})`;
+            }
 
-            // 2. Send In-App Notifications to ALL admins (including Santosh/Anju)
-            const adminIds = adminDocs.map(d => d.id);
-            await Promise.all(adminIds.map(adminId =>
-                NotificationService.createNotification({
-                    targetUserId: adminId,
-                    title,
-                    message,
-                    type: 'info',
-                    channels: ['in-app'],
-                    relatedEntityId,
-                    relatedEntityType,
-                    route
-                })
-            ));
+            // 1. Fetch all admins and managers
+            // Firestore 'in' query supports up to 10 values
+            const q = query(collection(db, "users"), where("role", "in", ["admin", "manager"]));
+            const querySnapshot = await getDocs(q);
+            const recipients = querySnapshot.docs;
 
-            // 3. Send WhatsApp to UNIQUE phone numbers (EXCLUDING Santosh/Anju)
-            const EXCLUDED_NAMES = ["santosh", "anju"];
+            console.log(`[NotificationService] Found ${recipients.length} recipients (admins/managers).`);
 
-            const whatsappRecipients = adminDocs.filter(doc => {
-                const data = doc.data();
-                const name = (data.displayName || data.name || "").toLowerCase();
-                // Check if name contains any of the excluded names
-                return !EXCLUDED_NAMES.some(excluded => name.includes(excluded));
+            if (recipients.length === 0) {
+                console.warn("[NotificationService] No admins or managers found to notify.");
+                return;
+            }
+
+            // 2. Send In-App Notifications
+            const recipientIds = recipients.map(d => d.id);
+            const inAppPromises = recipientIds.map(async (userId) => {
+                try {
+                    await NotificationService.createNotification({
+                        targetUserId: userId,
+                        title,
+                        message,
+                        type: 'info',
+                        channels: ['in-app'],
+                        relatedEntityId,
+                        relatedEntityType,
+                        route
+                    });
+                } catch (e) {
+                    console.error(`[NotificationService] Failed to create in-app notification for user ${userId}:`, e);
+                }
             });
+            await Promise.all(inAppPromises);
+            console.log(`[NotificationService] In-app notifications sent to ${recipientIds.length} users.`);
 
-            const uniquePhoneAdmins = new Map<string, string>();
-            whatsappRecipients.forEach(doc => {
+
+            // 3. Send WhatsApp to UNIQUE phone numbers
+            const uniquePhoneRecipients = new Map<string, string>();
+            recipients.forEach(doc => {
                 const data = doc.data();
-                const phone = data.phoneNumber;
-                if (phone && !uniquePhoneAdmins.has(phone)) {
-                    uniquePhoneAdmins.set(phone, doc.id);
+                // Check both phoneNumber and phone fields
+                const phone = data.phoneNumber || data.phone;
+                if (phone && !uniquePhoneRecipients.has(phone)) {
+                    uniquePhoneRecipients.set(phone, doc.id);
                 }
             });
 
-            await Promise.all(Array.from(uniquePhoneAdmins.values()).map(adminId =>
-                NotificationService.createNotification({
-                    targetUserId: adminId,
-                    title,
-                    message,
-                    type: 'info',
-                    channels: ['whatsapp'],
-                    relatedEntityId,
-                    relatedEntityType,
-                    route
-                })
-            ));
+            console.log(`[NotificationService] Found ${uniquePhoneRecipients.size} unique phone numbers for WhatsApp.`);
+
+            const whatsappPromises = Array.from(uniquePhoneRecipients.values()).map(async (userId) => {
+                try {
+                    await NotificationService.createNotification({
+                        targetUserId: userId,
+                        title,
+                        message,
+                        type: 'info',
+                        channels: ['whatsapp'],
+                        relatedEntityId,
+                        relatedEntityType,
+                        route
+                    });
+                } catch (e) {
+                    console.error(`[NotificationService] Failed to create WhatsApp notification for user ${userId}:`, e);
+                }
+            });
+            await Promise.all(whatsappPromises);
+            console.log(`[NotificationService] WhatsApp notifications processing initiated.`);
 
         } catch (error) {
-            console.error("Error notifying admins:", error);
+            console.error("[NotificationService] Error notifying admins/managers:", error);
         }
     },
 

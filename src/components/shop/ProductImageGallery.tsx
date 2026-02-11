@@ -48,7 +48,7 @@ export default function ProductImageGallery({ images, productName }: ProductImag
     };
 
     return (
-        <div className="relative group bg-gray-100 aspect-square md:aspect-auto h-full overflow-hidden rounded-3xl md:rounded-l-3xl md:rounded-r-none">
+        <div className="relative group bg-gray-100 aspect-square overflow-hidden rounded-3xl md:rounded-l-3xl md:rounded-r-none h-full min-h-[300px] md:min-h-[500px]">
             {/* Scroll Container */}
             <div
                 ref={scrollContainerRef}

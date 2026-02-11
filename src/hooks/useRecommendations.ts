@@ -56,7 +56,11 @@ export function useRecommendations() {
 
                 // Filter out items already in the cart to avoid recommending what they just bought/added
                 const cartProductIds = new Set(cartItems.map(item => item.productId));
-                const filtered = products.filter(p => !cartProductIds.has(p.id));
+                const filtered = products.filter(p =>
+                    !cartProductIds.has(p.id) &&
+                    p.currentStock > 0 && // Only show in-stock products
+                    p.showInApp !== false // Only show products marked as visible in app
+                );
 
                 // Limit to 4 items for the UI
                 setRecommendations(filtered.slice(0, 4));

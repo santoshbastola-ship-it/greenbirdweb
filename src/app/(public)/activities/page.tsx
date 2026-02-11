@@ -96,7 +96,7 @@ export default function ActivitiesPage() {
                 ) : (
                     <div className="space-y-48 lg:space-y-64 pb-20">
                         {activities.map((activity, index) => {
-                            const media = activity.media || (activity.imageUrl ? [{ url: activity.imageUrl, type: 'image' }] : []);
+                            const media = (activity.media && activity.media.length > 0) ? activity.media : (activity.imageUrl ? [{ url: activity.imageUrl, type: 'image' }] : []);
 
                             return (
                                 <div

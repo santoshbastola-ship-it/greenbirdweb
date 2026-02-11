@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { SettingsService } from "@/services/settings.service";
 import { AppSettings } from "@/types";
-import { Save, RefreshCcw, Truck, Percent, IndianRupee, AlertCircle, Phone, User } from "lucide-react";
+import { Save, Loader2, Truck, Percent, IndianRupee, AlertCircle, Phone, User } from "lucide-react";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -54,7 +54,7 @@ export default function AdminSettingsPage() {
 
         try {
             // Update app settings
-            await SettingsService.updateSettings(settings);
+            await SettingsService.updateSettings(settings, dbUser?.name || "Admin");
 
             // Update admin phone number if changed
             if (dbUser && phoneNumber !== dbUser.phoneNumber) {
@@ -191,16 +191,32 @@ export default function AdminSettingsPage() {
                     </div>
                 </div>
 
-                {/* Discount Settings */}
+                {/* App Discount Settings */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2 bg-green-50 rounded-lg">
-                            <Percent className="h-5 w-5 text-green-600" />
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-green-50 rounded-lg">
+                                <Percent className="h-5 w-5 text-green-600" />
+                            </div>
+                            <h2 className="text-lg font-bold text-gray-900">App Discount (Online Orders)</h2>
                         </div>
-                        <h2 className="text-lg font-bold text-gray-900">App Discount (Online Orders)</h2>
+                        <div className="flex items-center gap-2">
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={settings?.enableAppDiscount ?? true}
+                                    onChange={(e) => setSettings(s => s ? { ...s, enableAppDiscount: e.target.checked } : null)}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                            </label>
+                            <span className="text-sm font-medium text-gray-700">
+                                {settings?.enableAppDiscount ? 'Enabled' : 'Disabled'}
+                            </span>
+                        </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-opacity ${settings?.enableAppDiscount ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Discount Percentage (%)
@@ -237,6 +253,119 @@ export default function AdminSettingsPage() {
                             </div>
                             <p className="mt-1 text-xs text-gray-400">Minimum flat discount always applied</p>
                         </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Valid From (Optional)
+                            </label>
+                            <input
+                                type="date"
+                                value={settings?.appDiscountStartDate || ''}
+                                onChange={(e) => setSettings(s => s ? { ...s, appDiscountStartDate: e.target.value } : null)}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
+                            />
+                            <p className="mt-1 text-xs text-gray-400">Leave empty for always valid</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Valid Until (Optional)
+                            </label>
+                            <input
+                                type="date"
+                                value={settings?.appDiscountEndDate || ''}
+                                onChange={(e) => setSettings(s => s ? { ...s, appDiscountEndDate: e.target.value } : null)}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
+                            />
+                            <p className="mt-1 text-xs text-gray-400">Leave empty for always valid</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* First Order Discount Settings */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-50 rounded-lg">
+                                <User className="h-5 w-5 text-blue-600" />
+                            </div>
+                            <h2 className="text-lg font-bold text-gray-900">First Order Discount</h2>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={settings?.enableFirstOrderDiscount ?? false}
+                                    onChange={(e) => setSettings(s => s ? { ...s, enableFirstOrderDiscount: e.target.checked } : null)}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                            <span className="text-sm font-medium text-gray-700">
+                                {settings?.enableFirstOrderDiscount ? 'Enabled' : 'Disabled'}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 transition-opacity ${settings?.enableFirstOrderDiscount ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Discount Amount (Rs)
+                            </label>
+                            <div className="relative">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">Rs.</span>
+                                <input
+                                    type="number"
+                                    value={settings?.firstOrderDiscountAmount ?? 0}
+                                    onChange={(e) => setSettings(s => s ? { ...s, firstOrderDiscountAmount: Number(e.target.value) } : null)}
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                                    required
+                                    min="0"
+                                />
+                            </div>
+                            <p className="mt-1 text-xs text-gray-400">Flat discount amount to apply</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Applies to First X Orders
+                            </label>
+                            <input
+                                type="number"
+                                value={settings?.firstOrderCountThreshold ?? 1}
+                                onChange={(e) => setSettings(s => s ? { ...s, firstOrderCountThreshold: Number(e.target.value) } : null)}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                                required
+                                min="1"
+                            />
+                            <p className="mt-1 text-xs text-gray-400">e.g., "1" means only the 1st order gets the discount</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Valid From (Optional)
+                            </label>
+                            <input
+                                type="date"
+                                value={settings?.firstOrderDiscountStartDate || ''}
+                                onChange={(e) => setSettings(s => s ? { ...s, firstOrderDiscountStartDate: e.target.value } : null)}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                            <p className="mt-1 text-xs text-gray-400">Leave empty for always valid</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Valid Until (Optional)
+                            </label>
+                            <input
+                                type="date"
+                                value={settings?.firstOrderDiscountEndDate || ''}
+                                onChange={(e) => setSettings(s => s ? { ...s, firstOrderDiscountEndDate: e.target.value } : null)}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                            <p className="mt-1 text-xs text-gray-400">Leave empty for always valid</p>
+                        </div>
                     </div>
                 </div>
 
@@ -248,13 +377,13 @@ export default function AdminSettingsPage() {
                     >
                         {saving ? (
                             <>
-                                <RefreshCcw className="h-5 w-5 animate-spin" />
-                                Saving...
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                                <span>Saving...</span>
                             </>
                         ) : (
                             <>
                                 <Save className="h-5 w-5" />
-                                Save Settings
+                                <span>Save Settings</span>
                             </>
                         )}
                     </button>

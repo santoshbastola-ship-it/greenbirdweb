@@ -32,7 +32,7 @@ export const TaskService = {
         }
     },
 
-    createTask: async (task: Partial<TaskItem>): Promise<string> => {
+    createTask: async (task: Partial<TaskItem>, triggeredBy?: string): Promise<string> => {
         try {
             // Ensure essential defaults if not provided
             const newTask = {
@@ -68,7 +68,8 @@ export const TaskService = {
                 `New task created: ${newTask.title}`,
                 docRef.id,
                 'task',
-                '/admin/tasks'
+                '/admin/tasks',
+                triggeredBy
             );
 
             return docRef.id;
@@ -109,7 +110,7 @@ export const TaskService = {
         }
     },
 
-    updateTask: async (id: string, task: Partial<TaskItem>): Promise<void> => {
+    updateTask: async (id: string, task: Partial<TaskItem>, triggeredBy?: string): Promise<void> => {
         try {
             const docRef = doc(db, COLLECTION_NAME, id);
             await updateDoc(docRef, {
@@ -152,7 +153,8 @@ export const TaskService = {
                 `Task updated: ${task.title || id}`,
                 id,
                 'task',
-                '/admin/tasks'
+                '/admin/tasks',
+                triggeredBy
             );
         } catch (error) {
             console.error("Error updating task:", error);
@@ -160,7 +162,7 @@ export const TaskService = {
         }
     },
 
-    deleteTask: async (id: string): Promise<void> => {
+    deleteTask: async (id: string, triggeredBy?: string): Promise<void> => {
         try {
             const docRef = doc(db, COLLECTION_NAME, id);
             const docSnap = await getDoc(docRef);
@@ -180,7 +182,8 @@ export const TaskService = {
                 message,
                 undefined,
                 'task',
-                '/admin/tasks'
+                '/admin/tasks',
+                triggeredBy
             );
         } catch (error) {
             console.error("Error deleting task:", error);

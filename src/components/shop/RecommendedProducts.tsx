@@ -37,7 +37,7 @@ export default function RecommendedProducts() {
     return (
         <div className="mt-12 border-t border-gray-100 pt-12">
             <h2 className="text-xl font-bold text-gray-900 mb-6">You might also like</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-3">
                 {recommendations.map((product) => {
                     const isEggs = product.id === FRESH_EGGS_PRODUCT_ID;
                     const quantity = isEggs ? 30 : 1;
@@ -66,9 +66,9 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
     };
 
     return (
-        <div className="group bg-white rounded-xl border border-gray-100 p-3 hover:shadow-md transition-all duration-300 flex items-center gap-4">
-            {/* Small Product Image */}
-            <div className="relative h-20 w-20 flex-shrink-0">
+        <div className="group bg-white rounded-xl border border-gray-100 p-3 md:p-4 hover:shadow-md transition-all duration-300 flex items-center gap-3 md:gap-4">
+            {/* Product Image - Responsive sizing */}
+            <div className="relative h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0">
                 <Link href={`/shop/${product.id}`} className="block w-full h-full overflow-hidden rounded-lg bg-gray-50 border border-gray-100">
                     {product.images?.[0] ? (
                         <img
@@ -83,8 +83,8 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
                     )}
                 </Link>
 
-                {/* Share Button Overlay */}
-                <div className="absolute top-0 right-0 z-30 scale-75 origin-top-right">
+                {/* Share Button Overlay - Hidden on mobile */}
+                <div className="absolute top-0 right-0 z-30 scale-75 origin-top-right hidden md:block">
                     <ShareButton
                         title={product.name}
                         text={`Check out ${product.name} at Greenbird Homestead!`}
@@ -92,46 +92,33 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
                         className="bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
                     />
                 </div>
-
-                {product.tags && product.tags.length > 0 && (
-                    <div className="absolute top-1 left-1 flex flex-wrap gap-0.5 z-20 pointer-events-none">
-                        {product.tags.map((tag, index) => (
-                            <span key={index} className="bg-white/90 text-[#2D5A27] px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm border border-[#2D5A27]/20">
-                                {tag}
-                            </span>
-                        ))}
-                    </div>
-                )}
-
-                {product.currentStock <= 0 && (
-                    <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] flex items-center justify-center text-[8px] z-10 pointer-events-none">
-                        <span className="bg-gray-900 text-white font-bold px-1.5 py-0.5 rounded-full shadow-lg">
-                            OOS
-                        </span>
-                    </div>
-                )}
             </div>
 
-            {/* Product Details */}
+            {/* Product Details - Flexible layout */}
             <div className="flex-1 min-w-0">
                 <Link href={`/shop/${product.id}`} className="block group/title">
-                    <h3 className="text-sm font-bold text-gray-900 truncate group-hover/title:text-green-600 transition-colors">
+                    {/* Product name - no truncation, wraps naturally */}
+                    <h3 className="text-sm md:text-base font-bold text-gray-900 line-clamp-2 group-hover/title:text-green-600 transition-colors leading-tight mb-1">
                         {product.name}
                     </h3>
-                    <p className="text-[10px] font-medium text-gray-400 capitalize tracking-wide">
-                        {product.categoryName || (isAdminOrManager ? product.businessType : "")}
-                    </p>
+                    {/* Category - only show on larger screens or for admin */}
+                    {(product.categoryName || (isAdminOrManager && product.businessType)) && (
+                        <p className="text-[10px] font-medium text-gray-400 capitalize tracking-wide mb-1 hidden sm:block">
+                            {product.categoryName || product.businessType}
+                        </p>
+                    )}
                 </Link>
 
-                <div className="mt-1 flex items-center gap-2">
-                    <span className="text-sm font-black text-green-700">
+                {/* Price and unit on same line */}
+                <div className="flex items-baseline gap-1 flex-wrap">
+                    <span className="text-sm md:text-base font-black text-green-700 whitespace-nowrap">
                         Rs. {product.currentPrice.toLocaleString()}
                     </span>
-                    <span className="text-[10px] text-gray-400 font-medium">/ {product.unit}</span>
+                    <span className="text-xs md:text-sm text-gray-500 font-medium whitespace-nowrap">/ {product.unit}</span>
                 </div>
             </div>
 
-            {/* Add Button */}
+            {/* Add Button - Responsive sizing */}
             <div className="flex-shrink-0">
                 <button
                     onClick={(e) => {
@@ -139,7 +126,7 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
                         handleAdd();
                     }}
                     disabled={product.currentStock <= 0 || isAdded}
-                    className={`h-10 w-10 rounded-full transition-all duration-300 flex items-center justify-center shadow-sm
+                    className={`h-9 w-9 md:h-10 md:w-10 rounded-full transition-all duration-300 flex items-center justify-center shadow-sm
                         ${isAdded
                             ? 'bg-green-600 text-white shadow-green-200 cursor-default'
                             : 'bg-green-50 text-green-700 hover:bg-green-600 hover:text-white hover:shadow-md active:scale-95'
@@ -148,9 +135,9 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
                     title={isAdded ? "Added!" : "Add to Cart"}
                 >
                     {isAdded ? (
-                        <Check className="h-5 w-5" />
+                        <Check className="h-4 w-4 md:h-5 md:w-5" />
                     ) : (
-                        <Plus className="h-5 w-5" />
+                        <Plus className="h-4 w-4 md:h-5 md:w-5" />
                     )}
                 </button>
             </div>

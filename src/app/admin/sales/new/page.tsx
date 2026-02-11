@@ -15,7 +15,9 @@ import NepaliDate from "nepali-date-converter";
 import { Toast, ToastType } from "@/components/ui/Toast";
 import EditCustomerModal from "@/components/admin/EditCustomerModal";
 import AddCustomerModal from "@/components/admin/AddCustomerModal";
+import DocumentUpload from "@/components/admin/DocumentUpload";
 import { UserRole } from "@/types";
+import { useAuth } from "@/context/AuthContext";
 
 const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
     ssr: false,
@@ -38,6 +40,7 @@ interface POSItem {
 }
 
 export default function NewSalePage() {
+    const { dbUser } = useAuth();
     const router = useRouter();
     const [products, setProducts] = useState<Product[]>([]);
     const [customers, setCustomers] = useState<User[]>([]);
@@ -49,6 +52,9 @@ export default function NewSalePage() {
     const [filteredCustomers, setFilteredCustomers] = useState<User[]>([]);
     const [showEditCustomerModal, setShowEditCustomerModal] = useState(false);
     const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
+    const [productSearchQuery, setProductSearchQuery] = useState("");
+    const [showProductDropdown, setShowProductDropdown] = useState(false);
+    const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
 
     // Form state
     const [date, setDate] = useState(() => {
@@ -65,6 +71,7 @@ export default function NewSalePage() {
     const [customDeliveryFee, setCustomDeliveryFee] = useState<string>("");
     const [deliveryFee, setDeliveryFee] = useState(0);
     const [units, setUnits] = useState<Unit[]>([]);
+    const [documentUrls, setDocumentUrls] = useState<string[]>([]);
 
     // Toast state
     const [toast, setToast] = useState<{ message: string; type: ToastType } | null>(null);
@@ -190,7 +197,8 @@ export default function NewSalePage() {
         setCart(cart.filter(item => item.productId !== id));
     };
 
-    const currentDeliveryFee = customDeliveryFee !== "" ? parseFloat(customDeliveryFee) : deliveryFee;
+    const parsedCustomFee = customDeliveryFee ? parseFloat(customDeliveryFee) : NaN;
+    const currentDeliveryFee = !isNaN(parsedCustomFee) ? parsedCustomFee : deliveryFee;
     const totalAmount = cart.reduce((sum, item) => sum + item.total, 0);
 
     // Online order discount for verified users (also applying to POS for consistency if customer is verified)
@@ -243,6 +251,19 @@ export default function NewSalePage() {
         }
     }, [partyName, customerId, customers]);
 
+    useEffect(() => {
+        // Filter products based on search query
+        const lower = productSearchQuery.toLowerCase();
+        if (lower) {
+            const matches = products.filter(p =>
+                p.name.toLowerCase().includes(lower)
+            );
+            setFilteredProducts(matches);
+        } else {
+            setFilteredProducts(products);
+        }
+    }, [productSearchQuery, products]);
+
     const handleSave = async () => {
         if (!partyName) {
             showToast("Please enter Party/Customer Name", "error");
@@ -286,8 +307,9 @@ export default function NewSalePage() {
                     amount: Number(paidAmount),
                     date: new Date(),
                     note: "POS Sale"
-                }]
-            });
+                }],
+                documentUrls: documentUrls
+            }, dbUser?.name || "Admin");
 
             showToast("Sale saved successfully");
             setTimeout(() => {
@@ -376,7 +398,7 @@ export default function NewSalePage() {
                                     <input
                                         type="text"
                                         className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all font-medium"
-                                        placeholder="Search existing customer or type new name..."
+                                        placeholder="Search"
                                         value={partyName}
                                         onChange={(e) => {
                                             setPartyName(e.target.value);
@@ -480,18 +502,48 @@ export default function NewSalePage() {
                             <label className="block text-sm font-medium text-gray-700 mb-1.5 flex items-center gap-2">
                                 <Plus className="h-4 w-4 text-gray-400" /> Select Item to Add
                             </label>
-                            <select
-                                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all"
-                                onChange={(e) => handleProductSelect(e.target.value)}
-                                value=""
-                            >
-                                <option value="" disabled>Choose a product...</option>
-                                {products.map(p => (
-                                    <option key={p.id} value={p.id}>
-                                        {p.name} - Rs {p.currentPrice} ({p.currentStock} {p.unit} in stock)
-                                    </option>
-                                ))}
-                            </select>
+                            <div className="relative">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <input
+                                    type="text"
+                                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all font-medium"
+                                    placeholder="Search for a product..."
+                                    value={productSearchQuery}
+                                    onChange={(e) => setProductSearchQuery(e.target.value)}
+                                    onFocus={() => setShowProductDropdown(true)}
+                                    onBlur={() => {
+                                        // Delay to allow click on dropdown
+                                        setTimeout(() => setShowProductDropdown(false), 200);
+                                    }}
+                                />
+
+                                {/* Product Autocomplete Dropdown */}
+                                {showProductDropdown && filteredProducts.length > 0 && (
+                                    <div className="absolute z-10 w-full mt-1 bg-white rounded-xl shadow-xl border border-gray-100 max-h-60 overflow-y-auto">
+                                        {filteredProducts.map(product => (
+                                            <button
+                                                key={product.id}
+                                                className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-center justify-between group border-b border-gray-50 last:border-0"
+                                                onClick={() => {
+                                                    handleProductSelect(product.id);
+                                                    setProductSearchQuery("");
+                                                    setShowProductDropdown(false);
+                                                }}
+                                            >
+                                                <div className="flex-1">
+                                                    <div className="font-bold text-gray-900 group-hover:text-green-700">{product.name}</div>
+                                                    <div className="text-xs text-gray-500 mt-0.5">
+                                                        Rs {product.currentPrice} per {product.priceUnit || product.unit} • {product.currentStock} {product.unit} in stock
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Plus className="h-4 w-4 text-green-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                </div>
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* Cart Items List */}
@@ -668,6 +720,15 @@ export default function NewSalePage() {
                                 />
                             </div>
                         </div>
+                    </div>
+
+                    {/* Document Upload Section */}
+                    <div className="pt-6 border-t border-gray-100">
+                        <DocumentUpload
+                            documentUrls={documentUrls}
+                            onChange={setDocumentUrls}
+                            folder="sales-bills"
+                        />
                     </div>
 
                     {/* Summary Footer */}

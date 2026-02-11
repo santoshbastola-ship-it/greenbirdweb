@@ -14,6 +14,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
     const profileRef = useRef<HTMLDivElement>(null);
     const pathname = usePathname();
     const { user, dbUser, logout } = useAuth();
@@ -28,6 +29,10 @@ export default function Navbar() {
     ];
 
     const isActive = (path: string) => pathname === path;
+
+    useEffect(() => {
+        setIsSearchOpen(false);
+    }, [pathname]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent | TouchEvent) {
@@ -55,9 +60,9 @@ export default function Navbar() {
     return (
         <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between h-20 items-center">
+                <div className="flex justify-between h-20 items-center relative">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center shrink-0">
+                    <Link href="/" className={clsx("flex items-center shrink-0", isSearchOpen && "hidden md:flex")}>
                         <img
                             src="/images/logo.png"
                             alt="Greenbird Homestead"
@@ -66,8 +71,24 @@ export default function Navbar() {
                     </Link>
 
                     {/* Search Field - Visible on all screens */}
-                    <div className="flex-1 max-w-xl mx-2 md:mx-4">
-                        <SearchInput />
+                    <div className={clsx(
+                        "flex-1 mx-2 md:mx-4 transition-all duration-300",
+                        isSearchOpen
+                            ? "absolute inset-0 z-50 bg-white px-4 flex items-center justify-center md:relative md:bg-transparent md:inset-auto md:max-w-xl md:justify-start"
+                            : "max-w-xl"
+                    )}>
+                        <SearchInput
+                            onFocus={() => setIsSearchOpen(true)}
+                            className={clsx(isSearchOpen && "!max-w-none flex-1")}
+                        />
+                        {isSearchOpen && (
+                            <button
+                                onClick={() => setIsSearchOpen(false)}
+                                className="ml-2 p-2 text-gray-500 hover:text-gray-700 md:hidden"
+                            >
+                                <X className="h-6 w-6" />
+                            </button>
+                        )}
                     </div>
 
                     {/* Desktop Links - Hidden on small screens, shown on large */}
@@ -89,7 +110,7 @@ export default function Navbar() {
                     </div>
 
                     {/* Right Icons */}
-                    <div className="flex items-center space-x-4">
+                    <div className={clsx("flex items-center space-x-4", isSearchOpen && "hidden md:flex")}>
                         {user && (
                             <div className="flex items-center space-x-2">
                                 <Link href="/notifications" className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">

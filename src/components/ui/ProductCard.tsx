@@ -1,10 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingBag, Star } from "lucide-react";
 import { Product } from "@/types";
 import AddToCartButton from "./AddToCartButton";
 import { useAuth } from "@/context/AuthContext";
 import ShareButton from "./ShareButton";
+import { calculateProductPrice } from "@/lib/product-helper";
 
 interface ProductCardProps {
     product: Product;
@@ -19,6 +19,8 @@ export default function ProductCard({ product }: ProductCardProps) {
     const imageSrc = (product.images && Array.isArray(product.images) && product.images.length > 0)
         ? product.images[0]
         : "/placeholder.png";
+
+    const { finalPrice, originalPrice, hasDiscount, discountBadge } = calculateProductPrice(product);
 
     return (
         <div className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 relative">
@@ -50,6 +52,15 @@ export default function ProductCard({ product }: ProductCardProps) {
                         </span>
                     </div>
                 )}
+
+                {hasDiscount && (
+                    <div className="absolute bottom-2 right-2 z-20 pointer-events-none">
+                        <span className="bg-red-500 text-white px-2 py-1 rounded-lg text-xs font-bold uppercase tracking-wider shadow-sm">
+                            {discountBadge}
+                        </span>
+                    </div>
+                )}
+
                 {product.tags && product.tags.length > 0 && (
                     <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-20 pointer-events-none">
                         {product.tags.map((tag, index) => (
@@ -73,11 +84,19 @@ export default function ProductCard({ product }: ProductCardProps) {
                             </h3>
                         </Link>
                     </div>
-                    <div className="flex items-center bg-[#2D5A27]/10 px-3 py-1.5 rounded-xl border border-[#2D5A27]/10 shadow-sm">
-                        <span className="text-sm font-bold text-[#2D5A27]">
-                            Rs. {product.currentPrice}
-                        </span>
-                        <span className="text-xs text-[#2D5A27]/70 ml-1">/{product.priceUnit}</span>
+
+                    <div className="flex flex-col items-end">
+                        <div className="flex items-center bg-[#2D5A27]/10 px-3 py-1.5 rounded-xl border border-[#2D5A27]/10 shadow-sm">
+                            <span className="text-sm font-bold text-[#2D5A27]">
+                                Rs. {finalPrice}
+                            </span>
+                            <span className="text-xs text-[#2D5A27]/70 ml-1">/{product.priceUnit}</span>
+                        </div>
+                        {hasDiscount && (
+                            <span className="text-xs text-gray-400 line-through mt-1">
+                                Rs. {originalPrice}
+                            </span>
+                        )}
                     </div>
                 </div>
 

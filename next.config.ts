@@ -10,7 +10,7 @@ const withPWA = require("next-pwa")({
 import packageJson from './package.json';
 
 const nextConfig: NextConfig = {
-  // output: 'export', // Disabled to allow API routes (WhatsApp)
+  output: 'export', // Enabled for static deployment
   images: {
     unoptimized: true,
   },
@@ -19,19 +19,6 @@ const nextConfig: NextConfig = {
   },
   // @ts-ignore
   turbopack: {},
-  async headers() {
-    return [
-      {
-        source: "/(.*)",
-        headers: [
-          {
-            key: "Cross-Origin-Opener-Policy",
-            value: "same-origin-allow-popups",
-          },
-        ],
-      },
-    ];
-  },
 };
 
 export default withPWA(nextConfig);

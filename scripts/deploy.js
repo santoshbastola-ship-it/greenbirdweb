@@ -65,6 +65,10 @@ const main = () => {
     console.log('Building project...');
     runCommand('npm run build');
 
+    // 4.1 Build Functions
+    console.log('Building functions...');
+    runCommand('cd functions && npm install && npm run build');
+
     // 5. Deploy
     console.log('Deploying to Firebase...');
     runCommand('npx firebase deploy');

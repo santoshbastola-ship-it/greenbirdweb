@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Product, BusinessType, StockUnit } from "@/types";
+import { Product, BusinessType, StockUnit, ProductDiscount } from "@/types";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Upload, X } from "lucide-react";
+import { ArrowLeft, Save, Upload, X, Star, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { ProductService } from "@/services/product.service";
 import { Toast, ToastType } from "@/components/ui/Toast";
@@ -16,6 +16,7 @@ import { CategoryService } from "@/services/category.service";
 import { UnitService } from "@/services/unit.service";
 import { Category, Unit } from "@/types";
 import { useEffect } from "react";
+import ImageCropperModal from "./ImageCropperModal";
 
 interface ProductFormProps {
     initialData?: Product;
@@ -35,11 +36,17 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
     const [units, setUnits] = useState<Unit[]>([]);
     const [loadingUnits, setLoadingUnits] = useState(true);
 
+    // Image Cropping States
+    const [croppingImage, setCroppingImage] = useState<{ src: string; file: File } | null>(null);
+    const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+
     const [formData, setFormData] = useState<Partial<Product>>(() => {
         if (initialData) {
             return {
                 ...initialData,
                 tags: initialData.tags || ["", ""],
+                discount: initialData.discount,
+                showInApp: initialData.showInApp ?? true,
             };
         }
         return {
@@ -54,6 +61,8 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
             isAvailableForSale: true,
             isFeatured: false,
             tags: ["", ""],
+            discount: undefined,
+            showInApp: true,
         };
     });
 
@@ -140,6 +149,28 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
         });
     };
 
+    const handleDiscountChange = (field: keyof ProductDiscount | 'enabled', value: any) => {
+        setFormData((prev) => {
+            const currentDiscount = prev.discount || { type: 'flat', value: 0 };
+
+            if (field === 'enabled') {
+                // If disabling, remove discount
+                if (!value) return { ...prev, discount: undefined };
+                // If enabling, set default
+                return { ...prev, discount: { type: 'flat', value: 0 } };
+            }
+
+            // Update specific field
+            return {
+                ...prev,
+                discount: {
+                    ...currentDiscount,
+                    [field]: value
+                }
+            };
+        });
+    };
+
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files || files.length === 0) return;
@@ -159,8 +190,61 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
             showToast(`Failed to upload images: ${error.message || 'Unknown error'}`, "error");
         } finally {
             setUploadingImage(false);
-            // Reset input so same file can be selected again if needed
             if (fileInputRef.current) fileInputRef.current.value = "";
+        }
+    };
+
+    const processNextPendingFile = (currentPending: File[]) => {
+        if (currentPending.length === 0) return;
+
+        const nextFile = currentPending[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+            setCroppingImage({
+                src: reader.result as string,
+                file: nextFile
+            });
+            setPendingFiles(currentPending.slice(1));
+        };
+        reader.readAsDataURL(nextFile);
+    };
+
+    const handleImageSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        const fileList = Array.from(files);
+        processNextPendingFile(fileList);
+    };
+
+    const onCropComplete = async (croppedBlob: Blob) => {
+        if (!croppingImage) return;
+
+        const croppedFile = new File([croppedBlob], croppingImage.file.name, {
+            type: 'image/jpeg'
+        });
+
+        // Close cropper
+        setCroppingImage(null);
+
+        // Upload this file
+        setUploadingImage(true);
+        try {
+            const downloadURL = await ProductService.uploadProductImage(croppedFile);
+            setFormData(prev => ({
+                ...prev,
+                images: [...(prev.images || []), downloadURL]
+            }));
+            showToast("Image uploaded successfully");
+        } catch (error: any) {
+            console.error("Error uploading cropped image:", error);
+            showToast("Failed to upload image", "error");
+        } finally {
+            setUploadingImage(false);
+            // Process next if any
+            if (pendingFiles.length > 0) {
+                processNextPendingFile(pendingFiles);
+            }
         }
     };
 
@@ -171,8 +255,29 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
         }));
     };
 
+    const setAsDefault = (index: number) => {
+        setFormData(prev => {
+            if (!prev.images || prev.images.length <= 1) return prev;
+            const newImages = [...prev.images];
+            const [selectedImage] = newImages.splice(index, 1);
+            newImages.unshift(selectedImage);
+            return { ...prev, images: newImages };
+        });
+    };
+
     return (
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-6">
+            {croppingImage && (
+                <ImageCropperModal
+                    imageSrc={croppingImage.src}
+                    aspect={1} // Square for products
+                    onCropComplete={onCropComplete}
+                    onClose={() => {
+                        setCroppingImage(null);
+                        if (pendingFiles.length > 0) processNextPendingFile(pendingFiles);
+                    }}
+                />
+            )}
             {toast && (
                 <Toast
                     message={toast.message}
@@ -191,10 +296,19 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                 <button
                     type="submit"
                     disabled={loading || uploadingImage}
-                    className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center disabled:opacity-50"
+                    className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center disabled:opacity-50 gap-2"
                 >
-                    <Save className="h-5 w-5 mr-2" />
-                    {loading ? "Saving..." : "Save Product"}
+                    {loading ? (
+                        <>
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <span>Saving...</span>
+                        </>
+                    ) : (
+                        <>
+                            <Save className="h-5 w-5" />
+                            <span>Save Product</span>
+                        </>
+                    )}
                 </button>
             </div>
 
@@ -287,7 +401,20 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                         onChange={handleCheckboxChange}
                                         className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                                     />
-                                    <span className="ml-2 text-sm text-gray-600">Show on Home Page</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Show in App (Customer View)</label>
+                                <div className="flex items-center h-[42px]">
+                                    <input
+                                        type="checkbox"
+                                        name="showInApp"
+                                        checked={formData.showInApp ?? true}
+                                        onChange={handleCheckboxChange}
+                                        className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                                    />
+                                    <span className="ml-2 text-sm text-gray-600">Visible to Customers</span>
                                 </div>
                             </div>
                         </div>
@@ -460,6 +587,72 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                     )}
                 </div>
 
+                {/* Discount Section */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-4">
+                    <div className="flex items-center justify-between border-b pb-2 mb-4">
+                        <h2 className="text-lg font-semibold text-gray-900">Discount & Offers</h2>
+                        <div className="flex items-center">
+                            <input
+                                type="checkbox"
+                                id="enableDiscount"
+                                checked={!!formData.discount}
+                                onChange={(e) => handleDiscountChange('enabled', e.target.checked)}
+                                className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                            />
+                            <label htmlFor="enableDiscount" className="ml-2 text-sm text-gray-700">Enable Discount</label>
+                        </div>
+                    </div>
+
+                    {formData.discount && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Discount Type</label>
+                                <select
+                                    value={formData.discount.type}
+                                    onChange={(e) => handleDiscountChange('type', e.target.value)}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                                >
+                                    <option value="flat">Flat Amount (Rs)</option>
+                                    <option value="percentage">Percentage (%)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Discount Value ({formData.discount.type === 'percentage' ? '%' : 'Rs'})
+                                </label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={formData.discount.value}
+                                    onChange={(e) => handleDiscountChange('value', parseFloat(e.target.value))}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date (Optional)</label>
+                                <input
+                                    type="date"
+                                    value={formData.discount.startDate ? new Date(formData.discount.startDate).toISOString().split('T')[0] : ''}
+                                    onChange={(e) => handleDiscountChange('startDate', e.target.value ? new Date(e.target.value).toISOString() : undefined)}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">End Date (Optional)</label>
+                                <input
+                                    type="date"
+                                    value={formData.discount.endDate ? new Date(formData.discount.endDate).toISOString().split('T')[0] : ''}
+                                    onChange={(e) => handleDiscountChange('endDate', e.target.value ? new Date(e.target.value).toISOString() : undefined)}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
+
                 {/* Media / Images */}
                 <div className="space-y-6">
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -471,7 +664,7 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                             className="hidden"
                             accept="image/*"
                             multiple
-                            onChange={handleImageUpload}
+                            onChange={handleImageSelection}
                         />
 
                         <div
@@ -501,10 +694,23 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                     <button
                                         type="button"
                                         onClick={() => removeImage(index)}
-                                        className="absolute top-1 right-1 bg-white/80 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                        className="absolute top-1 right-1 bg-white/80 p-1 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-10"
                                     >
                                         <X className="h-4 w-4 text-red-500" />
                                     </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setAsDefault(index)}
+                                        className={`absolute bottom-1 left-1 p-1 rounded-full transition-all z-10 ${index === 0 ? 'bg-yellow-400 text-white' : 'bg-white/80 text-gray-400 opacity-100 md:opacity-0 md:group-hover:opacity-100'}`}
+                                        title={index === 0 ? "Default Image" : "Set as Default"}
+                                    >
+                                        <Star className={`h-4 w-4 ${index === 0 ? 'fill-current' : ''}`} />
+                                    </button>
+                                    {index === 0 && (
+                                        <div className="absolute top-1 left-1 bg-green-600 text-white text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider z-10">
+                                            Default
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -517,10 +723,19 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                 <button
                     type="submit"
                     disabled={loading || uploadingImage}
-                    className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition-colors flex items-center shadow-lg shadow-green-900/10 disabled:opacity-50"
+                    className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition-colors flex items-center shadow-lg shadow-green-900/10 disabled:opacity-50 gap-2"
                 >
-                    <Save className="h-5 w-5 mr-2" />
-                    {loading ? "Saving..." : "Save Product"}
+                    {loading ? (
+                        <>
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <span>Saving...</span>
+                        </>
+                    ) : (
+                        <>
+                            <Save className="h-5 w-5" />
+                            <span>Save Product</span>
+                        </>
+                    )}
                 </button>
             </div>
         </form>

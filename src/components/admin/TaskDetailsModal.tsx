@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { X, Calendar, User, AlignLeft, AlertCircle, Repeat, Edit2, Trash2 } from "lucide-react";
+import { X, Calendar, User, AlignLeft, AlertCircle, Repeat, Edit2, Trash2, Paperclip, ExternalLink } from "lucide-react";
 import { TaskItem, TaskPriority, TaskStatus } from "@/types";
 import { TaskService } from "@/services/task.service";
 import AddTaskModal from "./AddTaskModal";
+import { useAuth } from "@/context/AuthContext";
 
 interface TaskDetailsModalProps {
     task: TaskItem;
@@ -13,6 +14,7 @@ interface TaskDetailsModalProps {
 }
 
 export default function TaskDetailsModal({ task, onClose, onUpdate }: TaskDetailsModalProps) {
+    const { dbUser } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
@@ -38,7 +40,7 @@ export default function TaskDetailsModal({ task, onClose, onUpdate }: TaskDetail
 
         setIsDeleting(true);
         try {
-            await TaskService.deleteTask(task.id);
+            await TaskService.deleteTask(task.id, dbUser?.name || "Admin");
             onUpdate();
             onClose();
         } catch (error) {
@@ -61,7 +63,7 @@ export default function TaskDetailsModal({ task, onClose, onUpdate }: TaskDetail
         const newStatus = e.target.value as TaskStatus;
         try {
             // Optimistic UI update could be tricky with props, but we can call onUpdate which refreshes parent
-            await TaskService.updateTask(task.id, { status: newStatus });
+            await TaskService.updateTask(task.id, { status: newStatus }, dbUser?.name || "Admin");
             onUpdate();
         } catch (error) {
             console.error("Failed to update status:", error);
@@ -182,16 +184,44 @@ export default function TaskDetailsModal({ task, onClose, onUpdate }: TaskDetail
                         </div>
                     </div>
 
-                </div>
+                    {/* Documents Section */}
+                    {task.documentUrls && task.documentUrls.length > 0 && (
+                        <div>
+                            <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <Paperclip className="h-3 w-3" /> Attachments
+                            </h4>
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                {task.documentUrls.map((url, idx) => (
+                                    <a
+                                        key={idx}
+                                        href={url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="group relative aspect-square rounded-xl overflow-hidden border border-gray-100 bg-gray-50 hover:border-green-200 transition-all shadow-sm"
+                                    >
+                                        <img
+                                            src={url}
+                                            alt={`Attachment ${idx + 1}`}
+                                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                        />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <ExternalLink className="h-5 w-5 text-white" />
+                                        </div>
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
-                {/* Footer */}
-                <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end sticky bottom-0">
-                    <button
-                        onClick={onClose}
-                        className="px-6 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 font-bold hover:bg-gray-100 transition-colors shadow-sm"
-                    >
-                        Close
-                    </button>
+                    {/* Footer */}
+                    <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end sticky bottom-0">
+                        <button
+                            onClick={onClose}
+                            className="px-6 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 font-bold hover:bg-gray-100 transition-colors shadow-sm"
+                        >
+                            Close
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

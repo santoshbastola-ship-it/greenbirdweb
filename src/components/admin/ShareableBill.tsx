@@ -1,6 +1,6 @@
 import { TransactionRecord } from "@/types";
 import { toNepali } from "@/lib/date-helper";
-import { forwardRef } from "react";
+import { forwardRef, useState } from "react";
 
 interface ShareableBillProps {
     transaction: TransactionRecord;
@@ -12,6 +12,8 @@ const ShareableBill = forwardRef<HTMLDivElement, ShareableBillProps>(({ transact
     const totalAmount = subtotal - (transaction.discount || 0) + deliveryFee;
     const paidAmount = transaction.paidAmount || 0;
     const remaining = totalAmount - paidAmount;
+
+    const [qrError, setQrError] = useState(false);
 
     return (
         <div
@@ -34,7 +36,7 @@ const ShareableBill = forwardRef<HTMLDivElement, ShareableBillProps>(({ transact
                     />
                 </div>
                 <h1 className="text-2xl font-bold text-green-800">Greenbird Homestead</h1>
-                <p className="text-sm text-gray-500">Naturally Grown, Freshly Delivered</p>
+                <p className="text-sm text-gray-500">Organic.Fresh.Local</p>
                 <div className="flex flex-col items-center gap-1 mt-2 text-xs text-gray-500">
                     <span>📞 +977 9849850000</span>
                     <span>📍 Besi Gaun, Duwakot, Bhaktapur</span>
@@ -70,8 +72,10 @@ const ShareableBill = forwardRef<HTMLDivElement, ShareableBillProps>(({ transact
                         {transaction.items.map((item, idx) => (
                             <tr key={idx}>
                                 <td className="py-2 px-3 text-gray-800 font-medium">{item.productName}</td>
-                                <td className="py-2 px-3 text-center text-gray-600">{item.quantity} {item.unit}</td>
-                                <td className="py-2 px-3 text-right text-gray-600">Rs. {item.pricePerUnit.toLocaleString()}</td>
+                                <td className="py-2 px-3 text-center text-gray-600">
+                                    {item.weight ? `${item.weight} ${item.priceUnit}` : `${item.quantity} ${item.unit}`}
+                                </td>
+                                <td className="py-2 px-3 text-right text-gray-600">Rs. {item.pricePerUnit.toLocaleString()} / {item.priceUnit}</td>
                                 <td className="py-2 px-3 text-right text-gray-900 font-medium">Rs. {item.totalPrice.toLocaleString()}</td>
                             </tr>
                         ))}
@@ -80,7 +84,7 @@ const ShareableBill = forwardRef<HTMLDivElement, ShareableBillProps>(({ transact
             </div>
 
             {/* Summary */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-8">
+            <div className="bg-gray-50 rounded-lg p-4 mb-2">
                 <div className="flex justify-between mb-2">
                     <span className="text-gray-600">Subtotal</span>
                     <span className="font-medium">Rs. {subtotal.toLocaleString()}</span>
@@ -106,18 +110,18 @@ const ShareableBill = forwardRef<HTMLDivElement, ShareableBillProps>(({ transact
                     <span className="font-bold text-gray-900 text-xl">Rs. {totalAmount.toLocaleString()}</span>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-gray-200 border-dashed">
-                    <div className="flex justify-between mb-1">
-                        <span className="text-gray-600">Paid Amount</span>
-                        <span className="font-medium text-green-700">Rs. {paidAmount.toLocaleString()}</span>
-                    </div>
-                    {remaining > 0 && (
+                {paidAmount > 0 && remaining > 0 && (
+                    <div className="mt-4 pt-3 border-t border-gray-200 border-dashed">
+                        <div className="flex justify-between mb-1">
+                            <span className="text-gray-600">Paid Amount</span>
+                            <span className="font-medium text-green-700">Rs. {paidAmount.toLocaleString()}</span>
+                        </div>
                         <div className="flex justify-between bg-orange-50 p-2 rounded mt-2 border border-orange-100">
                             <span className="text-orange-800 font-medium">Due Balance</span>
                             <span className="text-orange-800 font-bold">Rs. {remaining.toLocaleString()}</span>
                         </div>
-                    )}
-                </div>
+                    </div>
+                )}
 
                 <div className="mt-4 flex items-center justify-between">
                     <span className="text-xs text-gray-500 uppercase font-bold tracking-wider">Status</span>
@@ -130,10 +134,26 @@ const ShareableBill = forwardRef<HTMLDivElement, ShareableBillProps>(({ transact
                 </div>
             </div>
 
+            {/* QR Code Section */}
+            {/* NOTE: QR code requires /public/images/qr_payment.jpg file to be present */}
+            {!qrError && (
+                <div className="flex flex-col items-center justify-center mb-6">
+                    <p className="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Scan to Pay</p>
+                    <div className="border-2 border-gray-100 rounded-xl p-2 bg-white shadow-sm">
+                        <img
+                            src="/images/qr_payment.jpg"
+                            alt="Payment QR Code"
+                            className="w-32 h-32 object-contain"
+                            onError={() => setQrError(true)}
+                        />
+                    </div>
+                </div>
+            )}
+
             {/* Footer */}
             <div className="text-center mt-auto">
                 <p className="text-green-800 font-handwriting text-lg italic font-medium mb-1">Thank you for your business!</p>
-                <p className="text-gray-400 text-xs">Generated from Greenbird Homestead App</p>
+                <p className="text-gray-400 text-xs">Generated from Greenbird Farm Management App</p>
                 <p className="text-gray-400 text-[10px] mt-2">{new Date().toLocaleString()}</p>
             </div>
         </div>

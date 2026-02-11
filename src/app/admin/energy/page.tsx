@@ -71,7 +71,7 @@ export default function EnergyBillsPage() {
         if (!confirm("Are you sure you want to delete this bill?")) return;
 
         try {
-            await deleteEnergyBill(id);
+            await deleteEnergyBill(id, dbUser?.name || "Admin");
             // Subscription will update state
         } catch (error) {
             console.error("Error deleting bill:", error);
@@ -177,7 +177,7 @@ export default function EnergyBillsPage() {
                     onStartDateChange={setStartDate}
                     endDate={endDate}
                     onEndDateChange={setEndDate}
-                    placeholder="Search by Type, Amount, or Remarks..."
+                    placeholder="Search"
                 />
 
                 {/* Tabs */}

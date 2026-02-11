@@ -13,6 +13,8 @@ import AddPartnerModal from "@/components/admin/AddPartnerModal";
 import NepaliDate from "nepali-date-converter";
 import { toNepali } from "@/lib/date-helper";
 import { Toast, ToastType } from "@/components/ui/Toast";
+import DocumentUpload from "@/components/admin/DocumentUpload";
+import { useAuth } from "@/context/AuthContext";
 
 // Dynamic import for NepaliDatePicker to avoid SSR issues
 const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
@@ -23,6 +25,7 @@ const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(
 import "nepali-datepicker-reactjs/dist/index.css";
 
 export default function NewPurchasePage() {
+    const { dbUser } = useAuth();
     const router = useRouter();
     const [vendors, setVendors] = useState<User[]>([]);
     const [availableUsers, setAvailableUsers] = useState<User[]>([]);
@@ -42,6 +45,7 @@ export default function NewPurchasePage() {
     const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(PaymentStatus.Pending);
     const [paidAmount, setPaidAmount] = useState<string>("0");
     const [discount, setDiscount] = useState<string>("0");
+    const [documentUrls, setDocumentUrls] = useState<string[]>([]);
 
     // Item Entry State
     const [entryItem, setEntryItem] = useState({
@@ -178,8 +182,9 @@ export default function NewPurchasePage() {
                     amount: parseFloat(paidAmount),
                     date: new Date(),
                     note: "Initial Payment"
-                }] : []
-            });
+                }] : [],
+                documentUrls: documentUrls
+            }, dbUser?.name || "Admin");
 
             showToast("Purchase recorded successfully");
             setTimeout(() => {
@@ -471,6 +476,15 @@ export default function NewPurchasePage() {
                                 />
                             </div>
                         </div>
+                    </div>
+
+                    {/* Document Upload Section */}
+                    <div className="pt-6 border-t border-gray-100">
+                        <DocumentUpload
+                            documentUrls={documentUrls}
+                            onChange={setDocumentUrls}
+                            folder="purchase-bills"
+                        />
                     </div>
 
                     {/* Final Totals */}

@@ -37,6 +37,7 @@ const convertToEnergyBill = (id: string, data: DocumentData): EnergyBill => {
         remarks: data.remarks,
         enteredBy: data.enteredBy || '',
         entryDate: data.entryDate?.toDate() || new Date(),
+        documentUrls: data.documentUrls || [],
     };
 };
 
@@ -53,6 +54,7 @@ const convertToFirestoreData = (bill: Partial<EnergyBill>) => {
     if (bill.payments !== undefined) data.payments = bill.payments;
     if (bill.remarks !== undefined) data.remarks = bill.remarks;
     if (bill.enteredBy !== undefined) data.enteredBy = bill.enteredBy;
+    if (bill.documentUrls !== undefined) data.documentUrls = bill.documentUrls;
 
     if (bill.meterReadingDate) {
         data.meterReadingDate = Timestamp.fromDate(bill.meterReadingDate);
@@ -105,7 +107,10 @@ export const subscribeToEnergyBills = (
 /**
  * Add a new energy bill
  */
-export const addEnergyBill = async (bill: Omit<EnergyBill, 'id'>): Promise<string> => {
+/**
+ * Add a new energy bill
+ */
+export const addEnergyBill = async (bill: Omit<EnergyBill, 'id'>, triggeredBy?: string): Promise<string> => {
     try {
         const data = convertToFirestoreData({
             ...bill,
@@ -120,7 +125,8 @@ export const addEnergyBill = async (bill: Omit<EnergyBill, 'id'>): Promise<strin
             `New ${bill.type} bill added for ${bill.month} ${bill.year}`,
             docRef.id,
             'energy',
-            '/admin/energy'
+            '/admin/energy',
+            triggeredBy
         );
 
         return docRef.id;
@@ -135,7 +141,8 @@ export const addEnergyBill = async (bill: Omit<EnergyBill, 'id'>): Promise<strin
  */
 export const updateEnergyBill = async (
     id: string,
-    updates: Partial<EnergyBill>
+    updates: Partial<EnergyBill>,
+    triggeredBy?: string
 ): Promise<void> => {
     try {
         const data = convertToFirestoreData(updates);
@@ -148,7 +155,8 @@ export const updateEnergyBill = async (
             `Energy bill updated: ${id}`,
             id,
             'energy',
-            '/admin/energy'
+            '/admin/energy',
+            triggeredBy
         );
     } catch (error) {
         console.error('Error updating energy bill:', error);
@@ -159,7 +167,7 @@ export const updateEnergyBill = async (
 /**
  * Delete an energy bill
  */
-export const deleteEnergyBill = async (id: string): Promise<void> => {
+export const deleteEnergyBill = async (id: string, triggeredBy?: string): Promise<void> => {
     try {
         const billRef = doc(db, COLLECTION_NAME, id);
         await deleteDoc(billRef);
@@ -170,7 +178,8 @@ export const deleteEnergyBill = async (id: string): Promise<void> => {
             `Energy bill deleted: ${id}`,
             undefined,
             'energy',
-            '/admin/energy'
+            '/admin/energy',
+            triggeredBy
         );
     } catch (error) {
         console.error('Error deleting energy bill:', error);
@@ -185,7 +194,8 @@ export const updatePaymentStatus = async (
     id: string,
     paymentStatus: PaymentStatus,
     paidAmount?: number,
-    payments?: any[]
+    payments?: any[],
+    triggeredBy?: string
 ): Promise<void> => {
     try {
         const billRef = doc(db, COLLECTION_NAME, id);
@@ -207,7 +217,8 @@ export const updatePaymentStatus = async (
             `Payment status updated for bill ${id}: ${paymentStatus}`,
             id,
             'energy',
-            '/admin/energy'
+            '/admin/energy',
+            triggeredBy
         );
     } catch (error) {
         console.error('Error updating payment status:', error);

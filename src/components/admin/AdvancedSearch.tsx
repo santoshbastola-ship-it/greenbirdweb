@@ -28,7 +28,7 @@ export default function AdvancedSearch({
     onStartDateChange,
     endDate,
     onEndDateChange,
-    placeholder = "Search..."
+    placeholder = "Search"
 }: AdvancedSearchProps) {
     const [isExpanded, setIsExpanded] = useState(false);
 

@@ -1,0 +1,522 @@
+{
+  "documents": [
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/5kMnWIxC4aOfKqT8OZPq",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770346771357_flower.webp?alt=media&token=c596d8d6-ecb0-47fc-8c98-c6ae7927218d"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Fresh Flowers"
+        }
+      },
+      "createTime": "2026-02-06T02:06:11.040659Z",
+      "updateTime": "2026-02-06T02:59:36.097090Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/5tM9mnyyo6RGP5F6liId",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546047845_1770346326233_pure-ghee.webp?alt=media"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Pure Cow Ghee "
+        }
+      },
+      "createTime": "2026-02-06T01:59:57.256651Z",
+      "updateTime": "2026-02-08T10:20:53.391844Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/67Z9L4MXTnU715Lr9XZF",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546056183_1770346537173_tomatoes.webp?alt=media"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Tomatoes"
+        }
+      },
+      "createTime": "2026-02-06T02:02:42.108402Z",
+      "updateTime": "2026-02-08T10:21:00.460888Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/6l4e9wP5LwhVMSFk2deB",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546065123_1770204162605_1000027309.webp?alt=media"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Amba (Guava) "
+        }
+      },
+      "createTime": "2026-02-04T05:42:19.956620Z",
+      "updateTime": "2026-02-08T10:21:11.101868Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/93zg2tCIL8r1udGDbDgT",
+      "fields": {
+        "name": {
+          "stringValue": "Tulsi Tea"
+        },
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546073189_1770345680718_tulsi%20tea.webp?alt=media"
+              }
+            ]
+          }
+        }
+      },
+      "createTime": "2026-02-04T02:58:52.064884Z",
+      "updateTime": "2026-02-08T10:21:17.082375Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/CPyhgMztV7yYMw1shMh7",
+      "fields": {
+        "name": {
+          "stringValue": "Lime (Nibuwa)"
+        },
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546080616_1770206249675_1000027465.webp?alt=media"
+              }
+            ]
+          }
+        }
+      },
+      "createTime": "2026-02-04T02:55:13.335519Z",
+      "updateTime": "2026-02-08T10:21:25.259080Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/CRp5xRonVEHXTN67jp2C",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546087706_1770345759554_timur.webp?alt=media"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Timur (Sichuan Pepper)"
+        }
+      },
+      "createTime": "2026-02-04T03:03:21.474853Z",
+      "updateTime": "2026-02-08T10:21:32.434750Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/DpuyHdnlLumEy12uZ9S6",
+      "fields": {
+        "name": {
+          "stringValue": "Compost Manure"
+        },
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546097362_1770345822235_organic-compost-manure.webp?alt=media"
+              }
+            ]
+          }
+        }
+      },
+      "createTime": "2026-02-04T05:38:29.769355Z",
+      "updateTime": "2026-02-08T10:21:41.491918Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/F86C7BrE1TaZknHEXZz3",
+      "fields": {
+        "name": {
+          "stringValue": "Cabbage"
+        },
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546103052_1770346612451_cabbage.webp?alt=media"
+              },
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770346665297_cabbage1.webp?alt=media&token=f11cd6ed-f51b-4533-a15c-f099caedb855"
+              }
+            ]
+          }
+        }
+      },
+      "createTime": "2026-02-06T02:04:38.091647Z",
+      "updateTime": "2026-02-08T10:21:47.111481Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/FG8aCq7toxAh4NGCksDl",
+      "fields": {
+        "name": {
+          "stringValue": "Green Lasun  (Spring Garlic)"
+        },
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770345442071_lasungreen.webp?alt=media&token=90bb33f0-cf98-43fb-a5e1-a1c73e0945cf"
+              }
+            ]
+          }
+        }
+      },
+      "createTime": "2026-02-04T02:48:14.722482Z",
+      "updateTime": "2026-02-06T02:37:29.287387Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/GMzK23xKoU53xSIljKa5",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546112139_1770206289760_1000027463.webp?alt=media"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Local Garlic (Dried)"
+        }
+      },
+      "createTime": "2026-02-04T05:47:30.365783Z",
+      "updateTime": "2026-02-08T10:21:56.973968Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/JbjwMw2iz71DHWLsYmPb",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546121900_1769606469582_Gemini_Generated_Image_v0p14cv0p14cv0p1.webp?alt=media"
+              },
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546130087_1770203814948_1000027425.webp?alt=media"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Organic Cauliflower"
+        }
+      },
+      "createTime": "2026-01-28T12:45:25.147983Z",
+      "updateTime": "2026-02-08T10:22:14.758741Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/JcGw5mkxbYt7IMkQRo3Z",
+      "fields": {
+        "name": {
+          "stringValue": "Farm - Fresh Eggs"
+        },
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546139759_1769606413689_Gemini_Generated_Image_wa2zyxwa2zyxwa2z.webp?alt=media"
+              },
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546149697_1770200546685_1000022290.webp?alt=media"
+              }
+            ]
+          }
+        }
+      },
+      "createTime": "2026-01-28T09:08:18.381162Z",
+      "updateTime": "2026-02-08T10:22:35.216942Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/KlMOn8p6TDZQZQ8CfXIr",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546157357_1770346068694_mint-pudina.webp?alt=media"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Pudina (Mint)"
+        }
+      },
+      "createTime": "2026-02-04T05:50:47.182907Z",
+      "updateTime": "2026-02-08T10:22:41.575139Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/MYftEcAK1efy2xz0KVKl",
+      "fields": {
+        "name": {
+          "stringValue": "Chamomile Tea"
+        },
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546167885_1770204621437_1000027459.webp?alt=media"
+              },
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546179361_1770204621452_1000020961.webp?alt=media"
+              }
+            ]
+          }
+        }
+      },
+      "createTime": "2026-02-04T03:00:29.422567Z",
+      "updateTime": "2026-02-08T10:23:05.520986Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/N2UyNZFQl7F9i7xVYhuP",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770344151644_broccoli.webp?alt=media&token=d8e295a1-63c2-41f2-927f-3909babf8d47"
+              },
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546187421_1770344151646_broccoli1.webp?alt=media"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Broccoli"
+        }
+      },
+      "createTime": "2026-02-04T02:35:58.432752Z",
+      "updateTime": "2026-02-08T10:23:11.939264Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/Sbk87VCg1kBFMoJIRCxE",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770345216179_saag.webp?alt=media&token=93a138b7-5889-4615-984c-124eb9a901a9"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Green Saag (Mustard)"
+        }
+      },
+      "createTime": "2026-02-04T02:45:56.876325Z",
+      "updateTime": "2026-02-06T02:33:40.960374Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/U63psHOGMe3tqZX5F3ML",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546194034_1770346209163_brown.webp?alt=media"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Brown Rice"
+        }
+      },
+      "createTime": "2026-02-04T05:52:56.988887Z",
+      "updateTime": "2026-02-08T10:23:18.076873Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/VRBjYdYr4Jz93D7zKqLw",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770344968897_dhania1.webp?alt=media&token=01890ce5-eafb-4483-bf96-1b6293945113"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Green Dhania  (Coriander)"
+        }
+      },
+      "createTime": "2026-02-04T02:43:07.865167Z",
+      "updateTime": "2026-02-06T02:29:33.590852Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/dWnv311TUYcihlv8T2qZ",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770345603281_Pokchoy.webp?alt=media&token=53e98e08-ec5d-48ae-9e32-68122817c670"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Pokchoy"
+        }
+      },
+      "createTime": "2026-02-04T02:52:46.241181Z",
+      "updateTime": "2026-02-06T02:40:11.658718Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/jSqA7yXW3Mc6wj3LDWga",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770345527404_onion.webp?alt=media&token=876c0cbc-b013-4dd7-aa01-337f16bf91dc"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Spring Onion "
+        }
+      },
+      "createTime": "2026-02-04T02:50:47.214673Z",
+      "updateTime": "2026-02-06T02:38:54.239139Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/kVcj9iywEir7OvzpSp3E",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546201548_1769606351240_Gemini_Generated_Image_mpii2cmpii2cmpii%20(1).webp?alt=media"
+              },
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546208583_1770200774043_1000019452.webp?alt=media"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Local Chicken"
+        }
+      },
+      "createTime": "2026-01-28T09:09:26.748661Z",
+      "updateTime": "2026-02-08T10:23:33.171433Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/m4JWNcC5ypsBMFC6p6qp",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546215373_1770345967941_onion1.webp?alt=media"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Local Onion"
+        }
+      },
+      "createTime": "2026-02-04T05:44:48.698180Z",
+      "updateTime": "2026-02-08T10:23:39.436504Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/mFenx0vu0TpZqKrqxHjE",
+      "fields": {
+        "name": {
+          "stringValue": "Indoor Plants"
+        },
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546222352_1770346864193_indoorplants.webp?alt=media"
+              },
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546227418_1770346911061_indoorplants2.webp?alt=media"
+              }
+            ]
+          }
+        }
+      },
+      "createTime": "2026-02-06T02:10:14.274206Z",
+      "updateTime": "2026-02-08T10:23:53.557539Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/rgJ0x0AkNYlRZh1BJ8f0",
+      "fields": {
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546235331_1770346812918_boneMeal.webp?alt=media"
+              }
+            ]
+          }
+        },
+        "name": {
+          "stringValue": "Bone Meal"
+        }
+      },
+      "createTime": "2026-02-06T02:08:27.674319Z",
+      "updateTime": "2026-02-08T10:23:59.489269Z"
+    },
+    {
+      "name": "projects/greenbird-56584/databases/(default)/documents/products/ywup2Nqdic1iPUIzPBIr",
+      "fields": {
+        "name": {
+          "stringValue": "Akabare (Dried)"
+        },
+        "images": {
+          "arrayValue": {
+            "values": [
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546243504_1770206216335_1000027464.webp?alt=media"
+              },
+              {
+                "stringValue": "https://firebasestorage.googleapis.com/v0/b/greenbird-56584.firebasestorage.app/o/products%2F1770546251945_1770206799953_1000027467.webp?alt=media"
+              }
+            ]
+          }
+        }
+      },
+      "createTime": "2026-02-04T02:57:11.589132Z",
+      "updateTime": "2026-02-08T10:24:16.703965Z"
+    }
+  ]
+}

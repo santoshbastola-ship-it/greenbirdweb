@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Calendar, User, AlignLeft, AlertCircle, Repeat } from "lucide-react";
+import { X, Calendar, User, AlignLeft, AlertCircle, Repeat, Loader2 } from "lucide-react";
 import { TaskItem, TaskPriority, TaskRepetition, TaskStatus, User as AppUser } from "@/types";
 import { TaskService } from "@/services/task.service";
 import { UserService } from "@/services/user.service";
@@ -14,6 +14,9 @@ const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(
 });
 
 import "nepali-datepicker-reactjs/dist/index.css";
+import DocumentUpload from "./DocumentUpload";
+
+import { useAuth } from "@/context/AuthContext";
 
 interface AddTaskModalProps {
     task?: TaskItem;
@@ -22,6 +25,7 @@ interface AddTaskModalProps {
 }
 
 export default function AddTaskModal({ onClose, onSuccess, task }: { onClose: () => void, onSuccess?: () => void, task?: TaskItem }) {
+    const { dbUser } = useAuth();
     const isEditing = !!task;
     const [creationMode, setCreationMode] = useState<'single' | 'bulk'>('single');
 
@@ -35,6 +39,8 @@ export default function AddTaskModal({ onClose, onSuccess, task }: { onClose: ()
         repetition: "doesNotRepeat" as TaskRepetition,
         status: TaskStatus.Open,
     });
+
+    const [documentUrls, setDocumentUrls] = useState<string[]>(task?.documentUrls || []);
 
     const [loading, setLoading] = useState(false);
     const [users, setUsers] = useState<AppUser[]>([]);
@@ -63,6 +69,7 @@ export default function AddTaskModal({ onClose, onSuccess, task }: { onClose: ()
                 repetition: task.repetition || "doesNotRepeat",
                 status: task.status || TaskStatus.Open,
             });
+            setDocumentUrls(task.documentUrls || []);
         }
     }, [task]);
 
@@ -96,16 +103,17 @@ export default function AddTaskModal({ onClose, onSuccess, task }: { onClose: ()
                     repetition: formData.repetition,
                     status: formData.status,
                     dueDate: formData.dueDate,
+                    documentUrls: documentUrls,
                 };
 
                 if (isEditing && task) {
-                    await TaskService.updateTask(task.id, taskData);
+                    await TaskService.updateTask(task.id, taskData, dbUser?.name || "Admin");
                 } else {
                     await TaskService.createTask({
                         ...taskData,
-                        createdBy: "admin", // TODO: Get from auth
+                        createdBy: dbUser?.name || "admin",
                         createdDate: new Date()
-                    } as any); // Type cast if needed depending on Service signature strictness
+                    } as any, dbUser?.name || "Admin");
                 }
 
             } else {
@@ -130,9 +138,10 @@ export default function AddTaskModal({ onClose, onSuccess, task }: { onClose: ()
                         status: formData.status,
                         repetition: formData.repetition,
                         dueDate: formData.dueDate,
-                        createdBy: "admin",
+                        documentUrls: documentUrls,
+                        createdBy: dbUser?.name || "admin",
                         createdDate: new Date()
-                    })
+                    }, dbUser?.name || "Admin")
                 ));
             }
             if (onSuccess) onSuccess();
@@ -333,6 +342,18 @@ export default function AddTaskModal({ onClose, onSuccess, task }: { onClose: ()
                         </select>
                     </div>
 
+                    {/* Document Upload */}
+                    <div className="pt-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Task Attachments (Images/PDFs)
+                        </label>
+                        <DocumentUpload
+                            documentUrls={documentUrls}
+                            onChange={setDocumentUrls}
+                            folder="task-attachments"
+                        />
+                    </div>
+
                     {/* Actions */}
                     <div className="flex gap-3 pt-4">
                         <button
@@ -345,9 +366,16 @@ export default function AddTaskModal({ onClose, onSuccess, task }: { onClose: ()
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
-                            {loading ? "Saving..." : isEditing ? "Update Task" : "Create Tasks"}
+                            {loading ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span>Saving...</span>
+                                </>
+                            ) : (
+                                isEditing ? "Update Task" : "Create Tasks"
+                            )}
                         </button>
                     </div>
                 </form>

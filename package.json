@@ -1,19 +1,21 @@
 {
   "name": "greenbird-pwa",
-  "version": "0.2.3",
+  "version": "0.2.8",
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
-    "clean": "rm -rf out .next",
-    "deploy": "git push && npm run build && firebase deploy --only hosting"
+    "test": "playwright test",
+    "deploy": "npm run test && npm run build && cd functions && npm install && npm run build && cd .. && firebase deploy"
   },
   "dependencies": {
     "@types/google.maps": "^3.58.1",
+    "browser-image-compression": "^2.0.2",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.2.4",
     "firebase": "^12.8.0",
     "firebase-admin": "^13.6.0",
     "html-to-image": "^1.11.13",
@@ -24,11 +26,14 @@
     "next-pwa": "^5.6.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-image-crop": "^11.0.10",
+    "sharp": "^0.34.5",
     "tailwind-merge": "^3.4.0",
     "twilio": "^5.12.0",
     "zustand": "^5.0.10"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

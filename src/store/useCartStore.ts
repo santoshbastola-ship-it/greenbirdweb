@@ -11,6 +11,8 @@ interface CartState {
     total: number;
 }
 
+import { calculateProductPrice } from "@/lib/product-helper";
+
 export const useCartStore = create<CartState>()(
     persist(
         (set, get) => ({
@@ -20,11 +22,12 @@ export const useCartStore = create<CartState>()(
             addItem: (product, quantity) => {
                 const currentItems = get().items;
                 const existingItem = currentItems.find((item) => item.productId === product.id);
+                const { finalPrice } = calculateProductPrice(product);
 
                 if (existingItem) {
                     const updatedItems = currentItems.map((item) =>
                         item.productId === product.id
-                            ? { ...item, quantity: item.quantity + quantity }
+                            ? { ...item, quantity: item.quantity + quantity, price: finalPrice, priceUnit: product.priceUnit }
                             : item
                     );
                     set({ items: updatedItems });
@@ -32,10 +35,11 @@ export const useCartStore = create<CartState>()(
                     const newItem: CartItem = {
                         productId: product.id,
                         productName: product.name,
-                        price: product.currentPrice,
+                        price: finalPrice,
                         quantity: quantity,
                         unit: product.unit,
-                        imageUrl: product.images[0],
+                        priceUnit: product.priceUnit,
+                        imageUrl: product.images && product.images.length > 0 ? product.images[0] : "/placeholder.png",
                         availableStock: product.currentStock,
                         businessType: product.businessType,
                     };
@@ -64,6 +68,38 @@ export const useCartStore = create<CartState>()(
         {
             name: "greenbird-cart",
             storage: createJSONStorage(() => localStorage),
+            onRehydrateStorage: () => (state) => {
+                if (state) {
+                    // Filter out invalid items during hydration
+                    const validItems = state.items.filter(
+                        (item) => item && item.productId && item.unit
+                    );
+                    // Migrate old cart items that don't have priceUnit
+                    const migratedItems = validItems.map(item => {
+                        if (!item.priceUnit) {
+                            return { ...item, priceUnit: item.unit };
+                        }
+                        return item;
+                    });
+
+                    // Check if migration is needed
+                    const needsMigration = migratedItems.length !== state.items.length ||
+                        migratedItems.some((item, idx) => item.priceUnit !== state.items[idx]?.priceUnit);
+
+                    if (needsMigration) {
+                        // Update state to trigger persistence
+                        state.items = migratedItems;
+                        // Force a re-save to localStorage by returning the migration function
+                        return () => {
+                            // This callback runs after hydration and will trigger a save
+                            setTimeout(() => {
+                                const store = useCartStore.getState();
+                                store.items = migratedItems;
+                            }, 0);
+                        };
+                    }
+                }
+            },
         }
     )
 );

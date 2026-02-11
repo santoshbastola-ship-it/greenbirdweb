@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Save } from "lucide-react";
+import { X, Save, Loader2 } from "lucide-react";
 import { Product, Unit } from "@/types";
 import { ProductService } from "@/services/product.service";
 import { UnitService } from "@/services/unit.service";
@@ -167,10 +167,19 @@ export default function StockUpdateModal({ product, onClose, onUpdate }: StockUp
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center disabled:opacity-50"
+                            className="w-full bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center justify-center disabled:opacity-50 gap-2"
                         >
-                            <Save className="h-4 w-4 mr-2" />
-                            {loading ? "Updating..." : "Update Stock"}
+                            {loading ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span>Updating...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-4 w-4" />
+                                    <span>Update Stock</span>
+                                </>
+                            )}
                         </button>
                     </div>
                 </form>

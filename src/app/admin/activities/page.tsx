@@ -7,6 +7,7 @@ import { getActivities, deleteActivity, updateActivityStatus } from "@/lib/servi
 import LogoLoader from "@/components/ui/LogoLoader";
 import ActivityCard from "@/components/admin/ActivityCard";
 import AddActivityModal from "@/components/admin/AddActivityModal";
+import EditActivityModal from "@/components/admin/EditActivityModal";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 
@@ -17,6 +18,7 @@ export default function ActivitiesPage() {
     const [activities, setActivities] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [selectedActivity, setSelectedActivity] = useState<FarmActivity | null>(null);
 
     useEffect(() => {
         if (!authLoading && dbUser && dbUser.role !== 'admin') {
@@ -61,10 +63,17 @@ export default function ActivitiesPage() {
         }
     };
 
+    const handleEdit = (activity: FarmActivity) => {
+        setSelectedActivity(activity);
+    };
+
     const handleToggleStatus = async (id: string, currentStatus: boolean) => {
         try {
             const newStatus = !currentStatus;
-            await updateActivityStatus(id, newStatus);
+            const activity = activities.find(a => a.id === id);
+            if (!activity) return;
+
+            await updateActivityStatus(id, newStatus, activity.title);
             setActivities(activities.map(a =>
                 a.id === id ? { ...a, isPublished: newStatus } : a
             ));
@@ -113,6 +122,7 @@ export default function ActivitiesPage() {
                                 key={activity.id}
                                 activity={activity}
                                 onDelete={dbUser?.role === "admin" ? handleDelete : undefined}
+                                onEdit={handleEdit}
                                 onToggleStatus={handleToggleStatus}
                             />
                         ))}
@@ -124,6 +134,14 @@ export default function ActivitiesPage() {
             {isAddModalOpen && (
                 <AddActivityModal
                     onClose={() => setIsAddModalOpen(false)}
+                    onSuccess={loadActivities}
+                />
+            )}
+
+            {selectedActivity && (
+                <EditActivityModal
+                    activity={selectedActivity}
+                    onClose={() => setSelectedActivity(null)}
                     onSuccess={loadActivities}
                 />
             )}

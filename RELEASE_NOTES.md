@@ -1,5 +1,25 @@
 # Release Notes
 
+## [0.2.8] - 2026-02-10
+- Admin flow improvements, unified order/sales view, receipt display updates, and product visibility features
+
+
+## [0.2.7] - 2026-02-10
+- Fixed product update and stock modification issues
+
+
+## [0.2.6] - 2026-02-09
+- Fixed product discount visibility issues and updated badge position
+
+
+## [0.2.5] - 2026-02-08
+- Updated customer list sorting and dashboard details
+
+
+## [0.2.4] - 2026-02-06
+- Fixed search bar responsiveness on mobile and improved search results header layout
+
+
 ## [0.2.3] - 2026-02-05
 ### Product Experience
 - Redesigned Product Detail page with floating "Add to Cart" button and improved quantity selection.

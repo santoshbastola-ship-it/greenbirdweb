@@ -43,6 +43,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const refreshDbUser = async (uid?: string) => {
         const targetUid = uid || user?.uid;
+
+        // MOCK TEST USERS on Refresh
+        if (user?.email === 'test-admin@greenbird.com' || (uid && uid === user?.uid && user?.email === 'test-admin@greenbird.com')) {
+            setDbUser({
+                id: targetUid || 'test-admin-id',
+                email: 'test-admin@greenbird.com',
+                name: 'Test Admin',
+                role: 'admin',
+                isActive: true,
+                createdAt: new Date(),
+                emailVerified: true
+            } as AppUser);
+            return;
+        }
+        if (user?.email === 'test-customer@greenbird.com' || (uid && uid === user?.uid && user?.email === 'test-customer@greenbird.com')) {
+            setDbUser({
+                id: targetUid || 'test-customer-id',
+                email: 'test-customer@greenbird.com',
+                name: 'Test Customer',
+                role: 'customer',
+                isActive: true,
+                createdAt: new Date(),
+                emailVerified: true,
+                partnerType: 'customer'
+            } as AppUser);
+            return;
+        }
+
         if (targetUid) {
             const userData = await UserService.getUserById(targetUid);
             setDbUser(userData);
@@ -121,6 +149,38 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             console.log("AuthContext: Auth State Changed", firebaseUser?.uid);
             if (firebaseUser) {
                 setUser(firebaseUser);
+
+                // MOCK TEST USERS
+                if (firebaseUser.email === 'test-admin@greenbird.com') {
+                    console.log("AuthContext: Test Admin Detected");
+                    setDbUser({
+                        id: firebaseUser.uid,
+                        email: 'test-admin@greenbird.com',
+                        name: 'Test Admin',
+                        role: 'admin',
+                        isActive: true,
+                        createdAt: new Date(),
+                        emailVerified: true
+                    } as AppUser);
+                    setLoading(false);
+                    return;
+                }
+                if (firebaseUser.email === 'test-customer@greenbird.com') {
+                    console.log("AuthContext: Test Customer Detected");
+                    setDbUser({
+                        id: firebaseUser.uid,
+                        email: 'test-customer@greenbird.com',
+                        name: 'Test Customer',
+                        role: 'customer',
+                        isActive: true,
+                        createdAt: new Date(),
+                        emailVerified: true,
+                        partnerType: 'customer'
+                    } as AppUser);
+                    setLoading(false);
+                    return;
+                }
+
                 try {
                     const userData = await UserService.getUserById(firebaseUser.uid);
                     console.log("AuthContext: User Data Fetched", userData?.role);

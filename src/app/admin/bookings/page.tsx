@@ -29,7 +29,7 @@ import { toNepali } from "@/lib/date-helper";
 import { Toast, ToastType } from "@/components/ui/Toast";
 import { useAuth } from "@/context/AuthContext";
 
-export default function AdminBookingsPage() {
+export default function BookingManagementPage() {
     const { dbUser } = useAuth();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
@@ -64,21 +64,25 @@ export default function AdminBookingsPage() {
         }
     };
 
-    const handleDeleteBooking = async (id: string) => {
-        try {
-            await BookingService.deleteBooking(id);
-            loadBookings();
-            showToast("Booking deleted successfully");
-        } catch (error) {
-            console.error("Error deleting booking:", error);
-            showToast("Failed to delete booking", "error");
+    const handleDelete = async (id: string) => {
+        if (confirm("Are you sure you want to delete this booking?")) {
+            try {
+                await BookingService.deleteBooking(id, dbUser?.name || "Admin");
+                setBookings(bookings.filter(b => b.id !== id));
+                showToast("Booking deleted successfully");
+            } catch (error) {
+                console.error("Error deleting booking:", error);
+                showToast("Failed to delete booking", "error");
+            }
         }
     };
 
-    const handleUpdateStatus = async (id: string, status: BookingStatus) => {
+    const handleStatusChange = async (id: string, status: BookingStatus) => {
         try {
-            await BookingService.updateBookingStatus(id, status);
-            loadBookings();
+            await BookingService.updateBookingStatus(id, status, dbUser?.name || "Admin");
+            setBookings(bookings.map(b =>
+                b.id === id ? { ...b, status } : b
+            ));
             showToast("Booking status updated successfully");
         } catch (error) {
             console.error("Error updating booking:", error);
@@ -146,7 +150,7 @@ export default function AdminBookingsPage() {
                 onStartDateChange={setStartDate}
                 endDate={endDate}
                 onEndDateChange={setEndDate}
-                placeholder="Search by Guest Name or Email..."
+                placeholder="Search"
             />
 
             {/* Tabs */}
@@ -192,12 +196,12 @@ export default function AdminBookingsPage() {
                         <BookingCard
                             key={booking.id}
                             booking={booking}
-                            onUpdateStatus={handleUpdateStatus}
+                            onUpdateStatus={handleStatusChange}
                             onEdit={(b) => {
                                 setSelectedBooking(b);
                                 setIsBookingModalOpen(true);
                             }}
-                            onDelete={dbUser?.email === "greenbirdhomestead@gmail.com" ? () => handleDeleteBooking(booking.id) : undefined}
+                            onDelete={dbUser?.email === "greenbirdhomestead@gmail.com" ? () => handleDelete(booking.id) : undefined}
                         />
                     ))}
                 </div>

@@ -5,6 +5,7 @@ import { X, Image as ImageIcon, Loader2, Play, Video } from "lucide-react";
 import { uploadMedia, addActivity } from "@/lib/services/activities";
 import { format } from "date-fns";
 import { cleanInput } from "@/lib/input-validation";
+import ImageCropperModal from "./ImageCropperModal";
 
 interface AddActivityModalProps {
     onClose: () => void;
@@ -25,21 +26,66 @@ export default function AddActivityModal({ onClose, onSuccess }: AddActivityModa
     const [isPublished, setIsPublished] = useState(true);
     const [saving, setSaving] = useState(false);
 
+    // Cropping States
+    const [croppingImage, setCroppingImage] = useState<{ src: string; file: File } | null>(null);
+    const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+
     const handleMediaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
-        if (files) {
-            Array.from(files).forEach(file => {
-                const type = file.type.startsWith('video/') ? 'video' : 'image';
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    setMediaFiles(prev => [...prev, {
-                        file,
-                        preview: reader.result as string,
-                        type
-                    }]);
-                };
-                reader.readAsDataURL(file);
-            });
+        if (!files || files.length === 0) return;
+
+        const fileList = Array.from(files);
+        processFiles(fileList);
+    };
+
+    const processFiles = (files: File[]) => {
+        if (files.length === 0) return;
+
+        const nextFile = files[0];
+        const remaining = files.slice(1);
+
+        if (nextFile.type.startsWith('video/')) {
+            // Videos don't need cropping
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setMediaFiles(prev => [...prev, {
+                    file: nextFile,
+                    preview: reader.result as string,
+                    type: 'video'
+                }]);
+                processFiles(remaining);
+            };
+            reader.readAsDataURL(nextFile);
+        } else {
+            // Images go through cropper
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setCroppingImage({
+                    src: reader.result as string,
+                    file: nextFile
+                });
+                setPendingFiles(remaining);
+            };
+            reader.readAsDataURL(nextFile);
+        }
+    };
+
+    const onCropComplete = (croppedBlob: Blob) => {
+        if (!croppingImage) return;
+
+        const croppedFile = new File([croppedBlob], croppingImage.file.name, {
+            type: 'image/jpeg'
+        });
+
+        setMediaFiles(prev => [...prev, {
+            file: croppedFile,
+            preview: URL.createObjectURL(croppedBlob),
+            type: 'image'
+        }]);
+
+        setCroppingImage(null);
+        if (pendingFiles.length > 0) {
+            processFiles(pendingFiles);
         }
     };
 
@@ -87,6 +133,17 @@ export default function AddActivityModal({ onClose, onSuccess }: AddActivityModa
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
                 {/* Header */}
+                {croppingImage && (
+                    <ImageCropperModal
+                        imageSrc={croppingImage.src}
+                        aspect={16 / 9} // Widescreen for activities
+                        onCropComplete={onCropComplete}
+                        onClose={() => {
+                            setCroppingImage(null);
+                            if (pendingFiles.length > 0) processFiles(pendingFiles);
+                        }}
+                    />
+                )}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200">
                     <h2 className="text-xl font-bold text-gray-900">Add New Activity</h2>
                     <button
@@ -167,7 +224,7 @@ export default function AddActivityModal({ onClose, onSuccess }: AddActivityModa
                                     <button
                                         type="button"
                                         onClick={() => removeMedia(index)}
-                                        className="absolute top-2 right-2 bg-red-500 p-1.5 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                                        className="absolute top-2 right-2 bg-red-500 p-1.5 rounded-full text-white opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-red-600"
                                     >
                                         <X className="h-4 w-4" />
                                     </button>

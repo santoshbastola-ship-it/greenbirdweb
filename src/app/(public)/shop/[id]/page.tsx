@@ -6,15 +6,20 @@ import { notFound } from "next/navigation";
 import ShareButton from "@/components/ui/ShareButton";
 import ProductQuantitySelector from "@/components/shop/ProductQuantitySelector";
 import ProductImageGallery from "@/components/shop/ProductImageGallery";
+import AdminProductControls from "@/components/admin/AdminProductControls";
+import { calculateProductPrice } from "@/lib/product-helper";
 
 interface PageProps {
     params: Promise<{ id: string }>;
 }
 
-export const dynamicParams = true;
+export const dynamicParams = false; // Required for static export
 
 export async function generateStaticParams() {
-    return [{ id: 'placeholder' }];
+    const products = await ProductService.getAllProducts();
+    return products.map((product) => ({
+        id: product.id,
+    }));
 }
 
 export default async function ProductDetailsPage({ params }: PageProps) {
@@ -31,7 +36,15 @@ export default async function ProductDetailsPage({ params }: PageProps) {
         notFound();
     }
 
+    // Hide if not shown in app
+    // Note: detailed admin check is skipped here for simplicity as this is a public page
+    // Admins should view products via Admin Panel
+    if (product.showInApp === false) {
+        notFound();
+    }
+
     const hasStock = product.currentStock > 0;
+    const { finalPrice, originalPrice, hasDiscount, discountBadge } = calculateProductPrice(product);
 
     return (
         <div className="min-h-screen bg-[#FCF9F1] py-12 pb-32">
@@ -86,11 +99,26 @@ export default async function ProductDetailsPage({ params }: PageProps) {
                                     title={product.name}
                                     text={`Check out ${product.name} at Greenbird Homestead!`}
                                 />
+                                <AdminProductControls productId={product.id} />
                             </div>
 
-                            <div className="flex items-baseline mb-6">
-                                <span className="text-3xl font-bold text-[#2D5A27]">Rs. {product.currentPrice}</span>
-                                <span className="text-gray-500 ml-2">/ {product.unit}</span>
+                            <div className="flex flex-col mb-6">
+                                <div className="flex items-baseline">
+                                    <span className="text-3xl font-bold text-[#2D5A27]">Rs. {finalPrice}</span>
+                                    <span className="text-gray-500 ml-2">/ {product.unit}</span>
+                                    {hasDiscount && (
+                                        <span className="ml-4 text-xl text-gray-400 line-through">
+                                            Rs. {originalPrice}
+                                        </span>
+                                    )}
+                                </div>
+                                {hasDiscount && (
+                                    <div className="mt-2">
+                                        <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold uppercase tracking-wider">
+                                            {discountBadge}
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Quantity & Add to Cart */}

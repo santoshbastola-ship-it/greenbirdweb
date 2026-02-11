@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { OrderStatus } from "@/types";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 
 interface OrderStatusDropdownProps {
     currentStatus: OrderStatus;
@@ -42,7 +42,11 @@ export default function OrderStatusDropdown({
                 title={isCancelled ? "Cancelled orders cannot be modified" : disabled ? "You don't have permission to modify order status" : ""}
             >
                 <span>{currentStatus}</span>
-                {(!isCancelled && !disabled) && <ChevronDown className="h-4 w-4" />}
+                {isUpdating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                    (!isCancelled && !disabled) && <ChevronDown className="h-4 w-4" />
+                )}
             </button>
 
             {isOpen && !isCancelled && !disabled && (

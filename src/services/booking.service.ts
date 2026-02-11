@@ -40,7 +40,7 @@ export const BookingService = {
     /**
      * Create a new booking
      */
-    async createBooking(booking: Omit<Booking, "id" | "status" | "createdAt">): Promise<string> {
+    async createBooking(booking: Omit<Booking, "id" | "status" | "createdAt">, triggeredBy?: string): Promise<string> {
         const bookingRef = collection(db, BOOKING_COLLECTION);
         const docRef = await addDoc(bookingRef, {
             ...booking,
@@ -56,7 +56,8 @@ export const BookingService = {
             `New booking received from ${booking.name} for ${booking.checkInDate}`,
             docRef.id,
             'booking',
-            '/admin/bookings'
+            '/admin/bookings',
+            triggeredBy
         );
 
         return docRef.id;
@@ -65,7 +66,7 @@ export const BookingService = {
     /**
      * Update booking status
      */
-    async updateBookingStatus(id: string, status: BookingStatus): Promise<void> {
+    async updateBookingStatus(id: string, status: BookingStatus, triggeredBy?: string): Promise<void> {
         const bookingRef = doc(db, BOOKING_COLLECTION, id);
         await updateDoc(bookingRef, { status });
 
@@ -75,14 +76,15 @@ export const BookingService = {
             `Booking ${id} status updated to ${status}`,
             id,
             'booking',
-            '/admin/bookings'
+            '/admin/bookings',
+            triggeredBy
         );
     },
 
     /**
      * Update a booking
      */
-    async updateBooking(id: string, booking: Partial<Booking>): Promise<void> {
+    async updateBooking(id: string, booking: Partial<Booking>, triggeredBy?: string): Promise<void> {
         const bookingRef = doc(db, BOOKING_COLLECTION, id);
         const updateData: any = { ...booking };
 
@@ -104,14 +106,15 @@ export const BookingService = {
             `Booking ${id} updated`,
             id,
             'booking',
-            '/admin/bookings'
+            '/admin/bookings',
+            triggeredBy
         );
     },
 
     /**
      * Delete a booking
      */
-    async deleteBooking(id: string): Promise<void> {
+    async deleteBooking(id: string, triggeredBy?: string): Promise<void> {
         await deleteDoc(doc(db, BOOKING_COLLECTION, id));
 
         // Notify Admins
@@ -120,7 +123,8 @@ export const BookingService = {
             `Booking ${id} deleted`,
             undefined,
             'booking',
-            '/admin/bookings'
+            '/admin/bookings',
+            triggeredBy
         );
     }
 };

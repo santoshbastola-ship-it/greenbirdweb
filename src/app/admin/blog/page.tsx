@@ -68,7 +68,7 @@ export default function BlogManagementPage() {
         if (!confirm(`Are you sure you want to ${action} "${post.title}"?`)) return;
 
         try {
-            await BlogService.updatePost(post.id, { published: !post.published });
+            await BlogService.updatePost(post.id, { published: !post.published }, dbUser?.name || "Admin");
             loadPosts();
         } catch (error) {
             console.error(`Error ${action}ing post:`, error);
@@ -80,7 +80,7 @@ export default function BlogManagementPage() {
         if (!confirm(`Are you sure you want to delete "${post.title}"?`)) return;
 
         try {
-            await BlogService.deletePost(post.id, post.imageUrl);
+            await BlogService.deletePost(post.id, post.imageUrl, dbUser?.name || "Admin");
             setPosts(posts.filter(p => p.id !== post.id));
         } catch (error) {
             console.error("Error deleting post:", error);
@@ -121,7 +121,7 @@ export default function BlogManagementPage() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search by title or category..."
+                            placeholder="Search"
                             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-green-500 focus:border-green-500 transition-all font-geist"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}

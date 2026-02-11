@@ -18,6 +18,7 @@ export default function BookingPage() {
     const { user } = useAuth();
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>({});
 
     const [formData, setFormData] = useState({
         name: user?.displayName || "",
@@ -31,6 +32,20 @@ export default function BookingPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Basic validation
+        const newErrors: Record<string, string> = {};
+        const cleanPhone = formData.phone.replace(/\D/g, '');
+        if (cleanPhone.length < 10) {
+            newErrors.phone = "Please enter a valid phone number (at least 10 digits)";
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
+        }
+
+        setErrors({});
         setSubmitting(true);
         try {
             await BookingService.createBooking({
@@ -172,10 +187,17 @@ export default function BookingPage() {
                                     <input
                                         type="tel"
                                         required
-                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2D5A27] transition-all"
+                                        className={`w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:ring-[#2D5A27] transition-all ${errors.phone ? 'border-red-500 ring-red-100' : 'border-gray-200'}`}
                                         value={formData.phone}
-                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, phone: e.target.value });
+                                            if (errors.phone) setErrors({ ...errors, phone: "" });
+                                        }}
+                                        placeholder="98XXXXXXXX"
                                     />
+                                    {errors.phone && (
+                                        <p className="mt-1 text-xs text-red-500 font-medium">{errors.phone}</p>
+                                    )}
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
@@ -235,9 +257,15 @@ export default function BookingPage() {
                                 className="w-full bg-[#2D5A27] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#1f3e1b] transition-all flex items-center justify-center gap-3 disabled:opacity-70 shadow-lg shadow-[#2D5A27]/20"
                             >
                                 {submitting ? (
-                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                    <>
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                        <span>Processing...</span>
+                                    </>
                                 ) : (
-                                    <>Book Now <Calendar className="h-5 w-5" /></>
+                                    <>
+                                        <span>Book Now</span>
+                                        <Calendar className="h-5 w-5" />
+                                    </>
                                 )}
                             </button>
                         </form>

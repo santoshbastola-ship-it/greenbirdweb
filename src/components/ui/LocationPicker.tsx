@@ -131,7 +131,9 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, initi
                 }
             }
 
-            setSelectedLocation({ lat, lng, address });
+            // Fallback: Ensure address is NEVER undefined/empty for Firestore
+            const safeAddress = address || `Pinned: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+            setSelectedLocation({ lat, lng, address: safeAddress });
         };
 
         loadGoogleMaps();
@@ -201,7 +203,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, initi
                 <input
                     ref={searchInputRef}
                     type="text"
-                    placeholder="Search for a location..."
+                    placeholder="Search"
                     className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
                 />
             </div>

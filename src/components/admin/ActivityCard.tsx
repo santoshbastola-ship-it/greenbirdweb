@@ -1,14 +1,15 @@
 import { FarmActivity } from "@/types/extra";
 import { format } from "date-fns";
-import { Calendar, Trash2, Eye, EyeOff, Image as ImageIcon, Video } from "lucide-react";
+import { Calendar, Trash2, Eye, EyeOff, Image as ImageIcon, Video, Pencil } from "lucide-react";
 
 interface ActivityCardProps {
     activity: FarmActivity;
     onDelete?: (id: string) => void;
+    onEdit?: (activity: FarmActivity) => void;
     onToggleStatus: (id: string, currentStatus: boolean) => void;
 }
 
-export default function ActivityCard({ activity, onDelete, onToggleStatus }: ActivityCardProps) {
+export default function ActivityCard({ activity, onDelete, onEdit, onToggleStatus }: ActivityCardProps) {
     const mediaCount = activity.media?.length || 0;
     const videoCount = activity.media?.filter(m => m.type === 'video').length || 0;
     const imageCount = mediaCount - videoCount;
@@ -57,7 +58,7 @@ export default function ActivityCard({ activity, onDelete, onToggleStatus }: Act
 
                     <div className="flex items-center text-sm text-gray-500 mb-2">
                         <Calendar className="h-4 w-4 mr-1.5" />
-                        {format(new Date(activity.date), "MMM dd, yyyy")}
+                        {activity.date ? format(new Date(activity.date), "MMM dd, yyyy") : "No date"}
                     </div>
 
                     <p className="text-gray-600 text-sm line-clamp-2">
@@ -67,8 +68,17 @@ export default function ActivityCard({ activity, onDelete, onToggleStatus }: Act
 
                 {/* Right: Actions */}
                 <div className="flex items-center gap-1 flex-shrink-0">
+                    {onEdit && (
+                        <button
+                            onClick={() => onEdit(activity)}
+                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Edit Activity"
+                        >
+                            <Pencil className="h-5 w-5" />
+                        </button>
+                    )}
                     <button
-                        onClick={() => onToggleStatus(activity.id, activity.isPublished)}
+                        onClick={() => onToggleStatus(activity.id, !!activity.isPublished)}
                         className={`p-2 rounded-lg transition-colors ${activity.isPublished
                             ? 'text-gray-400 hover:text-orange-600 hover:bg-orange-50'
                             : 'text-gray-400 hover:text-green-600 hover:bg-green-50'

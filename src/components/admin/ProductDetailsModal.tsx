@@ -27,8 +27,8 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
                     </div>
                     <div className="flex items-center gap-2">
                         <Link
-                            href={`/admin/inventory/edit/${product.id}`}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg flex items-center gap-2 transition-colors"
+                            href={`/admin/inventory/edit?id=${product.id}`}
+                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-center transition-colors"
                         >
                             <Edit2 className="h-4 w-4" />
                             <span className="text-sm font-medium">Edit Product</span>

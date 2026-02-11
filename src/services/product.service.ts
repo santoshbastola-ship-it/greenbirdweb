@@ -3,6 +3,7 @@ import { db, storage } from "@/lib/firebase";
 import { Product, StockHistoryEntry, PriceHistoryEntry } from "@/types";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { NotificationService } from "./notification.service";
+import { optimizeImage } from "@/lib/image-optimizer";
 
 const COLLECTION_NAME = "products";
 
@@ -81,8 +82,11 @@ export const ProductService = {
                 changedBy: changedBy
             }] : [];
 
+            // Sanitize product data (remove undefined)
+            const cleanProduct = JSON.parse(JSON.stringify(product));
+
             const docRef = await addDoc(collection(db, COLLECTION_NAME), {
-                ...product,
+                ...cleanProduct,
                 priceHistory: initialHistory,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
@@ -94,7 +98,8 @@ export const ProductService = {
                 `New product created: ${product.name}`,
                 docRef.id,
                 'product',
-                '/admin/inventory'
+                '/admin/inventory',
+                changedBy
             );
             return docRef.id;
         } catch (error) {
@@ -140,22 +145,44 @@ export const ProductService = {
                 changes.push(`name: ${oldProduct.name} -> ${updates.name}`);
             }
 
+            if (updates.showInApp !== undefined && updates.showInApp !== oldProduct.showInApp) {
+                changes.push(`App Visibility: ${oldProduct.showInApp !== false ? 'Visible' : 'Hidden'} -> ${updates.showInApp ? 'Visible' : 'Hidden'}`);
+            }
+
+            if (updates.discount !== undefined) {
+                const oldDiscount = oldProduct.discount;
+                const newDiscount = updates.discount;
+                if (JSON.stringify(oldDiscount) !== JSON.stringify(newDiscount)) {
+                    if (!newDiscount) {
+                        changes.push(`discount: removed`);
+                    } else {
+                        const type = newDiscount.type;
+                        const value = newDiscount.value;
+                        changes.push(`discount: ${type} ${value}${type === 'percentage' ? '%' : ' Rs'}`);
+                    }
+                }
+            }
+
+            // Sanitize updates (remove undefined)
+            const cleanUpdates = JSON.parse(JSON.stringify(updates));
+
             await updateDoc(docRef, {
-                ...updates,
+                ...cleanUpdates,
                 updatedAt: new Date().toISOString(),
             });
 
             // Notify Admins
             const timestamp = new Date().toLocaleString();
             const changesSummary = changes.length > 0 ? `(${changes.join(', ')})` : '(details updated)';
-            const message = `Product updated: ${productName} ${changesSummary} by ${changedBy} at ${timestamp}`;
+            const message = `Product updated: ${productName} ${changesSummary}`;
 
             await NotificationService.notifyAdmins(
                 "Product Updated",
                 message,
                 id,
                 'product',
-                '/admin/inventory'
+                '/admin/inventory',
+                changedBy
             );
         } catch (error) {
             console.error("Error updating product:", error);
@@ -166,8 +193,12 @@ export const ProductService = {
     uploadProductImage: async (file: File): Promise<string> => {
         try {
             console.log("Starting image upload for file:", file.name, "type:", file.type, "size:", file.size);
-            const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
+
+            // Optimize image before upload
+            const optimizedFile = await optimizeImage(file, 'product');
+
+            const storageRef = ref(storage, `products/${Date.now()}_${optimizedFile.name.split('.')[0]}.webp`);
+            const snapshot = await uploadBytes(storageRef, optimizedFile);
             const downloadURL = await getDownloadURL(snapshot.ref);
             console.log("Image upload successful. URL:", downloadURL);
             return downloadURL;
@@ -228,15 +259,20 @@ export const ProductService = {
             const docRef = doc(db, COLLECTION_NAME, productId);
             const currentHistory = product.stockHistory || [];
 
+            // Sanitize history entry
+            const cleanHistoryEntry = JSON.parse(JSON.stringify(historyEntry));
+
             await updateDoc(docRef, {
                 currentStock: newStock,
-                stockHistory: [historyEntry, ...currentHistory]
+                stockHistory: [cleanHistoryEntry, ...currentHistory]
             });
 
             // 5. Send Notification
             const timestamp = new Date().toLocaleString();
             const actionText = action === 'add' ? 'added' : action === 'remove' ? 'removed' : 'set';
-            const message = `Product updated: ${product.name} (stock updated: ${actionText} ${quantity} ${product.unit}, New total: ${newStock} ${product.unit}) by ${changedBy} at ${timestamp}`;
+            const message = `Product updated: ${product.name} (stock updated: ${actionText} ${quantity} ${product.unit}, New total: ${newStock} ${product.unit})`;
+
+            console.log(`[ProductService] Sending stock update notification for product ${product.name} (${productId})`);
 
             // Notify Admins
             await NotificationService.notifyAdmins(
@@ -244,8 +280,10 @@ export const ProductService = {
                 message,
                 productId,
                 'product',
-                '/admin/inventory'
+                '/admin/inventory',
+                changedBy
             );
+            console.log(`[ProductService] Stock update notification sent successfully.`);
 
         } catch (error) {
             console.error("Error updating stock:", error);
@@ -267,14 +305,15 @@ export const ProductService = {
 
             // Notify Admins
             const timestamp = new Date().toLocaleString();
-            const message = `Product deleted: ${productName} by ${changedBy} at ${timestamp}`;
+            const message = `Product deleted: ${productName}`;
 
             await NotificationService.notifyAdmins(
                 "Product Deleted",
                 message,
                 undefined,
                 'product',
-                '/admin/inventory'
+                '/admin/inventory',
+                changedBy
             );
         } catch (error) {
             console.error("Error deleting product:", error);
@@ -286,14 +325,39 @@ export const ProductService = {
         try {
             const q = query(collection(db, COLLECTION_NAME), where("isFeatured", "==", true));
             const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => ({
+            let featuredProducts = querySnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data(),
                 images: Array.isArray((doc.data() as any).images) ? (doc.data() as any).images : []
             } as Product));
+
+            // Fallback: If no featured products found via query, but there might be some that are not indexed properly
+            if (featuredProducts.length === 0) {
+                console.log("No featured products found via query, trying client-side filter as fallback...");
+                const allProducts = await ProductService.getAllProducts();
+                featuredProducts = allProducts.filter(p => p.isFeatured === true);
+            }
+
+            // Map category names if they are missing
+            if (featuredProducts.length > 0) {
+                const categories = await ProductService.getCategories();
+                const categoryMap = new Map(categories.map(cat => [cat.id, cat.name]));
+                featuredProducts = featuredProducts.map(p => ({
+                    ...p,
+                    categoryName: p.categoryId ? categoryMap.get(p.categoryId) : p.categoryName
+                }));
+            }
+
+            return featuredProducts;
         } catch (error) {
             console.error("Error fetching featured products:", error);
-            return [];
+            // Final fallback to all products filter
+            try {
+                const allProducts = await ProductService.getAllProducts();
+                return allProducts.filter(p => p.isFeatured === true);
+            } catch (fallbackError) {
+                return [];
+            }
         }
     }
 };

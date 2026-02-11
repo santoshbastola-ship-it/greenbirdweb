@@ -76,7 +76,7 @@ export default function RelatedProductsSelector({ currentProductId, selectedIds,
                 <div className="relative">
                     <input
                         type="text"
-                        placeholder="Search products to recommend..."
+                        placeholder="Search"
                         value={searchTerm}
                         onChange={(e) => {
                             setSearchTerm(e.target.value);

@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { TransactionRecord, PaymentStatus, PaymentRecord } from "@/types";
 import { TransactionService } from "@/services/transaction.service";
+import { useAuth } from "@/context/AuthContext";
 
 interface OrderPartialPaymentDialogProps {
     order: TransactionRecord;
@@ -12,11 +13,12 @@ interface OrderPartialPaymentDialogProps {
 }
 
 export default function OrderPartialPaymentDialog({ order, onClose, onSuccess }: OrderPartialPaymentDialogProps) {
+    const { dbUser } = useAuth();
     const [amount, setAmount] = useState("");
     const [note, setNote] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const totalOrderAmount = order.items.reduce((sum, item) => sum + item.totalPrice, 0) - (order.discount || 0);
+    const totalOrderAmount = order.items.reduce((sum, item) => sum + item.totalPrice, 0) - (order.discount || 0) + (order.deliveryFee || 0);
     const remainingAmount = totalOrderAmount - (order.paidAmount || 0);
 
     // Determine payment type based on the status we are transitioning to (or passed as context?)
@@ -100,7 +102,8 @@ export default function OrderPartialPaymentDialog({ order, onClose, onSuccess }:
                 order.id,
                 finalStatus,
                 newTotalPaid,
-                newPayments
+                newPayments,
+                dbUser?.name || "Admin"
             );
 
             onSuccess(paymentAmount);
@@ -192,9 +195,16 @@ export default function OrderPartialPaymentDialog({ order, onClose, onSuccess }:
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
-                            {loading ? "Updating..." : "Record Payment"}
+                            {loading ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span>Updating...</span>
+                                </>
+                            ) : (
+                                "Record Payment"
+                            )}
                         </button>
                     </div>
                 </form>

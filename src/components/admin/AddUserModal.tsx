@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Eye, EyeOff } from "lucide-react";
+import { X, Eye, EyeOff, Loader2 } from "lucide-react";
 import { UserRole } from "@/types";
 import { cleanInput } from "@/lib/input-validation";
 
@@ -180,9 +180,16 @@ export default function AddUserModal({ isOpen, onClose, onSubmit }: AddUserModal
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
-                            {isSubmitting ? "Inviting..." : "Invite User"}
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span>Inviting...</span>
+                                </>
+                            ) : (
+                                "Invite User"
+                            )}
                         </button>
                     </div>
                 </form>

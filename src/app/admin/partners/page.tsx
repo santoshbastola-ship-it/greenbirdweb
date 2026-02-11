@@ -113,10 +113,10 @@ export default function PartnersPage() {
             return true;
         })
         .sort((a, b) => {
-            // Sort by total transaction amount (highest first)
-            const aTotal = a.totalTransactionAmount || 0;
-            const bTotal = b.totalTransactionAmount || 0;
-            return bTotal - aTotal;
+            // Sort by Created Date (Newest First)
+            const dateA = new Date(a.createdAt).getTime();
+            const dateB = new Date(b.createdAt).getTime();
+            return dateB - dateA;
         });
 
     return (
@@ -174,7 +174,7 @@ export default function PartnersPage() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search by name, email, or phone..."
+                            placeholder="Search"
                             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}

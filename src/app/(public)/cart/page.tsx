@@ -31,8 +31,12 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 const DEFAULT_SETTINGS: AppSettings = {
     deliveryFee: 75,
     freeDeliveryThreshold: 750,
+    enableAppDiscount: true,
     appDiscountPercentage: 5,
-    minAppDiscount: 10
+    minAppDiscount: 10,
+    enableFirstOrderDiscount: false,
+    firstOrderDiscountAmount: 0,
+    firstOrderCountThreshold: 1
 };
 
 export default function CartPage() {
@@ -89,6 +93,31 @@ export default function CartPage() {
         }
     }, [dbUser]);
 
+    // State for order history count
+    const [pastOrderCount, setPastOrderCount] = useState<number>(0);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+
+    const checkOrderHistory = async () => {
+        if (!user) return;
+        setLoadingHistory(true);
+        try {
+            const transactions = await TransactionService.getTransactionsByCustomerId(user.uid);
+            // Count only valid sales (not cancelled)
+            const validOrders = transactions.filter(t => t.type === TransactionType.Sale && t.status !== OrderStatus.Cancelled);
+            setPastOrderCount(validOrders.length);
+        } catch (error) {
+            console.error("Failed to check order history:", error);
+        } finally {
+            setLoadingHistory(false);
+        }
+    };
+
+    useEffect(() => {
+        if (user) {
+            checkOrderHistory();
+        }
+    }, [user]);
+
     const handleAddAddress = () => {
         if (newAddress.trim()) {
             const updatedAddresses = [...addresses, newAddress.trim()];
@@ -135,39 +164,107 @@ export default function CartPage() {
         setPlacingOrder(true);
         try {
             // Update profile info if changed
-            if (dbUser && (phoneNumber !== dbUser.phoneNumber || JSON.stringify(addresses) !== JSON.stringify(dbUser.addresses))) {
-                await UserService.updateUser(user.uid, {
-                    phoneNumber,
-                    addresses,
-                    address: isMapSelected && deliveryLocation ? (deliveryLocation.address || "Pinned Location") : addresses[selectedAddressIndex],
-                    deliveryLocation: deliveryLocation || undefined
-                });
-                await refreshDbUser();
+            if (dbUser) {
+                const hasLocationChanged = JSON.stringify(deliveryLocation || null) !== JSON.stringify(dbUser.deliveryLocation || null);
+
+                if (phoneNumber !== dbUser.phoneNumber || JSON.stringify(addresses) !== JSON.stringify(dbUser.addresses) || hasLocationChanged) {
+                    // Prepare location for Firestore - ensuring NO undefined fields
+                    const firestoreLocation = deliveryLocation ? {
+                        lat: deliveryLocation.lat,
+                        lng: deliveryLocation.lng,
+                        address: deliveryLocation.address || "Pinned Location"
+                    } : undefined;
+
+                    await UserService.updateUser(user.uid, {
+                        phoneNumber,
+                        addresses,
+                        address: isMapSelected && deliveryLocation ? (deliveryLocation.address || "Pinned Location") : addresses[selectedAddressIndex],
+                        deliveryLocation: firestoreLocation
+                    });
+                    await refreshDbUser();
+                }
             }
+
+            const activeAddress = isMapSelected && deliveryLocation
+                ? (deliveryLocation.address || "Pinned Location")
+                : addresses[selectedAddressIndex];
 
             const activeProfile = {
                 name: dbUser?.name || user.displayName || "Customer",
                 phoneNumber,
-                address: isMapSelected && deliveryLocation ? (deliveryLocation.address || "Pinned Location") : addresses[selectedAddressIndex]
+                address: activeAddress
             };
+
+            // Prepare transaction location
+            const transactionLocation = deliveryLocation ? {
+                lat: deliveryLocation.lat,
+                lng: deliveryLocation.lng,
+                address: deliveryLocation.address || "Pinned Location"
+            } : undefined;
+
+            // Calculate discounts for checkout
+            const subtotal = validItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const isVerified = user && dbUser && !dbUser.email?.endsWith('@manual.entry');
+            const deliveryFee = subtotal < appSettings.freeDeliveryThreshold ? appSettings.deliveryFee : 0;
+
+            // Helper to check date validity (duplicated for safety inside handler)
+            const isDateValid = (startDate?: string, endDate?: string) => {
+                const now = new Date();
+                const start = startDate ? new Date(startDate) : null;
+                const end = endDate ? new Date(endDate) : null;
+                if (start) start.setHours(0, 0, 0, 0);
+                if (end) end.setHours(23, 59, 59, 999);
+                if (start && now < start) return false;
+                if (end && now > end) return false;
+                return true;
+            };
+
+            let appDiscount = 0;
+            let firstOrderDiscount = 0;
+
+            // 1. Check First Order Discount Eligibility
+            if (isVerified && appSettings.enableFirstOrderDiscount) {
+                if (isDateValid(appSettings.firstOrderDiscountStartDate, appSettings.firstOrderDiscountEndDate)) {
+                    if (pastOrderCount < (appSettings.firstOrderCountThreshold || 1)) {
+                        firstOrderDiscount = appSettings.firstOrderDiscountAmount || 0;
+                    }
+                }
+            }
+
+            // 2. Check App Discount Eligibility (Only if First Order Discount is NOT applied)
+            if (firstOrderDiscount > 0) {
+                appDiscount = 0; // mutually exclusive
+            } else if (isVerified && appSettings.enableAppDiscount !== false) {
+                if (isDateValid(appSettings.appDiscountStartDate, appSettings.appDiscountEndDate)) {
+                    appDiscount = Math.max(appSettings.minAppDiscount, Math.floor(subtotal * (appSettings.appDiscountPercentage / 100)));
+                }
+            }
+
+            const totalDiscount = appDiscount + firstOrderDiscount;
 
             await TransactionService.createTransaction({
                 billNo: "OR-" + Math.floor(Math.random() * 100000),
                 type: TransactionType.Sale,
-                items: validItems.map(i => ({
-                    productId: i.productId,
-                    productName: i.productName,
-                    businessType: i.businessType || 'product',
-                    quantity: i.quantity,
-                    unit: i.unit,
-                    priceUnit: i.unit,
-                    pricePerUnit: i.price,
-                    totalPrice: i.price * i.quantity
-                })),
+                items: validItems.map(i => {
+                    const priceUnit = i.priceUnit || i.unit;
+                    const usesWeight = priceUnit !== i.unit;
+                    return {
+                        productId: i.productId,
+                        productName: i.productName,
+                        businessType: i.businessType || 'product',
+                        quantity: usesWeight ? 1 : i.quantity, // For weight-based, quantity is always 1 item
+                        weight: usesWeight ? i.quantity : undefined, // For weight-based, quantity field holds the weight
+                        unit: i.unit,
+                        priceUnit: priceUnit,
+                        pricePerUnit: i.price,
+                        totalPrice: i.quantity * i.price // quantity holds weight for weight-based items
+                    };
+                }),
                 customerId: user.uid,
                 partyName: activeProfile.name,
                 date: new Date(),
-                discount: appDiscount,
+                discount: totalDiscount,
+                discountDetails: discountDetails,
                 deliveryFee: deliveryFee,
                 soldBy: "Online",
                 enteredBy: user.uid,
@@ -181,8 +278,8 @@ export default function CartPage() {
                 deliveryInstructions,
                 expectedDeliveryDate: expectedDate,
                 expectedDeliveryTime: expectedTime,
-                deliveryLocation: deliveryLocation || undefined
-            });
+                deliveryLocation: transactionLocation
+            }, activeProfile.name || dbUser?.name || "Customer");
 
             clearCart();
 
@@ -199,6 +296,10 @@ export default function CartPage() {
 
     // Defensive check: Ensure items is an array and filter out invalid ones
     const validItems = Array.isArray(items) ? items.filter(item => item && item.productId) : [];
+
+    // Safety check for unit to prevent crashes if data is corrupted
+    const getSafeUnit = (unit?: string) => unit || "unit";
+
 
     if (validItems.length === 0) {
         return (
@@ -224,6 +325,21 @@ export default function CartPage() {
         );
     }
 
+
+    // Helper to check if a date is within range (inclusive)
+    const isDateValid = (startDate?: string, endDate?: string) => {
+        const now = new Date();
+        const start = startDate ? new Date(startDate) : null;
+        const end = endDate ? new Date(endDate) : null;
+
+        if (start) start.setHours(0, 0, 0, 0);
+        if (end) end.setHours(23, 59, 59, 999);
+
+        if (start && now < start) return false;
+        if (end && now > end) return false;
+        return true;
+    };
+
     const subtotal = validItems.reduce((sum, item) => {
         const price = Number(item.price) || 0;
         const quantity = Number(item.quantity) || 0;
@@ -232,10 +348,41 @@ export default function CartPage() {
 
     const isVerified = user && dbUser && !dbUser.email?.endsWith('@manual.entry');
     const deliveryFee = subtotal < appSettings.freeDeliveryThreshold ? appSettings.deliveryFee : 0;
-    const appDiscount = isVerified
-        ? Math.max(appSettings.minAppDiscount, Math.floor(subtotal * (appSettings.appDiscountPercentage / 100)))
-        : 0;
-    const total = subtotal + deliveryFee - appDiscount;
+
+    // --- Discount Calculation Logic ---
+    let appDiscount = 0;
+    let firstOrderDiscount = 0;
+
+    // 1. Check First Order Discount Eligibility
+    if (isVerified && appSettings.enableFirstOrderDiscount) {
+        if (isDateValid(appSettings.firstOrderDiscountStartDate, appSettings.firstOrderDiscountEndDate)) {
+            // Check if user's past order count is less than the threshold
+            // e.g. Threshold 1: apply if count is 0. Threshold 2: apply if count is 0 or 1.
+            if (pastOrderCount < (appSettings.firstOrderCountThreshold || 1)) {
+                firstOrderDiscount = appSettings.firstOrderDiscountAmount || 0;
+            }
+        }
+    }
+
+    // 2. Check App Discount Eligibility (Only if First Order Discount is NOT applied)
+    if (firstOrderDiscount > 0) {
+        appDiscount = 0; // mutually exclusive
+    } else if (isVerified && appSettings.enableAppDiscount !== false) { // Default to true if undefined
+        if (isDateValid(appSettings.appDiscountStartDate, appSettings.appDiscountEndDate)) {
+            appDiscount = Math.max(appSettings.minAppDiscount, Math.floor(subtotal * (appSettings.appDiscountPercentage / 100)));
+        }
+    }
+
+    const totalDiscount = appDiscount + firstOrderDiscount;
+    let discountDetails = "";
+    if (totalDiscount > 0) {
+        if (firstOrderDiscount > 0) {
+            discountDetails = `First Order Discount (Rs. ${firstOrderDiscount})`;
+        } else if (appDiscount > 0) {
+            discountDetails = `App Discount (${appSettings.appDiscountPercentage}%)`;
+        }
+    }
+    const total = Math.max(0, subtotal + deliveryFee - totalDiscount);
 
     return (
         <div className="min-h-screen bg-gray-50 py-6 md:py-12 pb-32 md:pb-36">
@@ -256,14 +403,16 @@ export default function CartPage() {
                                     const isEggs = item.productId === FRESH_EGGS_PRODUCT_ID;
                                     const handleIncrement = () => {
                                         const step = isEggs ? 30 : 1;
-                                        const unitInfo = units.find(u => u.name.toLowerCase() === item.unit.toLowerCase());
+                                        const safeUnit = getSafeUnit(item.priceUnit || item.unit);
+                                        const unitInfo = units.find(u => u.name.toLowerCase() === safeUnit.toLowerCase());
                                         const allowDecimals = unitInfo ? unitInfo.allowDecimals !== false : true;
                                         const newVal = item.quantity + step;
                                         updateQuantity(item.productId, allowDecimals ? newVal : Math.floor(newVal));
                                     };
                                     const handleDecrement = () => {
                                         const step = isEggs ? 30 : 1;
-                                        const unitInfo = units.find(u => u.name.toLowerCase() === item.unit.toLowerCase());
+                                        const safeUnit = getSafeUnit(item.priceUnit || item.unit);
+                                        const unitInfo = units.find(u => u.name.toLowerCase() === safeUnit.toLowerCase());
                                         const allowDecimals = unitInfo ? unitInfo.allowDecimals !== false : true;
                                         const newVal = Math.max(0, item.quantity - step);
                                         updateQuantity(item.productId, allowDecimals ? newVal : Math.floor(newVal));
@@ -285,9 +434,11 @@ export default function CartPage() {
                                                 <div className="flex justify-between items-start gap-2 mb-1.5">
                                                     <div className="flex-1 min-w-0">
                                                         <h3 className="text-sm md:text-base font-bold text-gray-900 truncate">{item.productName}</h3>
-                                                        <p className="text-xs text-gray-500">Rs. {item.price} / {item.unit}</p>
+                                                        <p className="text-xs text-gray-500">Rs. {item.price} / {getSafeUnit(item.priceUnit || item.unit)}</p>
                                                     </div>
-                                                    <p className="text-sm md:text-base font-bold text-[#2D5A27] whitespace-nowrap">Rs. {(item.price * item.quantity).toFixed(2)}</p>
+                                                    <p className="text-sm md:text-base font-bold text-[#2D5A27] whitespace-nowrap">
+                                                        Rs. {((item.priceUnit && item.priceUnit !== item.unit) ? (item.quantity * item.price) : (item.price * item.quantity)).toFixed(2)}
+                                                    </p>
                                                 </div>
 
                                                 {/* Quantity Controls and Remove - Mobile Optimized */}
@@ -295,7 +446,7 @@ export default function CartPage() {
                                                     <div className="flex items-center gap-2">
                                                         <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
                                                             <button
-                                                                onClick={handleDecrement}
+                                                                onClick={handleIncrement}
                                                                 className="p-1.5 md:p-2 hover:bg-gray-100 active:bg-gray-200 text-gray-700 transition-colors touch-manipulation"
                                                                 aria-label="Decrease quantity"
                                                             >
@@ -303,12 +454,13 @@ export default function CartPage() {
                                                             </button>
                                                             <input
                                                                 type="number"
-                                                                step={units.find(u => u.name.toLowerCase() === item.unit.toLowerCase())?.allowDecimals === false ? "1" : "0.01"}
+                                                                step={units.find(u => u.name.toLowerCase() === getSafeUnit(item.priceUnit || item.unit).toLowerCase())?.allowDecimals === false ? "1" : "0.01"}
                                                                 min="0"
                                                                 value={item.quantity}
                                                                 onChange={(e) => {
                                                                     const val = e.target.value;
-                                                                    const unitInfo = units.find(u => u.name.toLowerCase() === item.unit.toLowerCase());
+                                                                    const safeUnit = getSafeUnit(item.priceUnit || item.unit);
+                                                                    const unitInfo = units.find(u => u.name.toLowerCase() === safeUnit.toLowerCase());
                                                                     const allowDecimals = unitInfo ? unitInfo.allowDecimals !== false : true;
 
                                                                     if (val === '') {
@@ -333,7 +485,7 @@ export default function CartPage() {
                                                                 <Plus className="h-4 w-4" />
                                                             </button>
                                                         </div>
-                                                        <span className="text-xs font-bold text-gray-500 lowercase">{item.unit}</span>
+                                                        <span className="text-xs font-bold text-gray-500 lowercase">{getSafeUnit(item.priceUnit || item.unit)}</span>
                                                     </div>
 
                                                     <button
@@ -642,8 +794,6 @@ export default function CartPage() {
                                                 placeholder="Special instructions (e.g. Leave at door)"
                                             />
                                         </div>
-
-
                                     </div>
                                 </div>
                             )}
@@ -663,10 +813,30 @@ export default function CartPage() {
                                 <span className="flex items-center">Delivery {subtotal >= appSettings.freeDeliveryThreshold && <span className="ml-2 text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-black uppercase">FREE</span>}</span>
                                 <span className={subtotal >= appSettings.freeDeliveryThreshold ? "line-through opacity-50" : ""}>Rs. {deliveryFee}</span>
                             </div>
-                            <div className="flex justify-between text-sm text-[#2D5A27] font-bold">
-                                <span>App Discount</span>
-                                <span>- Rs. {appDiscount.toFixed(2)}</span>
-                            </div>
+
+                            {/* Discounts Display */}
+                            {appDiscount > 0 && (
+                                <div className="flex justify-between text-sm text-green-700">
+                                    <span>App Discount ({appSettings.appDiscountPercentage}%)</span>
+                                    <span>- Rs. {appDiscount.toFixed(2)}</span>
+                                </div>
+                            )}
+                            {firstOrderDiscount > 0 && (
+                                <div className="flex justify-between text-sm text-blue-700">
+                                    <div className="flex flex-col">
+                                        <span>First Order Discount</span>
+                                        <span className="text-[10px] opacity-75">Welcome Offer</span>
+                                    </div>
+                                    <span>- Rs. {firstOrderDiscount.toFixed(2)}</span>
+                                </div>
+                            )}
+
+                            {(appDiscount === 0 && firstOrderDiscount === 0 && isVerified) && (
+                                <div className="text-xs text-gray-400 italic text-center py-1">
+                                    No discounts applicable
+                                </div>
+                            )}
+
                             <div className="border-t border-gray-100 pt-4 flex justify-between items-center">
                                 <span className="font-bold text-gray-900">Total</span>
                                 <span className="font-bold text-2xl text-[#2D5A27]">Rs. {total.toFixed(2)}</span>

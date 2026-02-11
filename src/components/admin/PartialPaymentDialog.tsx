@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { EnergyBill, PaymentStatus } from "@/types";
 import { updatePaymentStatus, calculateRemainingAmount } from "@/services/energyService";
 
@@ -124,9 +124,16 @@ export default function PartialPaymentDialog({ bill, onClose }: PartialPaymentDi
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
-                            {loading ? "Updating..." : "Update Payment"}
+                            {loading ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span>Updating...</span>
+                                </>
+                            ) : (
+                                "Update Payment"
+                            )}
                         </button>
                     </div>
                 </form>

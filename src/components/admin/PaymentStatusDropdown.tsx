@@ -13,7 +13,7 @@ import { getPaymentStatusDisplayName } from "@/services/energyService"; // Or mo
    Actually, redefine is cleaner for shared component.
 */
 
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 
 export function getPaymentStatusDisplayNameHelper(status: PaymentStatus): string {
     switch (status) {
@@ -37,13 +37,15 @@ interface PaymentStatusDropdownProps {
     onChange: (status: PaymentStatus) => void;
     color: string;
     disabled?: boolean;
+    isUpdating?: boolean;
 }
 
 export default function PaymentStatusDropdown({
     currentStatus,
     onChange,
     color,
-    disabled = false
+    disabled = false,
+    isUpdating = false,
 }: PaymentStatusDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -85,13 +87,17 @@ export default function PaymentStatusDropdown({
             <button
                 onClick={(e) => {
                     e.stopPropagation();
-                    if (!disabled) setIsOpen(!isOpen);
+                    if (!disabled && !isUpdating) setIsOpen(!isOpen);
                 }}
-                disabled={disabled}
-                className={`flex items-center gap-2 px-3 py-1 rounded-full border font-semibold text-sm transition-all ${selectedColorClass} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
+                disabled={disabled || isUpdating}
+                className={`flex items-center gap-2 px-3 py-1 rounded-full border font-semibold text-sm transition-all ${selectedColorClass} ${disabled || isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
             >
                 <span>{getPaymentStatusDisplayNameHelper(currentStatus)}</span>
-                {!disabled && <ChevronDown className="h-4 w-4" />}
+                {isUpdating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                    !disabled && <ChevronDown className="h-4 w-4" />
+                )}
             </button>
             {isOpen && (
                 <>

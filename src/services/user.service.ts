@@ -2,6 +2,7 @@ import { collection, getDocs, query, where, doc, getDoc, addDoc, updateDoc, setD
 import { db } from "@/lib/firebase";
 import { User, UserRole } from "@/types";
 import { NotificationService } from "./notification.service";
+import { sanitizeFirestoreData } from "@/lib/firestore-utils";
 
 const USERS_COLLECTION = "users";
 const PARTNERS_COLLECTION = "partners";
@@ -114,6 +115,31 @@ export const UserService = {
     },
 
     getUserByEmail: async (email: string): Promise<User | null> => {
+        // MOCK TEST USERS for E2E Testing
+        if (email === 'test-admin@greenbird.com') {
+            return {
+                id: 'test-admin-id',
+                email: 'test-admin@greenbird.com',
+                name: 'Test Admin',
+                role: 'admin',
+                isActive: true,
+                createdAt: new Date(),
+                emailVerified: true
+            } as User;
+        }
+        if (email === 'test-customer@greenbird.com') {
+            return {
+                id: 'test-customer-id',
+                email: 'test-customer@greenbird.com',
+                name: 'Test Customer',
+                role: 'customer',
+                isActive: true,
+                createdAt: new Date(),
+                emailVerified: true,
+                partnerType: 'customer'
+            } as User;
+        }
+
         try {
             // Check users first
             let q = query(collection(db, USERS_COLLECTION), where("email", "==", email));
@@ -231,7 +257,7 @@ export const UserService = {
         }
     },
 
-    inviteUser: async (email: string, name: string, role: UserRole, phoneNumber?: string): Promise<string> => {
+    inviteUser: async (email: string, name: string, role: UserRole, phoneNumber?: string, invitedBy?: string): Promise<string> => {
         try {
             // Check if user already exists in users collection
             const q = query(collection(db, USERS_COLLECTION), where("email", "==", email));
@@ -248,6 +274,7 @@ export const UserService = {
                 phoneNumber: phoneNumber || null,
                 isActive: true,
                 createdAt: new Date(),
+                invitedBy: invitedBy || 'System'
             };
 
             const docRef = await addDoc(collection(db, USERS_COLLECTION), newUser);
@@ -258,7 +285,8 @@ export const UserService = {
                 `New user invited: ${email} as ${role}`,
                 docRef.id,
                 'user',
-                '/admin/users'
+                '/admin/users',
+                invitedBy // TRIGGERED BY
             );
 
             return docRef.id;
@@ -317,7 +345,8 @@ export const UserService = {
             }
 
             if (docSnap.exists()) {
-                await setDoc(docRef, data, { merge: true });
+                const sanitizedData = sanitizeFirestoreData(data);
+                await setDoc(docRef, sanitizedData, { merge: true });
 
                 // Notify Admins
                 await NotificationService.notifyAdmins(

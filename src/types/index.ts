@@ -2,6 +2,13 @@ export type BusinessType = 'livestock' | 'crop' | 'product' | 'asset';
 export type StockUnit = string;
 export type UserRole = 'admin' | 'manager' | 'customer';
 
+export interface ProductDiscount {
+    type: 'flat' | 'percentage';
+    value: number;
+    startDate?: string | Date; // ISO String
+    endDate?: string | Date;   // ISO String
+}
+
 export enum TransactionType {
     Sale = 'Sale',
     Purchase = 'Purchase'
@@ -52,6 +59,7 @@ export interface TransactionRecord {
     partyName: string; // Customer or Vendor Name
     date: Date | string;
     discount: number;
+    discountDetails?: string;
     deliveryFee?: number;
     deliveryAddress?: string;
     customerPhone?: string;
@@ -72,6 +80,7 @@ export interface TransactionRecord {
     paidAmount: number;
     payments: PaymentRecord[];
     logs?: OrderLog[];
+    documentUrls?: string[];
     updatedAt?: Date | string;
 }
 
@@ -122,6 +131,7 @@ export interface TaskItem {
     repetition: TaskRepetition;
     createdDate: Date;
     completedDate?: Date;
+    documentUrls?: string[];
 }
 
 
@@ -186,6 +196,8 @@ export interface Product {
     isFeatured?: boolean;
     relatedProductIds?: string[]; // IDs of products to recommend when this product is viewed/carted
     tags?: string[];
+    discount?: ProductDiscount;
+    showInApp?: boolean; // If false, hide from customers
 }
 
 export interface User {
@@ -214,6 +226,7 @@ export interface CartItem {
     productName: string;
     price: number;
     quantity: number;
+    weight?: number; // Weight in priceUnit (e.g., kg) when priceUnit !== unit
     unit: StockUnit;
     imageUrl?: string;
     availableStock: number;
@@ -263,13 +276,26 @@ export interface EnergyBill {
     remarks?: string; // For food bills and notes
     enteredBy: string;
     entryDate: Date;
+    documentUrls?: string[];
 }
 
 export interface AppSettings {
     deliveryFee: number;
     freeDeliveryThreshold: number;
+
+    // App Discount (Percentage)
+    enableAppDiscount: boolean;
     appDiscountPercentage: number;
     minAppDiscount: number;
+    appDiscountStartDate?: string;
+    appDiscountEndDate?: string;
+
+    // First Order(s) Discount (Flat Amount)
+    enableFirstOrderDiscount: boolean;
+    firstOrderDiscountAmount: number; // Flat Rs amount
+    firstOrderCountThreshold: number; // Applies to first X orders (e.g. 1 means only 1st order)
+    firstOrderDiscountStartDate?: string;
+    firstOrderDiscountEndDate?: string;
 }
 
 // Notifications

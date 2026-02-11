@@ -72,7 +72,7 @@ export default function SingleActivityCarousel({ media, title }: SingleActivityC
                     <div className="absolute inset-0 bg-black/20 group-hover/video:bg-black/40 transition-colors duration-500" />
                     <button
                         onClick={togglePlay}
-                        className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/video:opacity-100 transition-all duration-500"
+                        className="absolute inset-0 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover/video:opacity-100 transition-all duration-500"
                     >
                         <div className="w-20 h-20 rounded-full bg-white/10 backdrop-blur-xl flex items-center justify-center border border-white/20 scale-90 group-hover/video:scale-100 transition-transform duration-500">
                             {isPlaying ? <Pause className="h-8 w-8 text-white fill-white" /> : <Play className="h-8 w-8 text-white fill-white ml-1" />}
@@ -90,13 +90,13 @@ export default function SingleActivityCarousel({ media, title }: SingleActivityC
                     <div className="absolute inset-x-6 top-1/2 -translate-y-1/2 flex justify-between pointer-events-none">
                         <button
                             onClick={prevMedia}
-                            className="p-4 rounded-2xl bg-white/5 hover:bg-white/20 text-white backdrop-blur-xl border border-white/10 opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 transition-all duration-500 pointer-events-auto shadow-2xl"
+                            className="p-4 rounded-2xl bg-white/5 hover:bg-white/20 text-white backdrop-blur-xl border border-white/10 opacity-100 md:opacity-0 md:group-hover:opacity-100 -translate-x-0 md:-translate-x-4 md:group-hover:translate-x-0 transition-all duration-500 pointer-events-auto shadow-2xl"
                         >
                             <ChevronLeft className="h-6 w-6" />
                         </button>
                         <button
                             onClick={nextMedia}
-                            className="p-4 rounded-2xl bg-white/5 hover:bg-white/20 text-white backdrop-blur-xl border border-white/10 opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all duration-500 pointer-events-auto shadow-2xl"
+                            className="p-4 rounded-2xl bg-white/5 hover:bg-white/20 text-white backdrop-blur-xl border border-white/10 opacity-100 md:opacity-0 md:group-hover:opacity-100 translate-x-0 md:translate-x-4 md:group-hover:translate-x-0 transition-all duration-500 pointer-events-auto shadow-2xl"
                         >
                             <ChevronRight className="h-6 w-6" />
                         </button>

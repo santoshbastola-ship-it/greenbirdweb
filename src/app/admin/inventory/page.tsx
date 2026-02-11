@@ -158,7 +158,7 @@ export default function InventoryPage() {
                 onStartDateChange={setStartDate}
                 endDate={endDate}
                 onEndDateChange={setEndDate}
-                placeholder="Search by Name, Description, or Type..."
+                placeholder="Search"
             />
 
             {/* Tabs */}

@@ -21,6 +21,7 @@ export default function Home() {
   const [activities, setActivities] = useState<FarmActivity[]>([]);
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [expandedTestimonials, setExpandedTestimonials] = useState<string[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [loadingTestimonials, setLoadingTestimonials] = useState(true);
@@ -58,14 +59,14 @@ export default function Home() {
 
         const [activitiesData, productsData, testimonialsData] = await Promise.race([
           Promise.all([
-            getActivities(3),
+            getActivities(12), // Fetch more to allow for filtering
             ProductService.getFeaturedProducts(),
-            getTestimonials(6)
+            getTestimonials(10)
           ]),
           timeoutPromise
         ]) as [FarmActivity[], Product[], Testimonial[]];
 
-        setActivities(activitiesData);
+        setActivities(activitiesData.filter(a => a.isPublished).slice(0, 3));
         setFeaturedProducts(productsData);
         setTestimonials(testimonialsData.filter(t => t.isPublished));
       } catch (error) {
@@ -86,7 +87,7 @@ export default function Home() {
       <section className="relative bg-[#2D5A27] text-white overflow-hidden">
         <div className="absolute inset-0 opacity-30">
           <Image
-            src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?q=80&w=1200&auto=format&fit=crop"
+            src="/images/hero-home.jpg"
             alt="Farm landscape"
             fill
             className="object-cover"
@@ -118,7 +119,7 @@ export default function Home() {
       </section>
 
       {/* Core Offerings Section */}
-      <section className="py-24 bg-white">
+      <section className="py-12 md:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 max-w-3xl mx-auto">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight">
@@ -170,7 +171,7 @@ export default function Home() {
       </section>
 
       {/* Farm Activities Section */}
-      <section className="py-24 bg-white overflow-hidden">
+      <section className="py-12 md:py-24 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 max-w-3xl mx-auto relative">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight">
@@ -202,7 +203,7 @@ export default function Home() {
 
 
       {/* Featured Products */}
-      <section className="py-24 bg-[#FCF9F1]">
+      <section className="py-12 md:py-24 bg-[#FCF9F1]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 max-w-3xl mx-auto">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight">
@@ -236,7 +237,7 @@ export default function Home() {
         </div>
       </section>
       {/* Testimonials Section */}
-      <section className="py-24 bg-white">
+      <section className="py-12 md:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16 max-w-3xl mx-auto">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight">
@@ -252,53 +253,73 @@ export default function Home() {
               <LogoLoader size="sm" />
             </div>
           ) : testimonials.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {testimonials.map((testimonial) => (
-                <div
-                  key={testimonial.id}
-                  className="bg-white border border-gray-100 p-8 rounded-[2rem] hover:shadow-2xl hover:border-green-100 transition-all duration-300 flex flex-col group relative"
-                >
-                  <Quote className="absolute top-8 right-8 h-12 w-12 text-green-50/50 group-hover:text-green-50 transition-colors" />
-                  <div className="flex-1 space-y-6">
-                    <p className="text-gray-700 text-lg italic leading-relaxed relative z-10">
-                      "{testimonial.content}"
-                    </p>
-                    <div className="flex items-center gap-4">
-                      <div className="h-14 w-14 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm transition-transform duration-500 group-hover:scale-110">
-                        {testimonial.photoUrl ? (
-                          <Image
-                            src={testimonial.photoUrl}
-                            alt={testimonial.name}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          />
-                        ) : (
-                          <div className="h-full w-full flex items-center justify-center bg-gray-100">
-                            <User className="h-6 w-6 text-gray-400" />
-                          </div>
-                        )}
+            <div className="flex overflow-x-auto gap-8 pb-8 -mx-4 px-4 sm:mx-0 sm:px-0 no-scrollbar snap-x snap-mandatory items-start">
+              {testimonials.map((testimonial) => {
+                const isExpanded = expandedTestimonials.includes(testimonial.id);
+                const isLongText = testimonial.content.length > 180;
+
+                return (
+                  <div
+                    key={testimonial.id}
+                    className={`bg-white border border-gray-100 p-8 rounded-[2rem] hover:shadow-2xl hover:border-green-100 transition-all duration-300 flex flex-col group relative flex-none w-[85vw] sm:w-[400px] snap-start ${isExpanded ? 'h-auto' : 'h-[420px]'}`}
+                  >
+                    <Quote className="absolute top-8 right-8 h-12 w-12 text-green-50/50 group-hover:text-green-50 transition-colors" />
+                    <div className="flex-1 flex flex-col h-full">
+                      <div className={`text-gray-700 text-lg italic leading-relaxed relative z-10 mb-6 ${!isExpanded ? 'line-clamp-6' : ''}`}>
+                        "{testimonial.content}"
                       </div>
-                      <div>
-                        <h4 className="font-bold text-gray-900">{testimonial.name}</h4>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-400">Verified Customer</span>
-                          {testimonial.customerProfileUrl && (
-                            <a
-                              href={testimonial.customerProfileUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-500 hover:text-blue-600 transition-colors"
-                            >
-                              <ExternalLink className="h-3 w-3" />
-                            </a>
+
+                      {isLongText && (
+                        <button
+                          onClick={() => {
+                            if (isExpanded) {
+                              setExpandedTestimonials(prev => prev.filter(id => id !== testimonial.id));
+                            } else {
+                              setExpandedTestimonials(prev => [...prev, testimonial.id]);
+                            }
+                          }}
+                          className="text-[#2D5A27] font-semibold text-sm hover:underline mb-4 text-left relative z-10"
+                        >
+                          {isExpanded ? "View Less" : "View More"}
+                        </button>
+                      )}
+
+                      <div className="flex items-center gap-4 mt-auto">
+                        <div className="h-14 w-14 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm transition-transform duration-500 group-hover:scale-110 flex-shrink-0 relative">
+                          {testimonial.photoUrl ? (
+                            <Image
+                              src={testimonial.photoUrl}
+                              alt={testimonial.name}
+                              fill
+                              className="object-cover"
+                              sizes="56px"
+                            />
+                          ) : (
+                            <div className="h-full w-full flex items-center justify-center bg-gray-100">
+                              <User className="h-6 w-6 text-gray-400" />
+                            </div>
                           )}
+                        </div>
+                        <div className="min-w-0">
+                          <h4 className="font-bold text-gray-900 truncate">{testimonial.name}</h4>
+                          <div className="flex items-center gap-2">
+                            {testimonial.customerProfileUrl && (
+                              <a
+                                href={testimonial.customerProfileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-500 hover:text-blue-600 transition-colors inline-block"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                              </a>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-24 bg-gray-50 rounded-[2.5rem] text-gray-400 font-medium border border-dashed border-gray-200">

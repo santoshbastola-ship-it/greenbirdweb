@@ -122,7 +122,7 @@ export default function QuickStockUpdatePage() {
                     onStartDateChange={setStartDate}
                     endDate={endDate}
                     onEndDateChange={setEndDate}
-                    placeholder="Search product by name or type..."
+                    placeholder="Search"
                 />
 
                 {/* Tabs */}

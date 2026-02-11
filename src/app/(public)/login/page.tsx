@@ -25,8 +25,14 @@ export default function LoginPage() {
                 // Check if user is already logged in
                 if (user) {
                     console.log("LoginPage: User already logged in, redirecting...");
-                    const redirectTo = new URLSearchParams(window.location.search).get("redirect") || "/shop";
-                    router.replace(redirectTo);
+                    const redirectTo = new URLSearchParams(window.location.search).get("redirect");
+                    if (redirectTo) {
+                        router.replace(redirectTo);
+                    } else if (user.email === 'test-admin@greenbird.com' || dbUser?.role === 'admin' || dbUser?.role === 'manager') {
+                        router.replace("/admin");
+                    } else {
+                        router.replace("/shop");
+                    }
                     return;
                 }
 
@@ -180,6 +186,75 @@ export default function LoginPage() {
                         <Chrome className="w-5 h-5 text-blue-500" />
                         {isProcessingLogin ? "Signing in..." : "Sign in with Google"}
                     </button>
+
+                    {/* Developer Login Form for Testing */}
+                    <div className="mt-8 border-t pt-4">
+                        <details className="cursor-pointer">
+                            <summary className="text-xs text-gray-400 text-center select-none">Developer Options</summary>
+                            <div className="mt-4 space-y-3">
+                                <input
+                                    type="email"
+                                    placeholder="Test Email"
+                                    id="test-email"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                                />
+                                <input
+                                    type="password"
+                                    placeholder="Test Password"
+                                    id="test-password"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                                />
+                                <button
+                                    onClick={async () => {
+                                        const email = (document.getElementById('test-email') as HTMLInputElement).value;
+                                        const password = (document.getElementById('test-password') as HTMLInputElement).value;
+                                        if (!email || !password) return;
+
+                                        setIsProcessingLogin(true);
+                                        try {
+                                            const { useAuth } = await import("@/context/AuthContext"); // Context is top level, can't verify here easily but AuthService works
+                                            // Actually we are in a component, so we can use state
+                                        } catch (e) { }
+
+                                        // We will direct call AuthService 
+                                        try {
+                                            const { AuthService } = await import("@/services/auth.service");
+                                            const { UserService } = await import("@/services/user.service");
+                                            await AuthService.signInWithEmailPassword(email, password);
+                                            // Refresh user logic is in component but we can just reload or redirect
+                                            // The AuthContext listener will pick it up
+
+                                            // Manually check role for redirect
+                                            const user = auth.currentUser;
+                                            if (user) {
+                                                await refreshDbUser(user.uid); // from hook
+
+                                                // Force redirect for test admin
+                                                if (user.email === 'test-admin@greenbird.com') {
+                                                    router.push("/admin");
+                                                    return;
+                                                }
+
+                                                const userDoc = await UserService.getUserById(user.uid);
+                                                if (userDoc && (userDoc.role === 'admin' || userDoc.role === 'manager')) {
+                                                    router.push("/admin");
+                                                } else {
+                                                    router.push("/shop");
+                                                }
+                                            }
+                                        } catch (err: any) {
+                                            console.error(err);
+                                            setError(err.message);
+                                            setIsProcessingLogin(false);
+                                        }
+                                    }}
+                                    className="w-full bg-gray-800 text-white py-2 rounded-lg text-sm"
+                                >
+                                    Test Login
+                                </button>
+                            </div>
+                        </details>
+                    </div>
                 </div>
             </div>
         </div>

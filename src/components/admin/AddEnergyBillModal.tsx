@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { EnergyBill, EnergyType, PaymentStatus } from "@/types";
 import {
     addEnergyBill,
@@ -15,6 +15,7 @@ import { useAuth } from "@/context/AuthContext";
 import dynamic from 'next/dynamic';
 import NepaliDate from "nepali-date-converter";
 import { cleanInput } from "@/lib/input-validation";
+import DocumentUpload from "./DocumentUpload";
 
 // Dynamic import for NepaliDatePicker to avoid SSR issues
 const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
@@ -59,6 +60,8 @@ export default function AddEnergyBillModal({ bill, onClose }: AddEnergyBillModal
         enteredBy: bill?.enteredBy || dbUser?.name || "Admin",
     });
 
+    const [documentUrls, setDocumentUrls] = useState<string[]>(bill?.documentUrls || []);
+
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -88,6 +91,7 @@ export default function AddEnergyBillModal({ bill, onClose }: AddEnergyBillModal
                 remarks: formData.remarks.trim() || undefined,
                 enteredBy: formData.enteredBy,
                 entryDate: bill?.entryDate || new Date(),
+                documentUrls: documentUrls,
             };
 
             // Add dates based on type - convert BS to AD
@@ -103,9 +107,9 @@ export default function AddEnergyBillModal({ bill, onClose }: AddEnergyBillModal
             }
 
             if (isEditing) {
-                await updateEnergyBill(bill.id, billData);
+                await updateEnergyBill(bill.id, billData, dbUser?.name || "Admin");
             } else {
-                await addEnergyBill(billData);
+                await addEnergyBill(billData, dbUser?.name || "Admin");
             }
 
             onClose();
@@ -313,6 +317,17 @@ export default function AddEnergyBillModal({ bill, onClose }: AddEnergyBillModal
                         />
                     </div>
 
+                    {/* Document Upload */}
+                    <div className="pt-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Bill Documents (Images/PDFs)
+                        </label>
+                        <DocumentUpload
+                            documentUrls={documentUrls}
+                            onChange={setDocumentUrls}
+                            folder="energy-bills"
+                        />
+                    </div>
 
 
                     {/* Actions */}
@@ -327,9 +342,16 @@ export default function AddEnergyBillModal({ bill, onClose }: AddEnergyBillModal
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
-                            {loading ? "Saving..." : "Save Bill"}
+                            {loading ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span>Saving...</span>
+                                </>
+                            ) : (
+                                "Save Bill"
+                            )}
                         </button>
                     </div>
                 </form>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, User as UserIcon, Phone, MapPin, Mail, Save } from "lucide-react";
+import { X, User as UserIcon, Phone, MapPin, Mail, Save, Loader2 } from "lucide-react";
 import { User, UserRole } from "@/types";
 import { cleanInput } from "@/lib/input-validation";
 
@@ -168,7 +168,17 @@ export default function EditCustomerModal({ isOpen, user, onClose, onSubmit }: E
                             disabled={isSubmitting}
                             className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isSubmitting ? "Saving..." : <><Save className="h-5 w-5" /> Save Changes</>}
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                    <span>Saving...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-5 w-5" />
+                                    <span>Save Changes</span>
+                                </>
+                            )}
                         </button>
                     </div>
                 </form>

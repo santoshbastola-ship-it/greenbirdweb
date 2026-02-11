@@ -9,8 +9,17 @@ const DOCUMENT_ID = "global";
 const DEFAULT_SETTINGS: AppSettings = {
     deliveryFee: 75,
     freeDeliveryThreshold: 750,
+
+    // App Discount
+    enableAppDiscount: true, // Default to true for backward compatibility if you wish, or false. Keeping existing behavior implies enabled.
     appDiscountPercentage: 5,
-    minAppDiscount: 10
+    minAppDiscount: 10,
+    // Dates default to undefined (always valid if enabled)
+
+    // First Order Discount
+    enableFirstOrderDiscount: false,
+    firstOrderDiscountAmount: 0,
+    firstOrderCountThreshold: 1, // Default: First 1 order
 };
 
 export const SettingsService = {
@@ -33,23 +42,49 @@ export const SettingsService = {
         }
     },
 
-    updateSettings: async (settings: AppSettings): Promise<void> => {
+    updateSettings: async (settings: AppSettings, triggeredBy?: string): Promise<void> => {
         try {
             if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'replace_me') {
                 console.warn("Cannot update settings without Firebase API Key (Mock Mode)");
                 return;
             }
 
+            // Fetch old settings to compare
+            const oldSettings = await SettingsService.getSettings();
+
             const docRef = doc(db, COLLECTION_NAME, DOCUMENT_ID);
             await setDoc(docRef, settings, { merge: true });
+
+            // Calculate changes
+            const changes: string[] = [];
+            const keys = new Set([...Object.keys(oldSettings), ...Object.keys(settings)]) as Set<keyof AppSettings>;
+
+            keys.forEach(key => {
+                const oldValue = oldSettings[key];
+                const newValue = settings[key];
+
+                if (oldValue !== newValue) {
+                    // Format key for better readability (camelCase to Title Case)
+                    const formattedKey = key.replace(/([A-Z])/g, " $1").replace(/^./, str => str.toUpperCase());
+                    changes.push(`${formattedKey}: ${oldValue} -> ${newValue}`);
+                }
+            });
+
+            const changesText = changes.length > 0 ? changes.join('\n') : "No specific changes detected.";
+
+            let message = `App global settings have been updated.\n\nChanges:\n${changesText}`;
+            if (triggeredBy) {
+                message += `\n\nUpdated by: ${triggeredBy}`;
+            }
 
             // Notify Admins
             await NotificationService.notifyAdmins(
                 "Settings Updated",
-                "App global settings have been updated.",
+                message,
                 "global",
                 'setting',
-                '/admin/settings'
+                '/admin/settings',
+                undefined // We manually added triggeredBy to the message for better formatting
             );
         } catch (error) {
             console.error("Error updating settings:", error);

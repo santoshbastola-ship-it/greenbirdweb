@@ -273,7 +273,7 @@ export default function AdminDashboard() {
                     ) : dashboardData?.recentTransactions && dashboardData.recentTransactions.length > 0 ? (
                         <div className="space-y-4">
                             {dashboardData.recentTransactions.slice(0, 5).map((transaction) => {
-                                const total = transaction.items.reduce((sum, item) => sum + item.totalPrice, 0) - (transaction.discount || 0);
+                                const total = transaction.items.reduce((sum, item) => sum + item.totalPrice, 0) - (transaction.discount || 0) + (transaction.deliveryFee || 0);
                                 const isSale = transaction.type === TransactionType.Sale;
                                 return (
                                     <div key={transaction.id} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">

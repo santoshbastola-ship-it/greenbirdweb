@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { cleanInput } from "@/lib/input-validation";
 
 interface AddPartnerModalProps {
@@ -103,9 +103,16 @@ export default function AddPartnerModal({ partnerType, onClose, onAdd }: AddPart
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-green-600 text-white py-2.5 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                            className="w-full bg-green-600 text-white py-2.5 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm flex items-center justify-center gap-2"
                         >
-                            {loading ? "Adding..." : `Add ${partnerType === "customer" ? "Customer" : "Vendor"}`}
+                            {loading ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span>Adding...</span>
+                                </>
+                            ) : (
+                                `Add ${partnerType === "customer" ? "Customer" : "Vendor"}`
+                            )}
                         </button>
                     </div>
                 </form>

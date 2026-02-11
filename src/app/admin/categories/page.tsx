@@ -20,7 +20,8 @@ import {
     Calendar,
     Filter,
     Layers,
-    Scale
+    Scale,
+    Loader2
 } from "lucide-react";
 import { Toast, ToastType } from "@/components/ui/Toast";
 import LogoLoader from "@/components/ui/LogoLoader";
@@ -320,7 +321,7 @@ export default function CategoriesAndUnitsPage() {
                             onStartDateChange={setStartDate}
                             endDate={endDate}
                             onEndDateChange={setEndDate}
-                            placeholder="Search categories..."
+                            placeholder="Search"
                         />
 
                         {/* Category Sub-Tabs */}
@@ -481,10 +482,15 @@ export default function CategoriesAndUnitsPage() {
                                     disabled={actionLoading}
                                     className="flex-1 px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center disabled:opacity-50"
                                 >
-                                    {actionLoading ? "Saving..." : (
+                                    {actionLoading ? (
+                                        <>
+                                            <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                                            <span>Saving...</span>
+                                        </>
+                                    ) : (
                                         <>
                                             <Save className="h-5 w-5 mr-2" />
-                                            {editingCategory ? "Update Category" : "Save Category"}
+                                            <span>{editingCategory ? "Update Category" : "Save Category"}</span>
                                         </>
                                     )}
                                 </button>
@@ -583,10 +589,15 @@ export default function CategoriesAndUnitsPage() {
                                     disabled={actionLoading}
                                     className="flex-1 px-4 py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center disabled:opacity-50"
                                 >
-                                    {actionLoading ? "Saving..." : (
+                                    {actionLoading ? (
+                                        <>
+                                            <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                                            <span>Saving...</span>
+                                        </>
+                                    ) : (
                                         <>
                                             <Save className="h-5 w-5 mr-2" />
-                                            {editingUnit ? "Update Unit" : "Save Unit"}
+                                            <span>{editingUnit ? "Update Unit" : "Save Unit"}</span>
                                         </>
                                     )}
                                 </button>

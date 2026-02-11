@@ -189,8 +189,17 @@ export default function AdminProfileModal({ isOpen, onClose }: AdminProfileModal
                                 disabled={isSavingProfile}
                                 className="w-full bg-green-600 text-white py-2.5 rounded-xl font-bold hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                             >
-                                {isSavingProfile ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                                Save Profile
+                                {isSavingProfile ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        <span>Saving...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="h-4 w-4" />
+                                        <span>Save Profile</span>
+                                    </>
+                                )}
                             </button>
                         </form>
                     ) : (
@@ -236,8 +245,17 @@ export default function AdminProfileModal({ isOpen, onClose }: AdminProfileModal
                                 disabled={isChangingPassword}
                                 className="w-full bg-green-600 text-white py-2.5 rounded-xl font-bold hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                             >
-                                {isChangingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
-                                Update Password
+                                {isChangingPassword ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        <span>Updating...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Lock className="h-4 w-4" />
+                                        <span>Update Password</span>
+                                    </>
+                                )}
                             </button>
                         </form>
                     )}

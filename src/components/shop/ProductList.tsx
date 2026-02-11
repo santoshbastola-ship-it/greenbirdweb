@@ -16,19 +16,31 @@ function ProductListContent({ initialProducts }: ProductListContentProps) {
     const searchParams = useSearchParams();
     const { dbUser } = useAuth();
     const category = searchParams.get('category');
-
     const isAdminOrManager = dbUser?.role === 'admin' || dbUser?.role === 'manager';
+    const search = searchParams.get('search')?.toLowerCase() || "";
 
     const products = initialProducts.filter(p => {
-        // First filter by category if present
+        // Filter by category if present
         if (category) {
             const matchesCategory = p.categoryId === category;
             const matchesBusinessType = p.businessType === category;
             if (!matchesCategory && !matchesBusinessType) return false;
         }
 
-        // Then hide assets from customers
+        // Filter by search term if present
+        if (search) {
+            const matchesSearch =
+                p.name.toLowerCase().includes(search) ||
+                p.description?.toLowerCase().includes(search) ||
+                p.categoryName?.toLowerCase().includes(search);
+            if (!matchesSearch) return false;
+        }
+
+        // Hide assets from customers
         if (p.businessType === 'asset' && !isAdminOrManager) return false;
+
+        // Hide hidden products from customers
+        if (p.showInApp === false && !isAdminOrManager) return false;
 
         return true;
     });
@@ -38,16 +50,18 @@ function ProductListContent({ initialProducts }: ProductListContentProps) {
         category.charAt(0).toUpperCase() + category.slice(1)
         : 'All Products';
 
+    const headerTitle = search ? `Search Results for "${searchParams.get('search')}"` : categoryDisplayName;
+
     return (
         <div className="flex-1">
             <OrderSuccessMessage />
 
             <div className="flex flex-col gap-2 mb-6">
-                <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        {categoryDisplayName}
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-4">
+                    <h1 className="text-2xl font-bold text-gray-900 break-words flex-1 min-w-0">
+                        {headerTitle}
                     </h1>
-                    <span className="text-sm text-gray-500">{products.length} items</span>
+                    <span className="text-sm text-gray-500 whitespace-nowrap">{products.length} items</span>
                 </div>
                 <p className="text-base text-gray-800 bg-yellow-50 p-3 rounded-lg border border-yellow-200 shadow-sm text-center">
                     <span className="font-bold text-yellow-700">Note:</span> Item quantity can be set from the Checkout page.

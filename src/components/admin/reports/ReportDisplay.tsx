@@ -160,7 +160,7 @@ export default function ReportDisplay({
                                             {transaction.items.map(item => item.productName).join(", ")}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {formatCurrency(transaction.items.reduce((sum, item) => sum + item.totalPrice, 0) - transaction.discount)}
+                                            {formatCurrency(transaction.items.reduce((sum, item) => sum + item.totalPrice, 0) - transaction.discount + (transaction.deliveryFee || 0))}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getPaymentStatusColor(transaction.paymentStatus)}`}>
@@ -197,7 +197,7 @@ export default function ReportDisplay({
                             <div className="flex justify-between items-center border-t pt-2 mt-2">
                                 <span className="text-xs text-gray-500">Total Amount</span>
                                 <span className="font-bold text-gray-900">
-                                    {formatCurrency(transaction.items.reduce((sum, item) => sum + item.totalPrice, 0) - transaction.discount)}
+                                    {formatCurrency(transaction.items.reduce((sum, item) => sum + item.totalPrice, 0) - transaction.discount + (transaction.deliveryFee || 0))}
                                 </span>
                             </div>
                         </div>
