@@ -13,6 +13,8 @@ export function PWAInstallPrompt() {
     const [showInstallPrompt, setShowInstallPrompt] = useState(false);
     const [isIOS, setIsIOS] = useState(false);
     const [isStandalone, setIsStandalone] = useState(false);
+    const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
+    const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
 
     useEffect(() => {
         // Check if running in standalone mode
@@ -47,6 +49,33 @@ export function PWAInstallPrompt() {
 
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
+        // Listen for service worker updates
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then((reg) => {
+                setRegistration(reg);
+
+                reg.addEventListener('updatefound', () => {
+                    const newWorker = reg.installing;
+                    if (newWorker) {
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                setShowUpdatePrompt(true);
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Handle controller change (reload after skipWaiting)
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
+        }
+
         // Listen for successful installation
         window.addEventListener('appinstalled', () => {
             setShowInstallPrompt(false);
@@ -58,6 +87,15 @@ export function PWAInstallPrompt() {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         };
     }, []);
+
+    const handleUpdate = () => {
+        if (registration?.waiting) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        } else {
+            // Fallback for some browsers
+            window.location.reload();
+        }
+    };
 
     const handleInstallClick = async () => {
         if (!deferredPrompt) return;
@@ -83,6 +121,35 @@ export function PWAInstallPrompt() {
         setShowInstallPrompt(false);
         localStorage.setItem('pwa-install-dismissed', Date.now().toString());
     };
+
+    // Service Worker Update Prompt (highest priority)
+    if (showUpdatePrompt) {
+        return (
+            <div className="fixed top-4 left-4 right-4 md:left-auto md:right-4 md:w-96 bg-green-600 text-white rounded-lg shadow-xl p-4 z-[100] animate-slide-up border border-green-500">
+                <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                        <h3 className="font-bold text-lg">Update Available!</h3>
+                        <p className="text-sm opacity-90">
+                            A new version of Greenbird Homestead is ready.
+                        </p>
+                    </div>
+                    <button
+                        onClick={handleUpdate}
+                        className="px-4 py-2 bg-white text-green-700 rounded-lg hover:bg-green-50 transition-colors text-sm font-bold shadow-sm"
+                    >
+                        Refresh Now
+                    </button>
+                    <button
+                        onClick={() => setShowUpdatePrompt(false)}
+                        className="p-1 hover:bg-green-700 rounded-lg transition-colors"
+                        aria-label="Close"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     // Don't show anything if already installed or if prompt is dismissed
     if (isStandalone || !showInstallPrompt) {

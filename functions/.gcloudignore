@@ -2,7 +2,7 @@
 node_modules/
 
 # Ignore package-lock.json to force npm install instead of npm ci
-package-lock.json
+# package-lock.json
 
 # Ignore TypeScript source files (we only need the compiled JS)
 src/

@@ -1,5 +1,9 @@
 # Release Notes
 
+## [0.2.20] - 2026-02-13
+- PWA: Implemented automated update detection and force-refresh mechanism to ensure latest version availability
+
+
 ## [0.2.19] - 2026-02-13
 - Final production release: Fixed inventory routing, authentication bypass for test users, and static export issues
 
