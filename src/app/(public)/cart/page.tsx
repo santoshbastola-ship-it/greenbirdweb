@@ -388,17 +388,17 @@ export default function CartPage() {
     const total = Math.max(0, subtotal + deliveryFee - totalDiscount);
 
     return (
-        <div className="min-h-screen bg-gray-50 py-6 md:py-12 pb-32 md:pb-36">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6 md:py-12 pb-32 md:pb-36">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8">Checkout</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-6 md:mb-8">Checkout</h1>
 
                 <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
                     {/* LEFT COLUMN: Cart Items */}
                     <div className="flex-1 space-y-4 md:space-y-6">
                         {/* Cart Items List */}
-                        <div className="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100">
-                            <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-4 md:mb-6 flex items-center">
-                                <span className="bg-green-100 text-green-800 h-7 w-7 md:h-8 md:w-8 rounded-full flex items-center justify-center text-xs md:text-sm mr-2 md:mr-3">1</span>
+                        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 md:p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                            <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-4 md:mb-6 flex items-center">
+                                <span className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 h-7 w-7 md:h-8 md:w-8 rounded-full flex items-center justify-center text-xs md:text-sm mr-2 md:mr-3">1</span>
                                 Review Cart Items
                             </h2>
                             <div className="space-y-3 md:space-y-4">
@@ -422,9 +422,9 @@ export default function CartPage() {
                                     };
 
                                     return (
-                                        <div key={item.productId} className="flex items-center gap-3 md:gap-4 border-b border-gray-50 pb-3 md:pb-4 last:border-0 last:pb-0">
+                                        <div key={item.productId} className="flex items-center gap-3 md:gap-4 border-b border-gray-50 dark:border-gray-700 pb-3 md:pb-4 last:border-0 last:pb-0">
                                             {/* Product Image - Smaller on mobile */}
-                                            <div className="h-14 w-14 md:h-16 md:w-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                            <div className="h-14 w-14 md:h-16 md:w-16 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
                                                 <img
                                                     src={item.imageUrl || "/placeholder.png"}
                                                     alt={item.productName}
@@ -436,9 +436,9 @@ export default function CartPage() {
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-start gap-2 mb-1.5">
                                                     <div className="flex-1 min-w-0">
-                                                        <h3 className="text-sm md:text-base font-bold text-gray-900 truncate">{item.productName}</h3>
+                                                        <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white truncate">{item.productName}</h3>
                                                         <div className="flex flex-wrap items-center gap-2">
-                                                            <p className="text-xs text-gray-500">
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400">
                                                                 Rs. {item.price} / {getSafeUnit(item.priceUnit || item.unit)}
                                                             </p>
                                                             {item.originalPrice && item.originalPrice > item.price ? (
@@ -447,14 +447,14 @@ export default function CartPage() {
                                                                 </span>
                                                             ) : null}
                                                             {item.discount && item.discount > 0 ? (
-                                                                <span className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full">
+                                                                <span className="text-[10px] font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-1.5 py-0.5 rounded-full">
                                                                     Save Rs. {item.discount}
                                                                 </span>
                                                             ) : null}
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
-                                                        <p className="text-sm md:text-base font-bold text-[#2D5A27] whitespace-nowrap">
+                                                        <p className="text-sm md:text-base font-bold text-[#2D5A27] dark:text-green-400 whitespace-nowrap">
                                                             Rs. {((item.priceUnit && item.priceUnit !== item.unit) ? (item.quantity * item.price) : (item.price * item.quantity)).toFixed(2)}
                                                         </p>
                                                         {item.originalPrice && item.originalPrice > item.price && (
@@ -468,10 +468,10 @@ export default function CartPage() {
                                                 {/* Quantity Controls and Remove - Mobile Optimized */}
                                                 <div className="flex items-center justify-between gap-2">
                                                     <div className="flex items-center gap-2">
-                                                        <div className="flex items-center bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+                                                        <div className="flex items-center bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
                                                             <button
                                                                 onClick={handleIncrement}
-                                                                className="p-1.5 md:p-2 hover:bg-gray-100 active:bg-gray-200 text-gray-700 transition-colors touch-manipulation"
+                                                                className="p-1.5 md:p-2 hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-500 text-gray-700 dark:text-gray-300 transition-colors touch-manipulation"
                                                                 aria-label="Decrease quantity"
                                                             >
                                                                 <Minus className="h-4 w-4" />
@@ -498,23 +498,23 @@ export default function CartPage() {
                                                                         updateQuantity(item.productId, parsed);
                                                                     }
                                                                 }}
-                                                                className="w-10 text-center font-bold text-sm bg-transparent border-0 focus:outline-none focus:ring-0 rounded-none appearance-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 h-8"
+                                                                className="w-10 text-center font-bold text-sm bg-transparent border-0 focus:outline-none focus:ring-0 rounded-none appearance-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 h-8 text-gray-900 dark:text-white"
                                                                 aria-label="Quantity"
                                                             />
                                                             <button
                                                                 onClick={handleIncrement}
-                                                                className="p-1.5 md:p-2 hover:bg-gray-100 active:bg-gray-200 text-gray-700 transition-colors touch-manipulation"
+                                                                className="p-1.5 md:p-2 hover:bg-gray-100 dark:hover:bg-gray-600 active:bg-gray-200 dark:active:bg-gray-500 text-gray-700 dark:text-gray-300 transition-colors touch-manipulation"
                                                                 aria-label="Increase quantity"
                                                             >
                                                                 <Plus className="h-4 w-4" />
                                                             </button>
                                                         </div>
-                                                        <span className="text-xs font-bold text-gray-500 lowercase">{getSafeUnit(item.priceUnit || item.unit)}</span>
+                                                        <span className="text-xs font-bold text-gray-500 dark:text-gray-400 lowercase">{getSafeUnit(item.priceUnit || item.unit)}</span>
                                                     </div>
 
                                                     <button
                                                         onClick={() => removeItem(item.productId)}
-                                                        className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                                                        className="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                                                         aria-label="Remove item"
                                                     >
                                                         <Trash2 className="h-4 w-4" />
@@ -800,23 +800,23 @@ export default function CartPage() {
 
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Date (Optional)</label>
+                                                <label className="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Date (Optional)</label>
                                                 <div className="nepali-datepicker-container">
                                                     <NepaliDatePicker
                                                         value={expectedDate}
                                                         onChange={(date: string) => setExpectedDate(date)}
                                                         options={{ calenderLocale: "en", valueLocale: "en" }}
-                                                        className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-xs"
+                                                        className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-1 focus:ring-green-500 outline-none text-xs"
                                                     />
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Time (Optional)</label>
+                                                <label className="block text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase mb-1">Time (Optional)</label>
                                                 <input
                                                     type="time"
                                                     value={expectedTime}
                                                     onChange={(e) => setExpectedTime(e.target.value)}
-                                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none text-xs"
+                                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-1 focus:ring-green-500 outline-none text-xs [color-scheme:dark]"
                                                 />
                                             </div>
                                         </div>
@@ -826,7 +826,7 @@ export default function CartPage() {
                                                 value={deliveryInstructions}
                                                 onChange={(e) => setDeliveryInstructions(e.target.value)}
                                                 rows={2}
-                                                className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 focus:ring-1 focus:ring-green-500 outline-none resize-none"
+                                                className="w-full px-3 py-2 text-xs rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 focus:ring-1 focus:ring-green-500 outline-none resize-none"
                                                 placeholder="Special instructions (e.g. Leave at door)"
                                             />
                                         </div>
@@ -837,11 +837,11 @@ export default function CartPage() {
                     </div>
 
                     {/* Order Summary */}
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:sticky lg:top-24">
-                        <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 lg:sticky lg:top-24">
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Order Summary</h2>
 
                         <div className="space-y-3 mb-6">
-                            <div className="flex justify-between text-sm text-gray-600">
+                            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                                 <span>Subtotal</span>
                                 <span>Rs. {subtotal.toFixed(2)}</span>
                             </div>
@@ -853,7 +853,7 @@ export default function CartPage() {
                                 }
                                 return acc;
                             }, 0) > 0 && (
-                                    <div className="flex justify-between text-sm text-green-600">
+                                    <div className="flex justify-between text-sm text-green-600 dark:text-green-400">
                                         <span>Product Savings</span>
                                         <span>- Rs. {validItems.reduce((acc, item) => {
                                             if (item.originalPrice && item.originalPrice > item.price) {
@@ -864,20 +864,20 @@ export default function CartPage() {
                                     </div>
                                 )}
 
-                            <div className="flex justify-between text-sm text-gray-600">
-                                <span className="flex items-center">Delivery {subtotal >= appSettings.freeDeliveryThreshold && <span className="ml-2 text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-black uppercase">FREE</span>}</span>
+                            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                                <span className="flex items-center">Delivery {subtotal >= appSettings.freeDeliveryThreshold && <span className="ml-2 text-[10px] bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-400 px-1.5 py-0.5 rounded-full font-black uppercase">FREE</span>}</span>
                                 <span className={subtotal >= appSettings.freeDeliveryThreshold ? "line-through opacity-50" : ""}>Rs. {deliveryFee}</span>
                             </div>
 
                             {/* Discounts Display */}
                             {appDiscount > 0 && (
-                                <div className="flex justify-between text-sm text-green-700">
+                                <div className="flex justify-between text-sm text-green-700 dark:text-green-400">
                                     <span>App Discount ({appSettings.appDiscountPercentage}%)</span>
                                     <span>- Rs. {appDiscount.toFixed(2)}</span>
                                 </div>
                             )}
                             {firstOrderDiscount > 0 && (
-                                <div className="flex justify-between text-sm text-blue-700">
+                                <div className="flex justify-between text-sm text-blue-700 dark:text-blue-400">
                                     <div className="flex flex-col">
                                         <span>First Order Discount</span>
                                         <span className="text-[10px] opacity-75">Welcome Offer</span>
@@ -887,22 +887,22 @@ export default function CartPage() {
                             )}
 
                             {(appDiscount === 0 && firstOrderDiscount === 0 && isVerified) && (
-                                <div className="text-xs text-gray-400 italic text-center py-1">
+                                <div className="text-xs text-gray-400 dark:text-gray-500 italic text-center py-1">
                                     No discounts applicable
                                 </div>
                             )}
 
-                            <div className="border-t border-gray-100 pt-4 flex justify-between items-center">
-                                <span className="font-bold text-gray-900">Total</span>
-                                <span className="font-bold text-2xl text-[#2D5A27]">Rs. {total.toFixed(2)}</span>
+                            <div className="border-t border-gray-100 dark:border-gray-700 pt-4 flex justify-between items-center">
+                                <span className="font-bold text-gray-900 dark:text-white">Total</span>
+                                <span className="font-bold text-2xl text-[#2D5A27] dark:text-green-400">Rs. {total.toFixed(2)}</span>
                             </div>
                         </div>
 
-                        <div className="bg-[#2D5A27]/5 p-4 rounded-xl flex items-center gap-3">
-                            <CreditCard className="h-5 w-5 text-[#2D5A27]" />
+                        <div className="bg-[#2D5A27]/5 dark:bg-[#2D5A27]/10 p-4 rounded-xl flex items-center gap-3 border border-[#2D5A27]/10 dark:border-[#2D5A27]/20">
+                            <CreditCard className="h-5 w-5 text-[#2D5A27] dark:text-green-400" />
                             <div className="flex-1">
-                                <p className="text-xs font-bold text-gray-900">Cash on Delivery</p>
-                                <p className="text-[10px] text-gray-500">Pay when you receive items</p>
+                                <p className="text-xs font-bold text-gray-900 dark:text-white">Cash on Delivery</p>
+                                <p className="text-[10px] text-gray-500 dark:text-gray-400">Pay when you receive items</p>
                             </div>
                         </div>
                     </div>
@@ -910,19 +910,19 @@ export default function CartPage() {
 
 
                     {/* Floating Checkout Button */}
-                    <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-100 z-50 safe-area-bottom">
+                    <div className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 z-50 safe-area-bottom">
                         <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
                             <div className="flex items-center justify-between gap-4">
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Total Amount</span>
-                                    <span className="text-xl font-black text-[#2D5A27]">Rs. {total.toFixed(2)}</span>
+                                    <span className="text-[10px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-wider">Total Amount</span>
+                                    <span className="text-xl font-black text-[#2D5A27] dark:text-green-400">Rs. {total.toFixed(2)}</span>
                                 </div>
 
                                 <button
                                     onClick={handleCheckout}
                                     disabled={placingOrder}
                                     className={`px-8 py-3.5 rounded-2xl font-bold text-base transition-all shadow-xl flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed group min-w-[160px] ${placingOrder
-                                        ? "bg-gray-400 cursor-not-allowed shadow-none"
+                                        ? "bg-gray-400 dark:bg-gray-600 cursor-not-allowed shadow-none"
                                         : "bg-[#2D5A27] text-white hover:bg-[#1e3d1a] shadow-green-900/20"
                                         }`}
                                 >

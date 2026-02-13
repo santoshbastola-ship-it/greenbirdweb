@@ -50,7 +50,7 @@ export default function Footer({ minimized = false }: FooterProps) {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="flex flex-col md:flex-row items-center justify-between text-sm text-gray-300 gap-4">
                             <div className="flex items-center gap-4">
-                                <div className="bg-white p-1 rounded inline-block">
+                                <div className="bg-white dark:bg-gray-200 p-1 rounded inline-block">
                                     <img
                                         src="/images/logo.png"
                                         alt="Greenbird Homestead"
@@ -84,7 +84,7 @@ export default function Footer({ minimized = false }: FooterProps) {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                     {/* Brand Section */}
                     <div>
-                        <div className="bg-white p-2 rounded-lg inline-block mb-4">
+                        <div className="bg-white dark:bg-gray-200 p-2 rounded-lg inline-block mb-4">
                             <img
                                 src="/images/logo.png"
                                 alt="Greenbird Homestead"

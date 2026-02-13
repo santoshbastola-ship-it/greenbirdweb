@@ -1,5 +1,9 @@
 # Release Notes
 
+## [0.2.19] - 2026-02-13
+- Final production release: Fixed inventory routing, authentication bypass for test users, and static export issues
+
+
 ## [0.2.18] - 2026-02-13
 - Production release
 

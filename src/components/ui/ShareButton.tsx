@@ -78,7 +78,7 @@ export default function ShareButton({ title, text, url, className = "" }: ShareB
 
             <button
                 onClick={handleShare}
-                className="p-2.5 rounded-full bg-white/10 hover:bg-green-50 text-gray-600 hover:text-green-700 transition-all border border-transparent hover:border-green-100 shadow-sm hover:shadow"
+                className="p-2.5 rounded-full bg-white/10 dark:bg-gray-800/10 hover:bg-green-50 dark:hover:bg-green-900/30 text-gray-600 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 transition-all border border-transparent hover:border-green-100 dark:hover:border-green-900 shadow-sm hover:shadow"
                 title="Share"
                 aria-label="Share"
             >
@@ -86,41 +86,41 @@ export default function ShareButton({ title, text, url, className = "" }: ShareB
             </button>
 
             {showOptions && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl ring-1 ring-black ring-opacity-5 py-2 z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-10 py-2 z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right border border-gray-100 dark:border-gray-700">
                     <button
                         onClick={() => shareToSocial('whatsapp')}
-                        className="w-full text-left px-4 py-3 hover:bg-green-50 text-sm text-gray-700 flex items-center gap-3 transition-colors"
+                        className="w-full text-left px-4 py-3 hover:bg-green-50 dark:hover:bg-green-900/20 text-sm text-gray-700 dark:text-gray-300 flex items-center gap-3 transition-colors"
                     >
-                        <Phone className="w-5 h-5 text-green-600" />
+                        <Phone className="w-5 h-5 text-green-600 dark:text-green-400" />
                         <span className="font-medium">WhatsApp</span>
                     </button>
                     <button
                         onClick={() => shareToSocial('facebook')}
-                        className="w-full text-left px-4 py-3 hover:bg-blue-50 text-sm text-gray-700 flex items-center gap-3 transition-colors"
+                        className="w-full text-left px-4 py-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-sm text-gray-700 dark:text-gray-300 flex items-center gap-3 transition-colors"
                     >
-                        <Facebook className="w-5 h-5 text-blue-600" />
+                        <Facebook className="w-5 h-5 text-blue-600 dark:text-blue-500" />
                         <span className="font-medium">Facebook</span>
                     </button>
                     <button
                         onClick={() => shareToSocial('twitter')}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-3 transition-colors"
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-300 flex items-center gap-3 transition-colors"
                     >
-                        <Twitter className="w-5 h-5 text-sky-500" />
+                        <Twitter className="w-5 h-5 text-sky-500 dark:text-sky-400" />
                         <span className="font-medium">X (Twitter)</span>
                     </button>
-                    <div className="h-px bg-gray-100 my-1" />
+                    <div className="h-px bg-gray-100 dark:bg-gray-700 my-1" />
                     <button
                         onClick={copyToClipboard}
-                        className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-3 transition-colors"
+                        className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-300 flex items-center gap-3 transition-colors"
                     >
                         {copied ? (
                             <>
-                                <Check className="w-5 h-5 text-green-600" />
-                                <span className="text-green-600 font-medium">Copied!</span>
+                                <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
+                                <span className="text-green-600 dark:text-green-400 font-medium">Copied!</span>
                             </>
                         ) : (
                             <>
-                                <LinkIcon className="w-5 h-5 text-gray-400" />
+                                <LinkIcon className="w-5 h-5 text-gray-400 dark:text-gray-500" />
                                 <span className="font-medium">Copy Link</span>
                             </>
                         )}

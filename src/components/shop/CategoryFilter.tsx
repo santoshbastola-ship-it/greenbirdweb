@@ -59,10 +59,10 @@ function CategoryFilterContent({ categories }: CategoryFilterProps) {
                                     key={cat.id}
                                     onClick={() => handleCategoryClick(cat.id)}
                                     className={`
-                                        px-4 py-2 rounded-lg text-sm font-semibold transition-all
+                                        px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap
                                         ${isActive
-                                            ? "bg-[#2D5A27] text-white shadow-md"
-                                            : "bg-gray-50 text-gray-700 hover:bg-[#2D5A27]/10 hover:text-[#2D5A27]"
+                                            ? 'bg-green-600 text-white shadow-md shadow-green-200 dark:shadow-green-900/30 transform scale-105'
+                                            : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
                                         }
                                     `}
                                 >

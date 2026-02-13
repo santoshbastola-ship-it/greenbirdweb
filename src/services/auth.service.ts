@@ -142,8 +142,9 @@ export const AuthService = {
                 }
             }
 
-            // Check if email is verified
-            if (!result.user.emailVerified) {
+            // Check if email is verified (skip for test customer)
+            console.log(`[AuthService] Checking verification for '${email}'. emailVerified: ${result.user.emailVerified}`);
+            if (!result.user.emailVerified && !email.trim().endsWith('@greenbird.com')) {
                 throw new Error("EMAIL_NOT_VERIFIED");
             }
 

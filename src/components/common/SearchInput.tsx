@@ -96,7 +96,7 @@ export default function SearchInput({ className, onFocus }: SearchInputProps) {
                         if (onFocus) onFocus();
                         if (suggestions.length > 0) setIsOpen(true);
                     }}
-                    className="w-full pl-10 pr-10 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2D5A27] focus:border-transparent bg-gray-50 text-sm"
+                    className="w-full pl-10 pr-10 py-2 rounded-full border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#2D5A27] focus:border-transparent bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
                 />
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                     <Search className="h-4 w-4" />
@@ -109,7 +109,7 @@ export default function SearchInput({ className, onFocus }: SearchInputProps) {
                             setIsOpen(false);
                             router.push("/shop");
                         }}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200 transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                     >
                         <X className="h-4 w-4" />
                     </button>
@@ -118,7 +118,7 @@ export default function SearchInput({ className, onFocus }: SearchInputProps) {
 
             {/* Suggestions Dropdown */}
             {isOpen && (suggestions.length > 0 || isLoading) && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden z-50">
                     {isLoading ? (
                         <div className="p-4 text-center text-gray-500 text-sm">Loading...</div>
                     ) : (
@@ -127,9 +127,9 @@ export default function SearchInput({ className, onFocus }: SearchInputProps) {
                                 <li key={product.id}>
                                     <button
                                         onClick={() => handleSuggestionClick(product)}
-                                        className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 transition-colors border-b border-gray-50 last:border-0"
+                                        className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors border-b border-gray-50 dark:border-gray-700 last:border-0"
                                     >
-                                        <div className="h-10 w-10 relative flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+                                        <div className="h-10 w-10 relative flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900">
                                             <img
                                                 src={product.image}
                                                 alt={product.name}
@@ -137,10 +137,10 @@ export default function SearchInput({ className, onFocus }: SearchInputProps) {
                                             />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-gray-900 truncate">
+                                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                                                 {product.name}
                                             </p>
-                                            <p className="text-xs text-gray-500 truncate">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                                                 {product.category}
                                             </p>
                                         </div>

@@ -41,7 +41,7 @@ function WhatsAppModalContent() {
 
     return (
         <div className={bgColors}>
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-300 border border-transparent dark:border-gray-800">
                 {/* Header */}
                 <div className="bg-[#25D366] p-6 text-center relative">
                     <button
@@ -58,11 +58,11 @@ function WhatsAppModalContent() {
                 </div>
 
                 {/* Body */}
-                <div className="p-8 text-center bg-gray-50/50">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">
+                <div className="p-8 text-center bg-gray-50/50 dark:bg-gray-800/50">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
                         Get Instant Updates
                     </h3>
-                    <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+                    <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 leading-relaxed">
                         To receive order status notifications and delivery updates, please enable WhatsApp alerts.
                     </p>
 
@@ -74,16 +74,16 @@ function WhatsAppModalContent() {
                         <span>Enable WhatsApp Updates</span>
                     </button>
 
-                    <p className="mt-4 text-xs text-gray-400">
+                    <p className="mt-4 text-xs text-gray-400 dark:text-gray-500">
                         This will open a chat with our automated bot.
                     </p>
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 bg-gray-100/50 text-center border-t border-gray-100">
+                <div className="p-4 bg-gray-100/50 dark:bg-gray-800/50 text-center border-t border-gray-100 dark:border-gray-800">
                     <button
                         onClick={handleClose}
-                        className="text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors"
+                        className="text-sm font-medium text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     >
                         No thanks, I'll check the app
                     </button>

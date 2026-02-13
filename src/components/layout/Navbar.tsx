@@ -85,7 +85,7 @@ export default function Navbar() {
     }, [user, isOpen]);
 
     return (
-        <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
+        <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-20 items-center relative">
                     {/* Logo */}
@@ -101,7 +101,7 @@ export default function Navbar() {
                     <div className={clsx(
                         "flex-1 mx-2 md:mx-4 transition-all duration-300",
                         isSearchOpen
-                            ? "absolute inset-0 z-50 bg-white px-4 flex items-center justify-center md:relative md:bg-transparent md:inset-auto md:max-w-xl md:justify-start"
+                            ? "absolute inset-0 z-50 bg-white dark:bg-gray-900 px-4 flex items-center justify-center md:relative md:bg-transparent md:inset-auto md:max-w-xl md:justify-start"
                             : "max-w-xl"
                     )}>
                         <SearchInput
@@ -127,8 +127,8 @@ export default function Navbar() {
                                 className={clsx(
                                     "text-sm font-semibold transition-all duration-200 whitespace-nowrap py-2 border-b-2",
                                     isActive(link.href)
-                                        ? "text-[#2D5A27] border-[#2D5A27]"
-                                        : "text-gray-600 border-transparent hover:text-[#2D5A27] hover:border-[#2D5A27]/30"
+                                        ? "text-[#2D5A27] dark:text-green-400 border-[#2D5A27] dark:border-green-400"
+                                        : "text-gray-600 dark:text-gray-400 border-transparent hover:text-[#2D5A27] dark:hover:text-green-400 hover:border-[#2D5A27]/30 dark:hover:border-green-400/30"
                                 )}
                             >
                                 {link.label}
@@ -148,23 +148,23 @@ export default function Navbar() {
                                         </span>
                                     </Link>
                                 )}
-                                <Link href="/notifications" className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200 hidden md:block">
+                                <Link href="/notifications" className="relative p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all duration-200 hidden md:block">
                                     <Bell className="h-5 w-5" />
                                     {unreadCount > 0 && (
-                                        <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white">
+                                        <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white dark:border-gray-900">
                                             {unreadCount > 9 ? '9+' : unreadCount}
                                         </span>
                                     )}
                                 </Link>
-                                <Link href="/orders" className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200 hidden md:block" title="My Orders">
+                                <Link href="/orders" className="relative p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all duration-200 hidden md:block" title="My Orders">
                                     <Package className="h-5 w-5" />
                                     {activeOrderCount > 0 && (
-                                        <span className="absolute -top-1 -right-1 h-4 w-4 bg-[#2D5A27] text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white">
+                                        <span className="absolute -top-1 -right-1 h-4 w-4 bg-[#2D5A27] dark:bg-green-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white dark:border-gray-900">
                                             {activeOrderCount}
                                         </span>
                                     )}
                                 </Link>
-                                <Link href="/cart" className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-all duration-200 hidden md:block">
+                                <Link href="/cart" className="relative p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all duration-200 hidden md:block">
                                     <ShoppingCart className="h-5 w-5" />
                                     <CartBadge />
                                 </Link>
@@ -175,9 +175,9 @@ export default function Navbar() {
                             <div className="relative" ref={profileRef}>
                                 <button
                                     onClick={() => setIsProfileOpen(!isProfileOpen)}
-                                    className="flex items-center space-x-2 p-1.5 pr-3 text-gray-700 hover:bg-gray-100 rounded-full transition-all duration-200 hidden md:flex border border-gray-100 shadow-sm"
+                                    className="flex items-center space-x-2 p-1.5 pr-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all duration-200 hidden md:flex border border-gray-100 dark:border-gray-800 shadow-sm"
                                 >
-                                    <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold overflow-hidden relative shadow-inner">
+                                    <div className="h-8 w-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center text-green-700 dark:text-green-400 font-bold overflow-hidden relative shadow-inner">
                                         {user.photoURL ? (
                                             <img src={user.photoURL} alt={user.displayName || "User"} className="h-full w-full object-cover" />
                                         ) : (
@@ -194,15 +194,15 @@ export default function Navbar() {
 
                                 {/* Dropdown Menu */}
                                 {isProfileOpen && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 transition-all transform origin-top-right z-50">
-                                        <div className="px-4 py-3 border-b border-gray-50 md:hidden">
-                                            <p className="text-sm font-bold text-gray-900">{user.displayName || "User"}</p>
-                                            <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 py-1 transition-all transform origin-top-right z-50">
+                                        <div className="px-4 py-3 border-b border-gray-50 dark:border-gray-700 md:hidden">
+                                            <p className="text-sm font-bold text-gray-900 dark:text-white">{user.displayName || "User"}</p>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
                                         </div>
 
                                         <Link
                                             href="/profile"
-                                            className="px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center justify-between"
+                                            className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:hover:text-green-400 flex items-center justify-between"
                                             onClick={() => setIsProfileOpen(false)}
                                         >
                                             <span>My Profile</span>
@@ -213,7 +213,7 @@ export default function Navbar() {
                                         {dbUser?.role !== 'admin' && (
                                             <Link
                                                 href="/orders"
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700"
+                                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:hover:text-green-400"
                                                 onClick={() => setIsProfileOpen(false)}
                                             >
                                                 My Orders
@@ -222,7 +222,7 @@ export default function Navbar() {
                                         {(dbUser?.role === 'admin' || dbUser?.role === 'manager') && (
                                             <Link
                                                 href="/admin"
-                                                className="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700"
+                                                className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-700 dark:hover:text-green-400"
                                                 onClick={() => setIsProfileOpen(false)}
                                             >
                                                 Admin Dashboard
@@ -233,7 +233,7 @@ export default function Navbar() {
                                                 setIsProfileOpen(false);
                                                 logout();
                                             }}
-                                            className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                            className="block w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                                         >
                                             Logout
                                         </button>
@@ -250,12 +250,12 @@ export default function Navbar() {
                         {/* Mobile Menu Button */}
                         <button
                             onClick={() => setIsOpen(!isOpen)}
-                            className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg relative"
+                            className="lg:hidden p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg relative"
                             aria-label="Toggle Menu"
                         >
                             {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
                             {!isOpen && hasIndicator && (
-                                <span className="absolute top-2 right-2 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+                                <span className="absolute top-2 right-2 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white dark:border-gray-900 animate-pulse"></span>
                             )}
                         </button>
                     </div>
@@ -266,16 +266,16 @@ export default function Navbar() {
             {isOpen && (
                 <div
                     ref={mobileMenuRef}
-                    className="lg:hidden border-t border-gray-100 bg-white shadow-xl animate-in slide-in-from-top duration-300"
+                    className="lg:hidden border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-xl animate-in slide-in-from-top duration-300"
                 >
                     <div className="px-4 pt-4 pb-6 space-y-4">
                         {/* Mobile Quick Links (Previously hidden from navbar) */}
                         {user && (
-                            <div className="grid grid-cols-5 gap-2 pb-4 border-b border-gray-50">
+                            <div className="grid grid-cols-5 gap-2 pb-4 border-b border-gray-50 dark:border-gray-800">
                                 <Link
                                     href="/shop"
                                     onClick={() => setIsOpen(false)}
-                                    className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-700 hover:text-green-700 transition-colors relative"
+                                    className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-700 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 transition-colors relative"
                                 >
                                     <Store className="h-6 w-6 mb-1" />
                                     <span className="text-[10px] font-medium">Shop</span>
@@ -283,7 +283,7 @@ export default function Navbar() {
                                 <Link
                                     href="/cart"
                                     onClick={() => setIsOpen(false)}
-                                    className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-700 hover:text-green-700 transition-colors relative"
+                                    className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-700 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 transition-colors relative"
                                 >
                                     <ShoppingCart className="h-6 w-6 mb-1" />
                                     <span className="text-[10px] font-medium">Cart</span>
@@ -292,12 +292,12 @@ export default function Navbar() {
                                 <Link
                                     href="/orders"
                                     onClick={() => setIsOpen(false)}
-                                    className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-700 hover:text-green-700 transition-colors relative"
+                                    className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-700 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 transition-colors relative"
                                 >
                                     <Package className="h-6 w-6 mb-1" />
                                     <span className="text-[10px] font-medium">Orders</span>
                                     {activeOrderCount > 0 && (
-                                        <span className="absolute top-2 right-2 h-4 w-4 bg-[#2D5A27] text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white">
+                                        <span className="absolute top-2 right-2 h-4 w-4 bg-[#2D5A27] dark:bg-green-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white dark:border-gray-900">
                                             {activeOrderCount}
                                         </span>
                                     )}
@@ -305,12 +305,12 @@ export default function Navbar() {
                                 <Link
                                     href="/notifications"
                                     onClick={() => setIsOpen(false)}
-                                    className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-700 hover:text-green-700 transition-colors relative"
+                                    className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-700 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 transition-colors relative"
                                 >
                                     <Bell className="h-6 w-6 mb-1" />
                                     <span className="text-[10px] font-medium">Alerts</span>
                                     {unreadCount > 0 && (
-                                        <span className="absolute top-2 right-2 h-4 w-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white">
+                                        <span className="absolute top-2 right-2 h-4 w-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white dark:border-gray-900">
                                             {unreadCount > 9 ? '9+' : unreadCount}
                                         </span>
                                     )}
@@ -318,10 +318,10 @@ export default function Navbar() {
                                 <Link
                                     href="/profile"
                                     onClick={() => setIsOpen(false)}
-                                    className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-700 hover:text-green-700 transition-colors relative"
+                                    className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-700 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 transition-colors relative"
                                 >
                                     {user.photoURL ? (
-                                        <div className="h-6 w-6 mb-1 rounded-full overflow-hidden border border-gray-200">
+                                        <div className="h-6 w-6 mb-1 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
                                             <img src={user.photoURL} alt="Profile" className="h-full w-full object-cover" />
                                         </div>
                                     ) : (
@@ -329,7 +329,7 @@ export default function Navbar() {
                                     )}
                                     <span className="text-[10px] font-medium">Profile</span>
                                     {isProfileIncomplete && (
-                                        <span className="absolute top-2 right-2 h-2.5 w-2.5 bg-red-500 rounded-full border border-white"></span>
+                                        <span className="absolute top-2 right-2 h-2.5 w-2.5 bg-red-500 rounded-full border border-white dark:border-gray-900"></span>
                                     )}
                                 </Link>
                             </div>
@@ -357,8 +357,8 @@ export default function Navbar() {
                                     className={clsx(
                                         "flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-colors",
                                         isActive(link.href)
-                                            ? "bg-[#2D5A27]/10 text-[#2D5A27] font-semibold"
-                                            : "text-gray-700 hover:bg-gray-50 hover:text-[#2D5A27]"
+                                            ? "bg-[#2D5A27]/10 dark:bg-green-900/20 text-[#2D5A27] dark:text-green-400 font-semibold"
+                                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-[#2D5A27] dark:hover:text-green-400"
                                     )}
                                 >
                                     <link.icon className="h-5 w-5" />
@@ -374,7 +374,7 @@ export default function Navbar() {
                                     setIsOpen(false);
                                     logout();
                                 }}
-                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-red-600 hover:bg-red-50 transition-colors"
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                             >
                                 <LogOut className="h-5 w-5" />
                                 Logout

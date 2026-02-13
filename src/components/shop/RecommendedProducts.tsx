@@ -89,7 +89,7 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
                         title={product.name}
                         text={`Check out ${product.name} at Greenbird Homestead!`}
                         url={`${typeof window !== 'undefined' ? window.location.origin : ''}/shop/${product.id}`}
-                        className="bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
+                        className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
                     />
                 </div>
             </div>
@@ -98,12 +98,12 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
             <div className="flex-1 min-w-0">
                 <Link href={`/shop/${product.id}`} className="block group/title">
                     {/* Product name - no truncation, wraps naturally */}
-                    <h3 className="text-sm md:text-base font-bold text-gray-900 line-clamp-2 group-hover/title:text-green-600 transition-colors leading-tight mb-1">
+                    <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white line-clamp-2 group-hover/title:text-green-600 dark:group-hover/title:text-green-400 transition-colors leading-tight mb-1">
                         {product.name}
                     </h3>
                     {/* Category - only show on larger screens or for admin */}
                     {(product.categoryName || (isAdminOrManager && product.businessType)) && (
-                        <p className="text-[10px] font-medium text-gray-400 capitalize tracking-wide mb-1 hidden sm:block">
+                        <p className="text-[10px] font-medium text-gray-400 dark:text-gray-500 capitalize tracking-wide mb-1 hidden sm:block">
                             {product.categoryName || product.businessType}
                         </p>
                     )}
@@ -111,10 +111,10 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
 
                 {/* Price and unit on same line */}
                 <div className="flex items-baseline gap-1 flex-wrap">
-                    <span className="text-sm md:text-base font-black text-green-700 whitespace-nowrap">
+                    <span className="text-sm md:text-base font-black text-green-700 dark:text-green-500 whitespace-nowrap">
                         Rs. {product.currentPrice.toLocaleString()}
                     </span>
-                    <span className="text-xs md:text-sm text-gray-500 font-medium whitespace-nowrap">/ {product.unit}</span>
+                    <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">/ {product.unit}</span>
                 </div>
             </div>
 
@@ -129,7 +129,7 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
                     className={`h-9 w-9 md:h-10 md:w-10 rounded-full transition-all duration-300 flex items-center justify-center shadow-sm
                         ${isAdded
                             ? 'bg-green-600 text-white shadow-green-200 cursor-default'
-                            : 'bg-green-50 text-green-700 hover:bg-green-600 hover:text-white hover:shadow-md active:scale-95'
+                            : 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-600 hover:text-white dark:hover:bg-green-600 dark:hover:text-white hover:shadow-md active:scale-95'
                         }
                         disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100`}
                     title={isAdded ? "Added!" : "Add to Cart"}

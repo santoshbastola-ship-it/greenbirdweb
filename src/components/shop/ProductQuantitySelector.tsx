@@ -68,10 +68,10 @@ export default function ProductQuantitySelector({ product }: ProductQuantitySele
         <div className="flex flex-col gap-4">
             <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm transition-all hover:border-[#2D5A27]/30">
+                    <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-sm transition-all hover:border-[#2D5A27]/30 dark:hover:border-green-500/30">
                         <button
                             onClick={handleDecrement}
-                            className="p-3 hover:bg-gray-50 text-gray-500 transition-colors"
+                            className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
                             aria-label="Decrease quantity"
                         >
                             <Minus className="h-4 w-4" />
@@ -82,12 +82,12 @@ export default function ProductQuantitySelector({ product }: ProductQuantitySele
                             min="0"
                             value={quantity}
                             onChange={handleInputChange}
-                            className="w-16 text-center font-bold text-gray-900 bg-transparent border-0 focus:outline-none focus:ring-0 appearance-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 h-10"
+                            className="w-16 text-center font-bold text-gray-900 dark:text-white bg-transparent border-0 focus:outline-none focus:ring-0 appearance-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 h-10"
                             aria-label="Quantity"
                         />
                         <button
                             onClick={handleIncrement}
-                            className="p-3 hover:bg-gray-50 text-gray-500 transition-colors"
+                            className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
                             aria-label="Increase quantity"
                         >
                             <Plus className="h-4 w-4" />
@@ -95,19 +95,19 @@ export default function ProductQuantitySelector({ product }: ProductQuantitySele
                     </div>
                 </div>
                 <div className="flex flex-col">
-                    <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">Unit</span>
-                    <span className="text-sm text-gray-700 font-bold lowercase">{product.priceUnit || product.unit}</span>
+                    <span className="text-xs text-gray-400 dark:text-gray-500 font-medium uppercase tracking-wider">Unit</span>
+                    <span className="text-sm text-gray-700 dark:text-gray-300 font-bold lowercase">{product.priceUnit || product.unit}</span>
                 </div>
             </div>
 
             {/* Floating Add to Cart Button */}
-            <div className="fixed bottom-0 left-0 right-0 z-[9000] p-4 bg-white/80 backdrop-blur-lg border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] transition-all duration-300">
+            <div className="fixed bottom-0 left-0 right-0 z-[9000] p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-t border-gray-100 dark:border-gray-800 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] transition-all duration-300">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <AddToCartButton
                         product={product}
                         quantity={quantity}
                         fullWidth={true}
-                        className="w-full bg-[#5C4033] text-white py-4 rounded-2xl font-bold text-lg hover:bg-[#2D5A27] active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#5C4033]/20"
+                        className="w-full bg-[#5C4033] dark:bg-green-700 text-white py-4 rounded-2xl font-bold text-lg hover:bg-[#2D5A27] dark:hover:bg-green-600 active:scale-[0.98] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-[#5C4033]/20 dark:shadow-green-900/40"
                     />
                 </div>
             </div>

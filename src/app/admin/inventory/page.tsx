@@ -59,11 +59,14 @@ export default function InventoryPage() {
 
     const loadProducts = async () => {
         setLoading(true);
-        // In a real app, we might pass filters to the service. 
-        // For now, we fetch all and filter client-side as the dataset is small.
-        const allProducts = await ProductService.getAllProducts();
-        setProducts(allProducts);
-        setLoading(false);
+        try {
+            const allProducts = await ProductService.getAllProducts();
+            setProducts(allProducts);
+        } catch (error) {
+            console.error("Error loading products:", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const filteredProducts = products.filter((product) => {

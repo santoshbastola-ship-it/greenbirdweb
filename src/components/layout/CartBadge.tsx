@@ -17,7 +17,7 @@ export default function CartBadge({ className }: { className?: string }) {
     if (!mounted || !user || items.length === 0) return null;
 
     return (
-        <span className={`absolute h-4 w-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full animate-pulse ${className || "-top-1 -right-1"}`}>
+        <span className={`absolute h-4 w-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full animate-pulse border border-white dark:border-gray-900 ${className || "-top-1 -right-1"}`}>
             {items.length}
         </span>
     );

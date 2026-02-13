@@ -60,13 +60,13 @@ function ProductListContent({ initialProducts, categories }: ProductListContentP
 
             <div className="flex flex-col gap-2 mb-6">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-4">
-                    <h1 className="text-2xl font-bold text-gray-900 break-words flex-1 min-w-0">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white break-words flex-1 min-w-0">
                         {headerTitle}
                     </h1>
-                    <span className="text-sm text-gray-500 whitespace-nowrap">{products.length} items</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap">{products.length} items</span>
                 </div>
-                <p className="text-base text-gray-800 bg-yellow-50 p-3 rounded-lg border border-yellow-200 shadow-sm text-center">
-                    <span className="font-bold text-yellow-700">Note:</span> Item quantity can be set from the Checkout page.
+                <p className="text-base text-gray-800 dark:text-gray-200 bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg border border-yellow-200 dark:border-yellow-700/50 shadow-sm text-center">
+                    <span className="font-bold text-yellow-700 dark:text-yellow-500">Note:</span> Item quantity can be set from the Checkout page.
                 </p>
             </div>
 
@@ -77,15 +77,15 @@ function ProductListContent({ initialProducts, categories }: ProductListContentP
             </div>
 
             {products.length === 0 && (
-                <div className="text-center py-20 bg-white rounded-2xl border border-gray-100">
-                    <p className="text-gray-500 text-lg">
+                <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
+                    <p className="text-gray-500 dark:text-gray-400 text-lg">
                         {searchParams.get('search')
                             ? `No products found matching "${searchParams.get('search')}"`
                             : "No products found in this category."}
                     </p>
                     <Link
                         href="/shop"
-                        className="text-[#2D5A27] font-medium hover:underline mt-2 inline-block"
+                        className="text-[#2D5A27] dark:text-green-400 font-medium hover:underline mt-2 inline-block"
                     >
                         View all products
                     </Link>

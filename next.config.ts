@@ -183,4 +183,5 @@ const nextConfig: NextConfig = {
   turbopack: {},
 };
 
+// Trigger reload
 export default withPWA(nextConfig);

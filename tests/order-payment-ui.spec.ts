@@ -81,7 +81,10 @@ test.describe('Order Payment UI & Flow', () => {
         // But let's just use the "Update Stock" button if we can find it
         // Or simpler: The product creation likely sets stock to 0.
         // Let's assume stock is needed.
-        const stockBtn = page.locator('div', { hasText: 'Payment Test Product' }).first().locator('button', { hasText: /0\s/ });
+        // Update locator to match the stock button specifically within the target product card
+        // We use the specific classes from product card and ensure we look for the button inside it
+        const targetProductCard = page.locator('div.bg-white.rounded-lg.shadow-sm.border.border-gray-200', { hasText: 'Payment Test Product' }).first();
+        const stockBtn = targetProductCard.locator('button', { hasText: /0\s/ });
         if (await stockBtn.isVisible()) {
             await stockBtn.click();
             await page.fill('input[type="number"]', '100');
@@ -94,6 +97,10 @@ test.describe('Order Payment UI & Flow', () => {
         await page.evaluate(async () => {
             localStorage.clear();
             sessionStorage.clear();
+            if (window.indexedDB && window.indexedDB.databases) {
+                const dbs = await window.indexedDB.databases();
+                await Promise.all(dbs.map(db => window.indexedDB.deleteDatabase(db.name!)));
+            }
         });
 
 
@@ -106,11 +113,24 @@ test.describe('Order Payment UI & Flow', () => {
 
         // Add to Cart
         await page.goto('/shop');
-        const addBtn = page.locator('div', { hasText: 'Payment Test Product' }).first().locator('button:has-text("Add")');
+        // Find the specific product card container
+        const shopProductCard = page.locator('div.group.bg-white', { hasText: 'Payment Test Product' }).first();
+        const addBtn = shopProductCard.locator('button', { hasText: 'Add' });
         await addBtn.click();
 
         // Checkout
         await page.goto('/cart');
+
+        // Login as Customer (since we logged out earlier)
+        await page.click('text=Login to Continue');
+        await page.locator('summary', { hasText: 'Developer Options' }).click();
+        await page.fill('#test-email', 'test-customer@greenbird.com'); // Use verified email or bypassed one
+        await page.fill('#test-password', 'password123!'); // Password for test user
+        await page.click('button:has-text("Test Login")');
+
+        // Wait for redirect back to cart
+        await page.waitForURL('**/cart');
+
         await page.fill('input[type="tel"]', '9800000000');
 
         // Add address if needed

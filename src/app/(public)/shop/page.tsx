@@ -18,10 +18,10 @@ export default async function ShopPage() {
     ]);
 
     return (
-        <div className="min-h-screen bg-[#FCF9F1] py-8 md:py-12">
+        <div className="min-h-screen bg-[#FCF9F1] dark:bg-gray-900 py-8 md:py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col gap-8">
-                    <Suspense fallback={<div className="w-full bg-white rounded-xl h-20 animate-pulse" />}>
+                    <Suspense fallback={<div className="w-full bg-white dark:bg-gray-800 rounded-xl h-20 animate-pulse" />}>
                         <CategoryFilter categories={categories} />
                     </Suspense>
 

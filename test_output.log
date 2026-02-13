@@ -1,0 +1,208 @@
+[dotenv@17.2.4] injecting env (10) from .env.local -- tip: 🗂️ backup and recover secrets: https://dotenvx.com/ops
+
+Running 1 test using 1 worker
+
+[1A[2K[dotenv@17.2.4] injecting env (0) from .env.local -- tip: 📡 add observability to secrets: https://dotenvx.com/ops
+
+[1A[2K[1/1] [chromium] › tests/customer-flow.spec.ts:12:9 › Full Customer Journey › Customer can login, shop, and place order
+[1A[2K[chromium] › tests/customer-flow.spec.ts:12:9 › Full Customer Journey › Customer can login, shop, and place order
+[Browser info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+
+[1A[2K[Browser log] [HMR] connected
+
+[1A[2K[Browser log] Firebase Config Check: {projectId: greenbird-56584, authDomain: greenbirdhomestead.com.np, apiKeyExists: true}
+
+[1A[2K[Browser log] AuthContext: Initializing listener
+
+[1A[2K[Browser log] [Fast Refresh] rebuilding
+
+[1A[2K[Browser log] AuthContext: Auth State Changed undefined
+
+[1A[2K[Browser log] AuthContext: No User
+
+[1A[2K[Browser log] LoginPage: Checking for redirect result...
+
+[1A[2K[Browser log] [Fast Refresh] done in 120ms
+
+[1A[2K[Browser log] AuthContext: Auth State Changed Qf8YLEgvi1Ry4oqbiyTV57foOAI2
+
+[1A[2K[Browser log] AuthContext: Test Admin Detected
+
+[1A[2K[Browser log] [AuthService] Checking verification for 'test-admin@greenbird.com'. emailVerified: false
+
+[1A[2K[Browser log] LoginPage: User already logged in, redirecting...
+
+[1A[2K[Browser log] [Fast Refresh] rebuilding
+
+[1A[2K[Browser log] [Fast Refresh] done in 130ms
+
+[1A[2K[Browser warning] Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior
+
+[1A[2K[Browser warning] [2026-02-13T13:45:09.882Z]  @firebase/firestore: Firestore (12.8.0): WebChannelConnection RPC 'Listen' stream 0x57344b0d transport errored. Name: undefined Message: undefined
+
+[1A[2K[Browser error] [2026-02-13T13:45:09.887Z]  @firebase/firestore: Firestore (12.8.0): Could not reach Cloud Firestore backend. Connection failed 1 times. Most recent error: FirebaseError: [code=unavailable]: The operation could not be completed
+This typically indicates that your device does not have a healthy Internet connection at the moment. The client will operate in offline mode until it is able to successfully connect to the backend.
+
+[1A[2K[Browser info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+
+[1A[2K[Browser log] [HMR] connected
+
+[1A[2K[Browser log] Firebase Config Check: {projectId: greenbird-56584, authDomain: greenbirdhomestead.com.np, apiKeyExists: true}
+
+[1A[2K[Browser log] AuthContext: Initializing listener
+
+[1A[2K[Browser log] AuthContext: Auth State Changed Qf8YLEgvi1Ry4oqbiyTV57foOAI2
+
+[1A[2K[Browser log] AuthContext: Test Admin Detected
+
+[1A[2K[Browser log] [Fast Refresh] rebuilding
+
+[1A[2K[Browser log] [Fast Refresh] done in 114ms
+
+[1A[2K[Browser warning] [2026-02-13T13:45:13.058Z]  @firebase/firestore: Firestore (12.8.0): WebChannelConnection RPC 'Write' stream 0x75de0a0b transport errored. Name: undefined Message: undefined
+
+[1A[2K[Browser info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+
+[1A[2K[Browser log] [HMR] connected
+
+[1A[2K[Browser log] Firebase Config Check: {projectId: greenbird-56584, authDomain: greenbirdhomestead.com.np, apiKeyExists: true}
+
+[1A[2K[Browser log] AuthContext: Initializing listener
+
+[1A[2K[Browser log] AuthContext: Auth State Changed Qf8YLEgvi1Ry4oqbiyTV57foOAI2
+
+[1A[2K[Browser log] AuthContext: Test Admin Detected
+
+[1A[2K[Browser warning] [2026-02-13T13:45:14.170Z]  @firebase/firestore: Firestore (12.8.0): WebChannelConnection RPC 'Listen' stream 0x62639329 transport errored. Name: undefined Message: undefined
+
+[1A[2K[Browser error] [2026-02-13T13:45:14.170Z]  @firebase/firestore: Firestore (12.8.0): Could not reach Cloud Firestore backend. Connection failed 1 times. Most recent error: FirebaseError: [code=unavailable]: The operation could not be completed
+This typically indicates that your device does not have a healthy Internet connection at the moment. The client will operate in offline mode until it is able to successfully connect to the backend.
+
+[1A[2K[Browser info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
+
+[1A[2K[Browser log] [HMR] connected
+
+[1A[2K[Browser log] Firebase Config Check: {projectId: greenbird-56584, authDomain: greenbirdhomestead.com.np, apiKeyExists: true}
+
+[1A[2K[Browser log] AuthContext: Initializing listener
+
+[1A[2K[Browser log] AuthContext: Auth State Changed Qf8YLEgvi1Ry4oqbiyTV57foOAI2
+
+[1A[2K[Browser log] AuthContext: Test Admin Detected
+
+[1A[2K
+🧹 Starting test data cleanup...
+
+
+[1A[2KTest user IDs retrieved: {
+  adminId: [32m'Qf8YLEgvi1Ry4oqbiyTV57foOAI2'[39m,
+  customerId: [32m'Wra2MNg1YWbL9tx8AhMKMGkErUD3'[39m
+}
+
+[1A[2KFound 0 test notifications to delete
+
+[1A[2K✓ Test notifications cleaned up
+
+[1A[2K✓ Test categories cleaned up
+
+[1A[2K✓ Test products cleaned up
+
+[1A[2KFound 0 test transactions to delete
+
+[1A[2K✓ Test transactions cleaned up
+
+[1A[2K
+✅ Test data cleanup completed successfully
+
+
+[1A[2K  1) [chromium] › tests/customer-flow.spec.ts:12:9 › Full Customer Journey › Customer can login, shop, and place order 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.selectOption: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('select[name="categoryId"]')[22m
+    [2m    - locator resolved to <select disabled required="" name="categoryId" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500">…</select>[22m
+    [2m  - attempting select option action[22m
+    [2m    2 × waiting for element to be visible and enabled[22m
+    [2m      - element is not enabled[22m
+    [2m    - retrying select option action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible and enabled[22m
+    [2m      - element is not enabled[22m
+    [2m    - retrying select option action[22m
+    [2m      - waiting 100ms[22m
+    [2m    2 × waiting for element to be visible and enabled[22m
+    [2m      - element is not enabled[22m
+    [2m    - retrying select option action[22m
+    [2m      - waiting 500ms[22m
+    [2m    42 × waiting for element to be visible and enabled[22m
+    [2m       - did not find some options[22m
+    [2m     - retrying select option action[22m
+    [2m       - waiting 500ms[22m
+
+
+      45 |             await page.fill('input[name="name"]', 'Customer Test Product');
+      46 |             await page.selectOption('select[name="businessType"]', 'product');
+    > 47 |             await page.selectOption('select[name="categoryId"]', { label: 'Customer Test Category' });
+         |                        ^
+      48 |             await page.fill('input[name="currentPrice"]', '100');
+      49 |             await page.click('button:has-text("Save Product")');
+      50 |             await expect(page).toHaveURL(/\/admin\/inventory/);
+        at /Users/santoshbastola/Desktop/Greenbirdecom/tests/customer-flow.spec.ts:47:24
+
+    Error Context: test-results/customer-flow-Full-Custome-a7e2e--login-shop-and-place-order-chromium/error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] › tests/customer-flow.spec.ts:12:9 › Full Customer Journey › Customer can login, shop, and place order 
+[39m
+}
+
+[1A[2KFound 0 test notifications to delete
+
+[1A[2K✓ Test notifications cleaned up
+
+[1A[2KFound 1 categories with name "Customer Test Category" to delete
+
+[1A[2KFound 1 products with name "Customer Test Product" to delete
+
+[1A[2KFound 0 test transactions to delete
+
+[1A[2K✓ Test transactions cleaned up
+
+[1A[2K[Browser log] [Fast Refresh] rebuilding
+
+[1A[2K[Browser log] [Fast Refresh] done in 114ms
+
+[1A[2K✓ Test categories cleaned up
+
+[1A[2K✓ Test products cleaned up
+
+[1A[2K
+✅ Test data cleanup completed successfully
+
+
+[1A[2K  1) [chromium] › tests/customer-flow.spec.ts:12:9 › Full Customer Journey › Customer can login, shop, and place order 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.click: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('button:has-text("Products")')[22m
+
+
+      51 |
+      52 |             // Add stock
+    > 53 |             await page.click('button:has-text("Products")');
+         |                        ^
+      54 |             const productCard = page.locator('div', { hasText: 'Customer Test Product' }).first();
+      55 |             const stockBtn = productCard.locator('button', { hasText: /0\s/ });
+      56 |             if (await stockBtn.isVisible()) {
+        at /Users/santoshbastola/Desktop/Greenbirdecom/tests/customer-flow.spec.ts:53:24
+
+    Error Context: test-results/customer-flow-Full-Custome-a7e2e--login-shop-and-place-order-chromium/error-context.md
+
+
+[1A[2K  1 failed
+    [chromium] › tests/customer-flow.spec.ts:12:9 › Full Customer Journey › Customer can login, shop, and place order 

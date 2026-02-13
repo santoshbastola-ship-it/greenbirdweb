@@ -23,7 +23,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     const { finalPrice, originalPrice, hasDiscount, discountBadge } = calculateProductPrice(product);
 
     return (
-        <div className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl transition-all duration-300 relative">
+        <div className="group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-xl dark:hover:shadow-green-900/10 transition-all duration-300 relative">
             <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
                 <Link href={`/shop/${product.id}`} className="block w-full h-full">
                     <Image
@@ -64,7 +64,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 {product.tags && product.tags.length > 0 && (
                     <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-20 pointer-events-none">
                         {product.tags.map((tag, index) => (
-                            <span key={index} className="bg-white/90 text-[#2D5A27] px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm border border-[#2D5A27]/20">
+                            <span key={index} className="bg-white/90 dark:bg-gray-900/90 text-[#2D5A27] dark:text-green-400 px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm border border-[#2D5A27]/20 dark:border-green-500/20">
                                 {tag}
                             </span>
                         ))}
@@ -75,25 +75,25 @@ export default function ProductCard({ product }: ProductCardProps) {
             <div className="p-4">
                 <div className="flex justify-between items-start mb-2">
                     <div>
-                        <p className="text-xs text-[#2D5A27] font-semibold mb-1 uppercase tracking-wider">
+                        <p className="text-xs text-[#2D5A27] dark:text-green-500 font-semibold mb-1 uppercase tracking-wider">
                             {product.categoryName || (isAdminOrManager ? product.businessType : "")}
                         </p>
                         <Link href={`/shop/${product.id}`}>
-                            <h3 className="font-bold text-gray-900 line-clamp-1 group-hover:text-[#2D5A27] transition-colors">
+                            <h3 className="font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-[#2D5A27] dark:group-hover:text-green-400 transition-colors">
                                 {product.name}
                             </h3>
                         </Link>
                     </div>
 
                     <div className="flex flex-col items-end">
-                        <div className="flex items-center bg-[#2D5A27]/10 px-3 py-1.5 rounded-xl border border-[#2D5A27]/10 shadow-sm">
-                            <span className="text-sm font-bold text-[#2D5A27]">
+                        <div className="flex items-center bg-[#2D5A27]/10 dark:bg-green-900/20 px-3 py-1.5 rounded-xl border border-[#2D5A27]/10 dark:border-[#2D5A27]/20 shadow-sm">
+                            <span className="text-sm font-bold text-[#2D5A27] dark:text-green-400">
                                 Rs. {finalPrice}
                             </span>
-                            <span className="text-xs text-[#2D5A27]/70 ml-1">/{product.priceUnit}</span>
+                            <span className="text-xs text-[#2D5A27]/70 dark:text-green-400/70 ml-1">/{product.priceUnit}</span>
                         </div>
                         {hasDiscount && (
-                            <span className="text-xs text-gray-400 line-through mt-1">
+                            <span className="text-xs text-gray-400 dark:text-gray-500 line-through mt-1">
                                 Rs. {originalPrice}
                             </span>
                         )}

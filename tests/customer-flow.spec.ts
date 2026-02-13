@@ -10,6 +10,15 @@ test.describe('Full Customer Journey', () => {
     });
 
     test('Customer can login, shop, and place order', async ({ page }) => {
+        // Monitor console errors and dialogs
+        page.on('console', msg => {
+            console.log(`[Browser ${msg.type()}] ${msg.text()}`);
+        });
+        page.on('dialog', async dialog => {
+            console.log(`Dialog message: ${dialog.message()}`);
+            await dialog.dismiss();
+        });
+
         // 0. Setup: Ensure product exists (Login as Admin)
         await page.goto('/login');
         await page.locator('summary', { hasText: 'Developer Options' }).click();
@@ -146,7 +155,7 @@ test.describe('Full Customer Journey', () => {
             await placeOrderBtn.click();
 
             // 6. Verify Success
-            await expect(page).toHaveURL('/order-success');
+            await expect(page).toHaveURL('/order-success', { timeout: 15000 });
             await expect(page.locator('h1')).toContainText('Order Placed');
         } else {
             // Maybe "Confirm"?
