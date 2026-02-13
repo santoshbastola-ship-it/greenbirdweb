@@ -95,19 +95,20 @@ export const TransactionService = {
             const title = `New ${transaction.type} Order`;
             const message = `New ${transaction.type} from ${transaction.partyName} for ${transaction.items.length} items.`;
 
-            await NotificationService.notifyAdmins(
+            // Fire-and-forget notifications to avoid blocking the transaction
+            NotificationService.notifyAdmins(
                 title,
                 message,
                 docRef.id,
                 'transaction',
                 '/admin/orders',
                 triggeredBy
-            );
+            ).catch(err => console.error("Failed to notify admins:", err));
 
             // Also notify the customer if it is a Sale and customerId is present
             if (transaction.type === TransactionType.Sale && transaction.customerId) {
                 const itemList = formatItemsList(transaction.items);
-                await NotificationService.createNotification({
+                NotificationService.createNotification({
                     targetUserId: transaction.customerId,
                     title: "Order Placed Successfully",
                     message: `Thank you. Your order ${transaction.billNo} ( ${itemList} ) has been placed successfully.${WHATSAPP_SUPPORT_FOOTER}`,
@@ -115,7 +116,7 @@ export const TransactionService = {
                     channels: ['in-app', 'whatsapp', 'push'],
                     relatedEntityId: docRef.id,
                     relatedEntityType: 'transaction'
-                });
+                }).catch(err => console.error("Failed to notify customer:", err));
             }
 
 

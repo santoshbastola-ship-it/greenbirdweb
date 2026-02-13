@@ -1,5 +1,9 @@
 # Release Notes
 
+## [0.2.16] - 2026-02-13
+- Restricted Farm Manager access to Partner Details and various dashboard sections per recent updates
+
+
 ## [0.2.15] - 2026-02-13
 - Restricted Farm Manager access to Partner Details and various dashboard sections per recent updates
 
