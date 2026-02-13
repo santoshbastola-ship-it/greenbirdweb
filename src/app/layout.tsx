@@ -25,7 +25,16 @@ export const metadata: Metadata = {
   authors: [{ name: "Greenbird Homestead" }],
   creator: "Greenbird Homestead",
   publisher: "Greenbird Homestead",
+  applicationName: "Greenbird Homestead",
   manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Greenbird",
+  },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -35,7 +44,7 @@ export const metadata: Metadata = {
     siteName: "Greenbird Homestead",
     images: [
       {
-        url: "/icon.png", // Assuming icon.png is a suitable social share image, ideally should be a larger cover image
+        url: "/icons/icon-512x512.png",
         width: 512,
         height: 512,
         alt: "Greenbird Homestead Logo",
@@ -46,7 +55,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Greenbird Homestead",
     description: "Organic.Fresh.Local - Farm fresh products and nature retreats.",
-    images: ["/icon.png"],
+    images: ["/icons/icon-512x512.png"],
   },
   alternates: {
     canonical: "/",
@@ -62,6 +71,15 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icons/icon-180x180.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
 };
 
 export const viewport: Viewport = {
@@ -71,7 +89,7 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
-import { ServiceWorkerUnregister } from "@/components/ServiceWorkerUnregister";
+import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 
 export default function RootLayout({
   children,
@@ -83,7 +101,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-gray-50`}
       >
-        <ServiceWorkerUnregister />
+        <PWAInstallPrompt />
         <AuthProvider>
           {children}
         </AuthProvider>

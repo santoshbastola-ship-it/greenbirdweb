@@ -152,3 +152,86 @@ html {
   scrollbar-width: none;
   /* Firefox */
 }
+
+/* PWA Specific Styles */
+
+/* Safe area insets for notched devices (iPhone X+) */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Prevent text size adjustment on orientation change */
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Improve tap highlight color */
+* {
+  -webkit-tap-highlight-color: rgba(45, 90, 39, 0.1);
+}
+
+/* Ensure minimum touch target size (44x44px for accessibility) */
+button,
+a,
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Prevent pull-to-refresh on certain elements */
+.prevent-pull-refresh {
+  overscroll-behavior-y: contain;
+}
+
+/* Standalone mode specific styles */
+@media (display-mode: standalone) {
+  /* Add extra padding at top for status bar in standalone mode */
+  body {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+/* Animation for install prompt */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* Improve scrolling performance on iOS */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent zoom on input focus (iOS) */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="password"],
+  input[type="search"],
+  input[type="url"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}

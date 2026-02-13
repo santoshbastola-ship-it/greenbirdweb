@@ -107,6 +107,10 @@ export default function AdminSidebar() {
         "/admin/activities",
         "/admin/users",
         "/admin/settings",
+        "/admin/inventory",
+        "/admin/categories",
+        "/admin/notifications/push",
+        "/admin/testimonials",
     ];
 
     const filterItems = (items: NavItem[]) => {

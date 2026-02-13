@@ -21,7 +21,8 @@ export default function ProductQuantitySelector({ product }: ProductQuantitySele
         const fetchUnitInfo = async () => {
             try {
                 const units = await UnitService.getActiveUnits();
-                const unitInfo = units.find(u => u.name.toLowerCase() === product.unit.toLowerCase());
+                const unitToUse = product.priceUnit || product.unit;
+                const unitInfo = units.find(u => u.name.toLowerCase() === unitToUse.toLowerCase());
                 if (unitInfo) {
                     setAllowDecimals(unitInfo.allowDecimals !== false);
                 }
@@ -30,7 +31,7 @@ export default function ProductQuantitySelector({ product }: ProductQuantitySele
             }
         };
         fetchUnitInfo();
-    }, [product.unit]);
+    }, [product.unit, product.priceUnit]);
 
     const handleIncrement = () => {
         const step = isEggs ? 30 : 1;
@@ -95,7 +96,7 @@ export default function ProductQuantitySelector({ product }: ProductQuantitySele
                 </div>
                 <div className="flex flex-col">
                     <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">Unit</span>
-                    <span className="text-sm text-gray-700 font-bold lowercase">{product.unit}</span>
+                    <span className="text-sm text-gray-700 font-bold lowercase">{product.priceUnit || product.unit}</span>
                 </div>
             </div>
 

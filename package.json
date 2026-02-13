@@ -1,6 +1,6 @@
 {
   "name": "greenbird-pwa",
-  "version": "0.2.8",
+  "version": "0.2.12",
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
@@ -8,14 +8,16 @@
     "start": "next start",
     "lint": "eslint",
     "test": "playwright test",
-    "deploy": "npm run test && npm run build && cd functions && npm install && npm run build && cd .. && firebase deploy"
+    "deploy": "npm run test && npm run build && cd functions && npm install && npm run build && cd .. && firebase deploy",
+    "deploy:full": "node scripts/full-deploy.js",
+    "deploy:quick": "node scripts/quick-deploy.js",
+    "cleanup:test-data": "tsx scripts/cleanup-test-data.ts"
   },
   "dependencies": {
     "@types/google.maps": "^3.58.1",
     "browser-image-compression": "^2.0.2",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "dotenv": "^17.2.4",
     "firebase": "^12.8.0",
     "firebase-admin": "^13.6.0",
     "html-to-image": "^1.11.13",
@@ -38,9 +40,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.2.4",
     "eslint": "^9",
     "eslint-config-next": "16.1.4",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

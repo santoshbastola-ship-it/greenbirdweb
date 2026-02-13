@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { NotificationService } from "@/services/notification.service";
 import { ProductService } from "@/services/product.service";
 import { Bell, Send, Image as ImageIcon, Trash2, Calendar, Loader2, CheckCircle2, AlertCircle, History, User } from "lucide-react";
@@ -10,7 +11,7 @@ import { BroadcastHistory } from "@/types";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default function PushNotificationsPage() {
-    const { user } = useAuth();
+    const { user, dbUser } = useAuth();
     const [title, setTitle] = useState("");
     const [message, setMessage] = useState("");
     const [validityDays, setValidityDays] = useState("7");
@@ -38,9 +39,15 @@ export default function PushNotificationsPage() {
         variant: "danger"
     });
 
+    const router = useRouter();
+
     useEffect(() => {
+        if (dbUser?.role === "manager") {
+            router.push("/admin");
+            return;
+        }
         loadHistory();
-    }, []);
+    }, [dbUser, router]);
 
     const loadHistory = async () => {
         setLoadingHistory(true);

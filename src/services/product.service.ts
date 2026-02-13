@@ -360,4 +360,44 @@ export const ProductService = {
             }
         }
     }
+    ,
+
+    searchProducts: async (query: string): Promise<any[]> => {
+        if (!query || query.trim().length < 2) {
+            return [];
+        }
+
+        const searchTerm = query.toLowerCase().trim();
+
+        try {
+            // Fetch all products (relying on client-side cache or fresh fetch)
+            const allProducts = await ProductService.getAllProducts();
+
+            return allProducts
+                .filter((product) => {
+                    if (!product.isAvailableForSale) return false;
+
+                    // Match name
+                    if (product.name.toLowerCase().includes(searchTerm)) return true;
+
+                    // Match category
+                    if (product.categoryName?.toLowerCase().includes(searchTerm)) return true;
+
+                    return false;
+                })
+                .slice(0, 5) // Limit to 5 results
+                .map((product) => ({
+                    id: product.id,
+                    name: product.name,
+                    category: product.categoryName || product.businessType,
+                    image: product.images?.[0] || '/placeholder.png',
+                    price: product.currentPrice,
+                    unit: product.unit,
+                    slug: product.id
+                }));
+        } catch (error) {
+            console.error("Error searching products:", error);
+            return [];
+        }
+    }
 };

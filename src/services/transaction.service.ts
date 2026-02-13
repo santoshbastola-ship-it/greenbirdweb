@@ -77,8 +77,13 @@ export const TransactionService = {
 
                         try {
                             await ProductService.updateProductStock(item.productId, action, item.quantity, note);
-                        } catch (stockError) {
-                            console.error(`Failed to update stock for product ${item.productId}:`, stockError);
+                        } catch (stockError: any) {
+                            if (stockError.message === "Product not found") {
+                                // This is expected for ad-hoc items (e.g. in Purchases) that aren't in the product database
+                                console.warn(`Skipping stock update for item ${item.productName} (ID: ${item.productId}): Product not found.`);
+                            } else {
+                                console.error(`Failed to update stock for product ${item.productId}:`, stockError);
+                            }
                             // We don't throw here to avoid failing the whole transaction if stock update fails
                         }
                     }));
@@ -569,10 +574,23 @@ export const TransactionService = {
 
             await updateDoc(docRef, updateData);
 
+            // Fetch updated doc to get details for notification
+            const docSnap = await getDoc(docRef);
+            let message = `Transaction #${id} has been updated.`;
+            let title = `Transaction Updated`;
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const billNo = data.billNo || id;
+                const partyName = data.partyName || 'Unknown';
+                title = `Order Updated: #${billNo}`;
+                message = `Order #${billNo} for ${partyName} has been updated.`;
+            }
+
             // Notify Admins
             await NotificationService.notifyAdmins(
-                `Transaction Updated`,
-                `Transaction #${id} has been updated.`,
+                title,
+                message,
                 id,
                 'transaction',
                 '/admin/orders',

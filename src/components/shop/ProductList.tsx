@@ -4,26 +4,27 @@ import { useSearchParams } from "next/navigation";
 import ProductCard from "@/components/ui/ProductCard";
 import OrderSuccessMessage from "@/components/ui/OrderSuccessMessage";
 import Link from "next/link";
-import { Product } from "@/types";
+import { Product, Category } from "@/types";
 import { Suspense } from "react";
 import { useAuth } from "@/context/AuthContext";
 
 interface ProductListContentProps {
     initialProducts: Product[];
+    categories: Category[];
 }
 
-function ProductListContent({ initialProducts }: ProductListContentProps) {
+function ProductListContent({ initialProducts, categories }: ProductListContentProps) {
     const searchParams = useSearchParams();
     const { dbUser } = useAuth();
-    const category = searchParams.get('category');
+    const categoryId = searchParams.get('category');
     const isAdminOrManager = dbUser?.role === 'admin' || dbUser?.role === 'manager';
     const search = searchParams.get('search')?.toLowerCase() || "";
 
     const products = initialProducts.filter(p => {
         // Filter by category if present
-        if (category) {
-            const matchesCategory = p.categoryId === category;
-            const matchesBusinessType = p.businessType === category;
+        if (categoryId) {
+            const matchesCategory = p.categoryId === categoryId;
+            const matchesBusinessType = p.businessType === categoryId;
             if (!matchesCategory && !matchesBusinessType) return false;
         }
 
@@ -45,9 +46,10 @@ function ProductListContent({ initialProducts }: ProductListContentProps) {
         return true;
     });
 
-    const categoryDisplayName = category
-        ? products.find(p => p.categoryId === category || p.businessType === category)?.categoryName ||
-        category.charAt(0).toUpperCase() + category.slice(1)
+    const categoryDisplayName = categoryId
+        ? categories.find(c => c.id === categoryId)?.name ||
+        products.find(p => p.categoryId === categoryId || p.businessType === categoryId)?.categoryName ||
+        categoryId.charAt(0).toUpperCase() + categoryId.slice(1)
         : 'All Products';
 
     const headerTitle = search ? `Search Results for "${searchParams.get('search')}"` : categoryDisplayName;

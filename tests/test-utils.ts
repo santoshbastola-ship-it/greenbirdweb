@@ -99,26 +99,33 @@ export async function cleanupTestProducts(): Promise<void> {
 export async function cleanupTestTransactions(testUserIds: { adminId: string; customerId: string }): Promise<void> {
     try {
         const transactionsRef = collection(db, 'transactions');
+        const allTransactions: any[] = [];
 
         // Query for transactions by test customer
         const customerQuery = query(transactionsRef, where('customerId', '==', testUserIds.customerId));
         const customerSnapshot = await getDocs(customerQuery);
+        allTransactions.push(...customerSnapshot.docs);
 
         // Query for transactions by test admin (if any)
         const adminQuery = query(transactionsRef, where('customerId', '==', testUserIds.adminId));
         const adminSnapshot = await getDocs(adminQuery);
+        allTransactions.push(...adminSnapshot.docs);
 
-        const totalDocs = customerSnapshot.size + adminSnapshot.size;
-        console.log(`Found ${totalDocs} test transactions to delete`);
+        // Query for transactions where enteredBy is test admin
+        const enteredByQuery = query(transactionsRef, where('enteredBy', '==', testUserIds.adminId));
+        const enteredBySnapshot = await getDocs(enteredByQuery);
 
-        const deletePromises = [
-            ...customerSnapshot.docs.map(docSnapshot =>
-                deleteDoc(doc(db, 'transactions', docSnapshot.id))
-            ),
-            ...adminSnapshot.docs.map(docSnapshot =>
-                deleteDoc(doc(db, 'transactions', docSnapshot.id))
-            )
-        ];
+        // Merge and deduplicate
+        const uniqueTransactions = new Map();
+        [...allTransactions, ...enteredBySnapshot.docs].forEach(doc => {
+            uniqueTransactions.set(doc.id, doc);
+        });
+
+        console.log(`Found ${uniqueTransactions.size} test transactions to delete`);
+
+        const deletePromises = Array.from(uniqueTransactions.values()).map(docSnapshot =>
+            deleteDoc(doc(db, 'transactions', docSnapshot.id))
+        );
 
         await Promise.all(deletePromises);
         console.log('✓ Test transactions cleaned up');

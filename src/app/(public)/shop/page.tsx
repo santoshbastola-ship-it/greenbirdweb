@@ -1,4 +1,5 @@
 import { ProductService } from "@/services/product.service";
+import { CategoryService } from "@/services/category.service";
 import CategoryFilter from "@/components/shop/CategoryFilter";
 import ProductList from "@/components/shop/ProductList";
 import { Suspense } from "react";
@@ -7,9 +8,14 @@ import WhatsAppOptInModal from "@/components/shop/WhatsAppOptInModal";
 // Static export compatibility
 // Static export compatibility
 
+
+
 export default async function ShopPage() {
-    // Fetch all products at build time
-    const products = await ProductService.getAllProducts();
+    // Fetch all products and categories at build time/request time
+    const [products, categories] = await Promise.all([
+        ProductService.getAllProducts(),
+        CategoryService.getActiveCategories()
+    ]);
 
     return (
         <div className="min-h-screen bg-[#FCF9F1] py-8 md:py-12">
@@ -20,7 +26,7 @@ export default async function ShopPage() {
                     </Suspense>
 
                     {/* Product Grid - Handles filtering client-side */}
-                    <ProductList initialProducts={products} />
+                    <ProductList initialProducts={products} categories={categories} />
                 </div>
             </div>
 

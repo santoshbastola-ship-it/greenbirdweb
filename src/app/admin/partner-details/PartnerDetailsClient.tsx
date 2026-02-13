@@ -22,10 +22,13 @@ import {
 import LogoLoader from "@/components/ui/LogoLoader";
 import EditCustomerModal from "@/components/admin/EditCustomerModal";
 
+import { useAuth } from "@/context/AuthContext";
+
 export default function PartnerDetailsClient() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const id = searchParams.get("id");
+    const { dbUser, loading: authLoading } = useAuth();
 
     const [partner, setPartner] = useState<User | null>(null);
     const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
@@ -34,6 +37,14 @@ export default function PartnerDetailsClient() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     useEffect(() => {
+        if (loading) return;
+
+        // Restrict access for managers
+        if (dbUser?.role === 'manager') {
+            router.push('/admin/partners');
+            return;
+        }
+
         if (id) {
             loadPartnerData();
         } else {
@@ -41,7 +52,7 @@ export default function PartnerDetailsClient() {
             // router.push("/admin/partners");
             setLoading(false);
         }
-    }, [id]);
+    }, [id, dbUser, loading]);
 
     const loadPartnerData = async () => {
         if (!id) return;
@@ -149,7 +160,7 @@ export default function PartnerDetailsClient() {
         t.items.some(i => i.productName.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-    if (loading) {
+    if (loading || authLoading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <LogoLoader />

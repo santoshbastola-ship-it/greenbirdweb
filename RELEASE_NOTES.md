@@ -1,5 +1,21 @@
 # Release Notes
 
+## [0.2.12] - 2026-02-13
+- Restricted Farm Manager access to Partner Details and various dashboard sections per recent updates
+
+
+## [0.2.11] - 2026-02-11
+- Fixed 'unreadable id' issue on shop page and improved product filtering (Retry)
+
+
+## [0.2.10] - 2026-02-11
+- Fixed 'unreadable id' issue on shop page and improved product filtering
+
+
+## [0.2.9] - 2026-02-11
+- Fixed production bugs, improved admin flows, and updated test coverage
+
+
 ## [0.2.8] - 2026-02-10
 - Admin flow improvements, unified order/sales view, receipt display updates, and product visibility features
 

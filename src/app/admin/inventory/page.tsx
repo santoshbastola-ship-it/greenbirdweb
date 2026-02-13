@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ProductService } from "@/services/product.service";
 import { Product, BusinessType } from "@/types";
 import {
@@ -46,9 +47,15 @@ export default function InventoryPage() {
     const [isStockHistoryModalOpen, setIsStockHistoryModalOpen] = useState(false);
     const [isProductViewModalOpen, setIsProductViewModalOpen] = useState(false);
 
+    const router = useRouter();
+
     useEffect(() => {
+        if (dbUser?.role === "manager") {
+            router.push("/admin");
+            return;
+        }
         loadProducts();
-    }, []);
+    }, [dbUser, router]);
 
     const loadProducts = async () => {
         setLoading(true);

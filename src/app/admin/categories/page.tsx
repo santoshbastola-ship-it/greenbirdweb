@@ -27,6 +27,8 @@ import { Toast, ToastType } from "@/components/ui/Toast";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { formatDateTime } from "@/lib/date-helper";
 import AdvancedSearch from "@/components/admin/AdvancedSearch";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 type MainTab = "CATEGORIES" | "UNITS";
 type CategoryTab = BusinessType | "ALL";
@@ -67,9 +69,16 @@ export default function CategoriesAndUnitsPage() {
         allowDecimals: true
     });
 
+    const { dbUser } = useAuth();
+    const router = useRouter();
+
     useEffect(() => {
+        if (dbUser?.role === "manager") {
+            router.push("/admin");
+            return;
+        }
         fetchAllData();
-    }, []);
+    }, [dbUser, router]);
 
     const fetchAllData = async () => {
         setLoading(true);

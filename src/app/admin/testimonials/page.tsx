@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, Trash2, MessageSquare, Quote, Eye, EyeOff, ExternalLink, Calendar as CalendarIcon, User } from "lucide-react";
 import { getTestimonials, deleteTestimonial, updateTestimonialStatus } from "@/lib/services/testimonials";
 import { Testimonial } from "@/types/extra";
@@ -15,9 +16,15 @@ export default function TestimonialsAdminPage() {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    const router = useRouter();
+
     useEffect(() => {
+        if (dbUser?.role === "manager") {
+            router.push("/admin");
+            return;
+        }
         loadTestimonials();
-    }, []);
+    }, [dbUser, router]);
 
     const loadTestimonials = async () => {
         setLoading(true);

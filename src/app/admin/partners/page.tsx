@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { UserService } from "@/services/user.service";
 import { TransactionService } from "@/services/transaction.service";
+import { useAuth } from "@/context/AuthContext";
 import { User, TransactionRecord } from "@/types";
 import {
     Plus,
@@ -25,6 +26,7 @@ export default function PartnersPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [activeTab, setActiveTab] = useState<"customer" | "vendor">("customer");
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const { dbUser } = useAuth();
 
     useEffect(() => {
         loadData();
@@ -215,6 +217,71 @@ export default function PartnersPage() {
                         const partnerTxns = getPartnerTransactions(partner.id);
                         const lastOrder = getLastOrderInfo(partnerTxns);
                         const prediction = getPredictedNextOrder(partnerTxns);
+                        const isManager = dbUser?.role === 'manager';
+
+                        const Content = (
+                            <div className="flex items-center gap-4 min-w-0 flex-1">
+                                <div className="h-12 w-12 flex-shrink-0 bg-green-100 rounded-full border border-green-200 flex items-center justify-center text-green-700 font-bold text-lg">
+                                    {partner.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="font-bold text-gray-900 text-lg truncate">
+                                            {partner.name}
+                                        </h3>
+                                        <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">
+                                            {partner.partnerType || "customer"}
+                                        </span>
+                                    </div>
+                                    <span>{partner.phoneNumber || "No phone"}</span>
+                                    {/* Status Icon */}
+                                    <span className="flex items-center gap-1">
+                                        {partner.email && !partner.email.endsWith('@manual.entry') ? (
+                                            <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100" title="Registered User">
+                                                <UserCheck className="h-3 w-3" />
+                                                <span className="text-[10px] font-bold uppercase tracking-wider">Verified</span>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-1 text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-200" title="Manually Created">
+                                                <Users className="h-3 w-3" />
+                                                <span className="text-[10px] font-bold uppercase tracking-wider">Manual</span>
+                                            </div>
+                                        )}
+                                    </span>
+
+
+                                    {/* Activity Metrics */}
+                                    <div className="flex flex-wrap gap-3 mt-2 text-xs">
+                                        {lastOrder ? (
+                                            <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-medium border border-blue-100">
+                                                Ordered {lastOrder.daysAgo} {lastOrder.daysAgo === 1 ? 'day' : 'days'} ago
+                                            </span>
+                                        ) : (
+                                            <span className="bg-gray-50 text-gray-500 px-2 py-1 rounded-md border border-gray-100">
+                                                No orders yet
+                                            </span>
+                                        )}
+
+                                        {prediction && (
+                                            <span className="bg-purple-50 text-purple-700 px-2 py-1 rounded-md font-medium border border-purple-100">
+                                                Next predicted: {toNepali(prediction.date, "DD MMM YYYY")}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        );
+
+                        if (isManager) {
+                            return (
+                                <div
+                                    key={partner.id}
+                                    className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group cursor-default opacity-90"
+                                >
+                                    {Content}
+                                </div>
+                            );
+                        }
 
                         return (
                             <Link
@@ -222,57 +289,7 @@ export default function PartnersPage() {
                                 key={partner.id}
                                 className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between hover:shadow-md transition-shadow gap-4 group cursor-pointer"
                             >
-                                <div className="flex items-center gap-4 min-w-0 flex-1">
-                                    <div className="h-12 w-12 flex-shrink-0 bg-green-100 rounded-full border border-green-200 flex items-center justify-center text-green-700 font-bold text-lg">
-                                        {partner.name.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div className="min-w-0 flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="font-bold text-gray-900 text-lg truncate">
-                                                {partner.name}
-                                            </h3>
-                                            <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full uppercase font-bold tracking-wider">
-                                                {partner.partnerType || "customer"}
-                                            </span>
-                                        </div>
-                                        <span>{partner.phoneNumber || "No phone"}</span>
-                                        {/* Status Icon */}
-                                        <span className="flex items-center gap-1">
-                                            {partner.email && !partner.email.endsWith('@manual.entry') ? (
-                                                <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-100" title="Registered User">
-                                                    <UserCheck className="h-3 w-3" />
-                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Verified</span>
-                                                </div>
-                                            ) : (
-                                                <div className="flex items-center gap-1 text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-200" title="Manually Created">
-                                                    <Users className="h-3 w-3" />
-                                                    <span className="text-[10px] font-bold uppercase tracking-wider">Manual</span>
-                                                </div>
-                                            )}
-                                        </span>
-
-
-                                        {/* Activity Metrics */}
-                                        <div className="flex flex-wrap gap-3 mt-2 text-xs">
-                                            {lastOrder ? (
-                                                <span className="bg-blue-50 text-blue-700 px-2 py-1 rounded-md font-medium border border-blue-100">
-                                                    Ordered {lastOrder.daysAgo} {lastOrder.daysAgo === 1 ? 'day' : 'days'} ago
-                                                </span>
-                                            ) : (
-                                                <span className="bg-gray-50 text-gray-500 px-2 py-1 rounded-md border border-gray-100">
-                                                    No orders yet
-                                                </span>
-                                            )}
-
-                                            {prediction && (
-                                                <span className="bg-purple-50 text-purple-700 px-2 py-1 rounded-md font-medium border border-purple-100">
-                                                    Next predicted: {toNepali(prediction.date, "DD MMM YYYY")}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
+                                {Content}
                             </Link>
                         );
                     })}

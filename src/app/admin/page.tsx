@@ -20,25 +20,33 @@ import OrderStatusWidget from "@/components/admin/OrderStatusWidget";
 import RevenueChart from "@/components/admin/RevenueChart";
 import { formatMetricValue } from "@/lib/dashboard-utils";
 import { toNepali } from "@/lib/date-helper";
+import { useAuth } from "@/context/AuthContext";
 import { TransactionType } from "@/types";
 
 export default function AdminDashboard() {
+    const { dbUser } = useAuth();
     const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
     const [revenueTrend, setRevenueTrend] = useState<{ date: string; revenue: number }[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
+    const isManager = dbUser?.role === 'manager';
+
     useEffect(() => {
-        loadDashboardData();
+        if (!isManager) {
+            loadDashboardData();
 
-        // Auto-refresh every 30 seconds
-        const interval = setInterval(() => {
-            loadDashboardData(true);
-        }, 30000);
+            // Auto-refresh every 30 seconds
+            const interval = setInterval(() => {
+                loadDashboardData(true);
+            }, 30000);
 
-        return () => clearInterval(interval);
-    }, []);
+            return () => clearInterval(interval);
+        } else {
+            setLoading(false); // No data to load for manager
+        }
+    }, [isManager]);
 
     const loadDashboardData = async (isRefresh: boolean = false) => {
         if (isRefresh) {
@@ -67,6 +75,46 @@ export default function AdminDashboard() {
         DashboardService.clearCache();
         loadDashboardData(true);
     };
+
+    // Quick Access Links Logic
+    const quickLinks = [
+        { href: "/admin/orders", label: "Orders", icon: ShoppingBag, color: "bg-orange-100 text-orange-700" },
+        { href: "/admin/tasks", label: "Tasks", icon: ClipboardList, color: "bg-purple-100 text-purple-700" },
+        { href: "/admin/stock-update", label: "Stock", icon: Package, color: "bg-teal-100 text-teal-700" },
+        { href: "/admin/inventory", label: "Products", icon: Package, color: "bg-blue-100 text-blue-700", restricted: true }, // Restricted for managers
+        { href: "/admin/sales", label: "Sales", icon: DollarSign, color: "bg-green-100 text-green-700" },
+        { href: "/admin/energy", label: "Energy", icon: Zap, color: "bg-yellow-100 text-yellow-700" },
+        { href: "/admin/partners", label: "Partners", icon: Users, color: "bg-indigo-100 text-indigo-700" },
+        { href: "/admin/reports", label: "Reports", icon: TrendingUp, color: "bg-pink-100 text-pink-700", restricted: true }, // Mark as restricted
+    ];
+
+    const visibleLinks = quickLinks.filter(link => !isManager || !link.restricted);
+
+    if (isManager) {
+        return (
+            <div className="space-y-8">
+                {/* Header */}
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">Greenbird Dashboard</h1>
+                        <p className="text-gray-500">Quick Access Menu</p>
+                    </div>
+                </div>
+
+                {/* Quick Access Grid */}
+                <div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {visibleLinks.map((link) => (
+                            <QuickLink
+                                key={link.href}
+                                {...link}
+                            />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8">
@@ -308,14 +356,12 @@ export default function AdminDashboard() {
             <div>
                 <h2 className="text-lg font-bold text-gray-900 mb-4">Quick Access</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <QuickLink href="/admin/orders" label="Orders" icon={ShoppingBag} color="bg-orange-100 text-orange-700" />
-                    <QuickLink href="/admin/tasks" label="Tasks" icon={ClipboardList} color="bg-purple-100 text-purple-700" />
-                    <QuickLink href="/admin/stock-update" label="Stock" icon={Package} color="bg-teal-100 text-teal-700" />
-                    <QuickLink href="/admin/inventory" label="Products" icon={Package} color="bg-blue-100 text-blue-700" />
-                    <QuickLink href="/admin/sales" label="Sales" icon={DollarSign} color="bg-green-100 text-green-700" />
-                    <QuickLink href="/admin/energy" label="Energy" icon={Zap} color="bg-yellow-100 text-yellow-700" />
-                    <QuickLink href="/admin/partners" label="Partners" icon={Users} color="bg-indigo-100 text-indigo-700" />
-                    <QuickLink href="/admin/reports" label="Reports" icon={TrendingUp} color="bg-pink-100 text-pink-700" />
+                    {visibleLinks.map((link) => (
+                        <QuickLink
+                            key={link.href}
+                            {...link}
+                        />
+                    ))}
                 </div>
             </div>
         </div>

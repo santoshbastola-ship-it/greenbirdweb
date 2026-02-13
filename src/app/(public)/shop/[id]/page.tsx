@@ -105,7 +105,7 @@ export default async function ProductDetailsPage({ params }: PageProps) {
                             <div className="flex flex-col mb-6">
                                 <div className="flex items-baseline">
                                     <span className="text-3xl font-bold text-[#2D5A27]">Rs. {finalPrice}</span>
-                                    <span className="text-gray-500 ml-2">/ {product.unit}</span>
+                                    <span className="text-gray-500 ml-2">/ {product.priceUnit || product.unit}</span>
                                     {hasDiscount && (
                                         <span className="ml-4 text-xl text-gray-400 line-through">
                                             Rs. {originalPrice}

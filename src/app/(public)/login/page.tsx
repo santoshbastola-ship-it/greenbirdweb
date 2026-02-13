@@ -45,8 +45,19 @@ export default function LoginPage() {
                     console.log("LoginPage: Successful redirect sign-in", result.user.uid);
                     await refreshDbUser(result.user.uid);
 
-                    const redirectTo = new URLSearchParams(window.location.search).get("redirect") || "/shop";
-                    router.push(redirectTo);
+                    const redirectTo = new URLSearchParams(window.location.search).get("redirect");
+                    if (redirectTo) {
+                        router.push(redirectTo);
+                    } else {
+                        // Check role for default redirect
+                        const { UserService } = await import("@/services/user.service");
+                        const userDoc = await UserService.getUserById(result.user.uid);
+                        if (userDoc && (userDoc.role === 'admin' || userDoc.role === 'manager')) {
+                            router.push("/admin");
+                        } else {
+                            router.push("/shop");
+                        }
+                    }
                     return;
                 }
 
@@ -93,6 +104,7 @@ export default function LoginPage() {
                         router.push("/shop");
                     }
                 }
+                window.localStorage.removeItem('emailForSignIn');
             } catch (err: any) {
                 console.error("Link sign-in error:", err);
                 setError("Failed to sign in with link. The link may have expired or already been used.");
@@ -188,73 +200,75 @@ export default function LoginPage() {
                     </button>
 
                     {/* Developer Login Form for Testing */}
-                    <div className="mt-8 border-t pt-4">
-                        <details className="cursor-pointer">
-                            <summary className="text-xs text-gray-400 text-center select-none">Developer Options</summary>
-                            <div className="mt-4 space-y-3">
-                                <input
-                                    type="email"
-                                    placeholder="Test Email"
-                                    id="test-email"
-                                    className="w-full px-3 py-2 border rounded-lg text-sm"
-                                />
-                                <input
-                                    type="password"
-                                    placeholder="Test Password"
-                                    id="test-password"
-                                    className="w-full px-3 py-2 border rounded-lg text-sm"
-                                />
-                                <button
-                                    onClick={async () => {
-                                        const email = (document.getElementById('test-email') as HTMLInputElement).value;
-                                        const password = (document.getElementById('test-password') as HTMLInputElement).value;
-                                        if (!email || !password) return;
+                    {process.env.NODE_ENV !== 'production' && (
+                        <div className="mt-8 border-t pt-4">
+                            <details className="cursor-pointer">
+                                <summary className="text-xs text-gray-400 text-center select-none">Developer Options</summary>
+                                <div className="mt-4 space-y-3">
+                                    <input
+                                        type="email"
+                                        placeholder="Test Email"
+                                        id="test-email"
+                                        className="w-full px-3 py-2 border rounded-lg text-sm"
+                                    />
+                                    <input
+                                        type="password"
+                                        placeholder="Test Password"
+                                        id="test-password"
+                                        className="w-full px-3 py-2 border rounded-lg text-sm"
+                                    />
+                                    <button
+                                        onClick={async () => {
+                                            const email = (document.getElementById('test-email') as HTMLInputElement).value;
+                                            const password = (document.getElementById('test-password') as HTMLInputElement).value;
+                                            if (!email || !password) return;
 
-                                        setIsProcessingLogin(true);
-                                        try {
-                                            const { useAuth } = await import("@/context/AuthContext"); // Context is top level, can't verify here easily but AuthService works
-                                            // Actually we are in a component, so we can use state
-                                        } catch (e) { }
+                                            setIsProcessingLogin(true);
+                                            try {
+                                                const { useAuth } = await import("@/context/AuthContext"); // Context is top level, can't verify here easily but AuthService works
+                                                // Actually we are in a component, so we can use state
+                                            } catch (e) { }
 
-                                        // We will direct call AuthService 
-                                        try {
-                                            const { AuthService } = await import("@/services/auth.service");
-                                            const { UserService } = await import("@/services/user.service");
-                                            await AuthService.signInWithEmailPassword(email, password);
-                                            // Refresh user logic is in component but we can just reload or redirect
-                                            // The AuthContext listener will pick it up
+                                            // We will direct call AuthService 
+                                            try {
+                                                const { AuthService } = await import("@/services/auth.service");
+                                                const { UserService } = await import("@/services/user.service");
+                                                await AuthService.signInWithEmailPassword(email, password);
+                                                // Refresh user logic is in component but we can just reload or redirect
+                                                // The AuthContext listener will pick it up
 
-                                            // Manually check role for redirect
-                                            const user = auth.currentUser;
-                                            if (user) {
-                                                await refreshDbUser(user.uid); // from hook
+                                                // Manually check role for redirect
+                                                const user = auth.currentUser;
+                                                if (user) {
+                                                    await refreshDbUser(user.uid); // from hook
 
-                                                // Force redirect for test admin
-                                                if (user.email === 'test-admin@greenbird.com') {
-                                                    router.push("/admin");
-                                                    return;
+                                                    // Force redirect for test admin
+                                                    if (user.email === 'test-admin@greenbird.com') {
+                                                        router.push("/admin");
+                                                        return;
+                                                    }
+
+                                                    const userDoc = await UserService.getUserById(user.uid);
+                                                    if (userDoc && (userDoc.role === 'admin' || userDoc.role === 'manager')) {
+                                                        router.push("/admin");
+                                                    } else {
+                                                        router.push("/shop");
+                                                    }
                                                 }
-
-                                                const userDoc = await UserService.getUserById(user.uid);
-                                                if (userDoc && (userDoc.role === 'admin' || userDoc.role === 'manager')) {
-                                                    router.push("/admin");
-                                                } else {
-                                                    router.push("/shop");
-                                                }
+                                            } catch (err: any) {
+                                                console.error(err);
+                                                setError(err.message);
+                                                setIsProcessingLogin(false);
                                             }
-                                        } catch (err: any) {
-                                            console.error(err);
-                                            setError(err.message);
-                                            setIsProcessingLogin(false);
-                                        }
-                                    }}
-                                    className="w-full bg-gray-800 text-white py-2 rounded-lg text-sm"
-                                >
-                                    Test Login
-                                </button>
-                            </div>
-                        </details>
-                    </div>
+                                        }}
+                                        className="w-full bg-gray-800 text-white py-2 rounded-lg text-sm"
+                                    >
+                                        Test Login
+                                    </button>
+                                </div>
+                            </details>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

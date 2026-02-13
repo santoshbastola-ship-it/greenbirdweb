@@ -99,9 +99,16 @@ export default function AdminOrdersPage() {
     const filteredOrders = orders.filter(order => {
         const matchesStatus = order.status === activeTab;
 
-        // Manager restrictions: only show undelivered
-        if (isManager && (order.status === OrderStatus.Delivered || order.status === OrderStatus.Cancelled)) {
-            return false;
+        // Manager restrictions:
+        if (isManager) {
+            // "Allow Farm Manager role to access all record ... from one month"
+            // Filter by Date: Last 30 Days only
+            const oneMonthAgo = new Date();
+            oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
+
+            if (new Date(order.date) < oneMonthAgo) {
+                return false;
+            }
         }
 
         const matchesSearch = searchQuery === "" ||
@@ -142,12 +149,7 @@ export default function AdminOrdersPage() {
         { label: "Accepted", status: OrderStatus.Accepted, count: orders.filter(o => o.status === OrderStatus.Accepted).length },
         { label: "Delivered", status: OrderStatus.Delivered, count: orders.filter(o => o.status === OrderStatus.Delivered).length },
         { label: "Cancelled", status: OrderStatus.Cancelled, count: orders.filter(o => o.status === OrderStatus.Cancelled).length },
-    ].filter(tab => {
-        if (isManager && (tab.status === OrderStatus.Delivered || tab.status === OrderStatus.Cancelled)) {
-            return false;
-        }
-        return true;
-    });
+    ];
 
     const selectedOrder = orders.find(o => o.id === selectedOrderId);
 
