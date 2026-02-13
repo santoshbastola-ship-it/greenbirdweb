@@ -72,3 +72,24 @@ export function formatDateTime(date: any, formatStr: string = "DD MMM YYYY"): st
 export function getTodayNepali(): string {
     return new NepaliDate().format('YYYY-MM-DD', 'en');
 }
+
+/**
+ * Converts "HH:MM" (24-hour) string to "h:MM AM/PM" format
+ * @param timeStr - e.g., "14:30" or "09:15"
+ */
+export function formatTime(timeStr: string | undefined): string {
+    if (!timeStr) return "";
+    try {
+        const [hours24, minutes] = timeStr.split(':');
+        if (!hours24) return "";
+
+        let h = parseInt(hours24);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12;
+        h = h ? h : 12; // the hour '0' should be '12'
+
+        return `${h}:${minutes || "00"} ${ampm}`;
+    } catch (e) {
+        return timeStr;
+    }
+}

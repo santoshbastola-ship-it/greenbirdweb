@@ -3,36 +3,20 @@
 import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Filter } from "lucide-react";
-import { BusinessType } from "@/types";
 import { useAuth } from "@/context/AuthContext";
-
-import { CategoryService } from "@/services/category.service";
 import { Category } from "@/types";
-import { useEffect, useState } from "react";
 
-function CategoryFilterContent() {
+interface CategoryFilterProps {
+    categories: Category[];
+}
+
+function CategoryFilterContent({ categories }: CategoryFilterProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { dbUser } = useAuth();
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [loading, setLoading] = useState(true);
     const currentCategory = searchParams.get("category") || "all";
 
     const isAdminOrManager = dbUser?.role === 'admin' || dbUser?.role === 'manager';
-
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const data = await CategoryService.getActiveCategories();
-                setCategories(data);
-            } catch (error) {
-                console.error("Error fetching categories:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchCategories();
-    }, []);
 
     const handleCategoryClick = (categoryValue: string) => {
         const params = new URLSearchParams(searchParams);
@@ -43,10 +27,6 @@ function CategoryFilterContent() {
         }
         router.push(`/shop?${params.toString()}`);
     };
-
-    if (loading) {
-        return <div className="w-full md:w-64 h-96 animate-pulse bg-white rounded-2xl" />;
-    }
 
     return (
         <div className="w-full mb-8">
@@ -96,10 +76,10 @@ function CategoryFilterContent() {
     );
 }
 
-export default function CategoryFilter() {
+export default function CategoryFilter({ categories }: CategoryFilterProps) {
     return (
         <Suspense fallback={<div className="w-full md:w-64">Loading filters...</div>}>
-            <CategoryFilterContent />
+            <CategoryFilterContent categories={categories} />
         </Suspense>
     );
 }

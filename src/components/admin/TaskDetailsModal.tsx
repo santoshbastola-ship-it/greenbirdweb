@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { X, Calendar, User, AlignLeft, AlertCircle, Repeat, Edit2, Trash2, Paperclip, ExternalLink } from "lucide-react";
+import { X, Calendar, User, AlignLeft, AlertCircle, Repeat, Edit2, Trash2, Paperclip, ExternalLink, Clock } from "lucide-react";
 import { TaskItem, TaskPriority, TaskStatus } from "@/types";
 import { TaskService } from "@/services/task.service";
+import { toNepali } from "@/lib/date-helper";
 import AddTaskModal from "./AddTaskModal";
 import { useAuth } from "@/context/AuthContext";
+import UserName from "@/components/ui/UserName";
+
 
 interface TaskDetailsModalProps {
     task: TaskItem;
@@ -165,6 +168,20 @@ export default function TaskDetailsModal({ task, onClose, onUpdate }: TaskDetail
                                     <div>
                                         <p className="text-xs text-gray-500">Assigned To</p>
                                         <p className="font-medium text-gray-900">{task.assignedTo || "Unassigned"}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 text-sm">
+                                    <Clock className="h-4 w-4 text-gray-400" />
+                                    <div>
+                                        <p className="text-xs text-gray-500">Created By</p>
+                                        <p className="font-medium text-gray-900"><UserName nameOrId={task.createdBy} fallback={task.assignedTo ? 'Admin' : 'N/A'} /></p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 text-sm">
+                                    <Calendar className="h-4 w-4 text-gray-400" />
+                                    <div>
+                                        <p className="text-xs text-gray-500">Created On</p>
+                                        <p className="font-medium text-gray-900">{task.createdDate ? toNepali(task.createdDate, "DD MMM YYYY") : 'N/A'}</p>
                                     </div>
                                 </div>
                             </div>

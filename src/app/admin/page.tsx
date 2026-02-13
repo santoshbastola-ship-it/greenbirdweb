@@ -10,7 +10,8 @@ import {
     Calendar,
     RefreshCw,
     Zap,
-    ClipboardList
+    ClipboardList,
+    Store
 } from "lucide-react";
 import Link from "next/link";
 import { DashboardService, DashboardData } from "@/services/dashboard.service";
@@ -86,6 +87,7 @@ export default function AdminDashboard() {
         { href: "/admin/energy", label: "Energy", icon: Zap, color: "bg-yellow-100 text-yellow-700" },
         { href: "/admin/partners", label: "Partners", icon: Users, color: "bg-indigo-100 text-indigo-700" },
         { href: "/admin/reports", label: "Reports", icon: TrendingUp, color: "bg-pink-100 text-pink-700", restricted: true }, // Mark as restricted
+        { href: "/", label: "Shop", icon: Store, color: "bg-lime-100 text-lime-700" },
     ];
 
     const visibleLinks = quickLinks.filter(link => !isManager || !link.restricted);

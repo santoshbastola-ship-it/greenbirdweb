@@ -1,5 +1,13 @@
 # Release Notes
 
+## [0.2.18] - 2026-02-13
+- Production release
+
+
+## [0.2.17] - 2026-02-13
+- Optimized customer order display and added Payment Pending tab
+
+
 ## [0.2.16] - 2026-02-13
 - Restricted Farm Manager access to Partner Details and various dashboard sections per recent updates
 

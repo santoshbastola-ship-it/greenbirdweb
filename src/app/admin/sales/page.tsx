@@ -111,42 +111,11 @@ export default function SalesListPage() {
 
         // Manager restrictions: 
         if (isManager) {
-            // 1. Only show pending and undelivered (matches previous logic, but user requested "current rights applied" so keeping this restriction might be what they mean by "current rights" PLUS the date filter? 
-            // Wait, the prompt says "Allow Farm Manager role to access all record of sales & purchase, orders from one month with current rights applied to it."
-            // "Current rights" likely refers to their ability to Edit/Add, but maybe also the *existing* restriction of "undelivered only"? 
-            // Actually, "access all record... from one month" implies they SHOULD see Delivered items from the last month too?
-            // "Current rights" usually means "what they can DO with it" (Edit/View), not "what rows they see".
-            // The previous code had: `if (isFinished) return false;` which hid ALL delivered/cancelled items.
-            // If I interpret "access all record... from one month" literally, they should see Delivered items from last month.
-            // Let's assume "current rights" means "keep the existing logic for 'finished' items BUT allow them if recent".
-            // OR checks generic "manager" restrictions. 
-            // Let's implement the DATE filter as the primary new restriction, and RELAX the "undelivered" restriction if the user meant "ALL record... from one month".
-            // However, "current rights applied to it" might mean "If they are restricted from seeing delivered items, KEEP that restriction". 
-            // BUT "access all record of sales... from one month" strongly suggests seeing history.
-            // Let's try to KEEP the "undelivered" restriction AND add the date restriction? No, that would mean they see NOTHING from history if they can't see delivered.
-            // The request likely implies: "Show me HISTORY (last 1 month), even if I couldn't see it before?" 
-            // OR "I can see pending items forever? No, restricting access."
-
-            // Let's look at the previous code:
-            // if (isManager) {
-            //    const isFinished = ...
-            //    if (isFinished) return false;
-            // }
-            // This prevented managers from seeing ANY completed sales.
-
-            // New Request: "Allow ... access all record ... from one month".
-            // This implies they CAN see completed records now, but only from the last month.
-
-            // So I should REMOVE the "isFinished" check and REPLACE it with a Date check?
-            // "with current rights applied to it" -> Maybe means "Read Only" for completed? 
-            // In the permission table I wrote: "Orders: ... Can update status ... Cannot delete".
-
-            // Let's go with:
-            // 1. Filter by DATE (must be within last 30 days).
-            // 2. Remove the "isFinished" hide logic, because "access all record" implies seeing them.
-
+            // Allow access to all records (pending, delivered, etc) but ONLY from the last one month.
             const oneMonthAgo = new Date();
             oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
+            // Reset time to start of day
+            oneMonthAgo.setHours(0, 0, 0, 0);
 
             const txDate = new Date(t.date);
             if (txDate < oneMonthAgo) {

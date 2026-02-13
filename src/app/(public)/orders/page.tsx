@@ -3,22 +3,21 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { TransactionService } from "@/services/transaction.service";
-import { TransactionRecord, OrderStatus } from "@/types";
+import { TransactionRecord, OrderStatus, PaymentStatus } from "@/types";
 import { useRouter } from "next/navigation";
-import { Package, Calendar, ChevronRight, X, AlertCircle, Clock, MessageSquare } from "lucide-react";
-import { toNepali } from "@/lib/date-helper";
+import { Package, Calendar, ChevronRight, X, AlertCircle, Clock, MessageSquare, Loader2, MapPin, QrCode, Download, ChevronDown, ShoppingBag, Ban, CreditCard, Banknote } from "lucide-react";
+import { toNepali, formatTime } from "@/lib/date-helper";
 import Link from "next/link";
-import ShareButton from "@/components/ui/ShareButton";
 
 
-type FilterStatus = 'all' | OrderStatus;
+type FilterStatus = 'all' | 'payment_pending' | OrderStatus;
 
 export default function MyOrdersPage() {
     const { user, loading: authLoading } = useAuth();
     const router = useRouter();
     const [orders, setOrders] = useState<TransactionRecord[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState<FilterStatus>('all');
+    const [filter, setFilter] = useState<FilterStatus>(OrderStatus.Open);
 
     useEffect(() => {
         if (!authLoading && !user) {
@@ -46,36 +45,49 @@ export default function MyOrdersPage() {
 
     const filteredOrders = filter === 'all'
         ? orders
-        : filter === OrderStatus.Open
-            ? orders.filter(order => order.status === OrderStatus.Open || order.status === OrderStatus.Accepted)
-            : orders.filter(order => order.status === filter);
+        : filter === 'payment_pending'
+            ? orders.filter(order => (order.paymentStatus === PaymentStatus.Pending || order.paymentStatus === PaymentStatus.PartialCash || order.paymentStatus === PaymentStatus.PartialOnline) && order.status !== OrderStatus.Cancelled)
+            : filter === OrderStatus.Open
+                ? orders.filter(order => order.status === OrderStatus.Open || order.status === OrderStatus.Accepted)
+                : orders.filter(order => order.status === filter);
 
-    if (loading || authLoading) return <div className="min-h-screen pt-20 text-center">Loading orders...</div>;
+    const filterLabel = filter === 'all' ? '' : filter.replace(/_/g, ' ');
+
+    if (loading || authLoading) return (
+        <div className="min-h-screen pt-32 pb-12 flex justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+        </div>
+    );
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-8">My Orders</h1>
+        <div className="min-h-screen bg-gray-50/50 py-8 pb-24">
+            <div className="max-w-3xl mx-auto px-4 sm:px-6">
+                <div className="mb-6">
+                    <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
+                    <p className="text-sm text-gray-500 mt-1">Track and manage your recent orders.</p>
+                </div>
 
                 {orders.length === 0 ? (
-                    <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100">
-                        <Package className="h-16 w-16 mx-auto text-gray-300 mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No orders yet</h3>
-                        <p className="text-gray-500 mb-6">Looks like you haven't placed any orders yet.</p>
-                        <Link href="/shop" className="bg-green-600 text-white px-6 py-3 rounded-full font-bold hover:bg-green-700 transition-colors">
+                    <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-gray-100/50">
+                        <div className="bg-green-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <ShoppingBag className="h-10 w-10 text-green-600" />
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">No orders yet</h3>
+                        <p className="text-gray-500 mb-8 max-w-xs mx-auto">Looks like you haven't placed any orders yet. Start shopping to fill this page!</p>
+                        <Link href="/shop" className="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-all shadow-green-200 shadow-lg hover:shadow-xl active:scale-95">
                             Start Shopping
                         </Link>
                     </div>
                 ) : (
                     <>
-                        {/* Filter Tabs */}
-                        <div className="mb-6 bg-white rounded-xl shadow-sm border border-gray-100 p-2">
-                            <div className="flex flex-wrap gap-2">
+                        {/* Filter Tabs - Scrollable on mobile */}
+                        <div className="mb-6 -mx-4 px-4 overflow-x-auto pb-2 scrollbar-hide">
+                            <div className="flex gap-2 min-w-max">
                                 <FilterTab
-                                    label="All"
-                                    count={orders.length}
-                                    active={filter === 'all'}
-                                    onClick={() => setFilter('all')}
+                                    label="Payment Pending"
+                                    count={orders.filter(o => (o.paymentStatus === PaymentStatus.Pending || o.paymentStatus === PaymentStatus.PartialCash || o.paymentStatus === PaymentStatus.PartialOnline) && o.status !== OrderStatus.Cancelled).length}
+                                    active={filter === 'payment_pending'}
+                                    onClick={() => setFilter('payment_pending')}
                                 />
                                 <FilterTab
                                     label="Open"
@@ -95,15 +107,21 @@ export default function MyOrdersPage() {
                                     active={filter === OrderStatus.Cancelled}
                                     onClick={() => setFilter(OrderStatus.Cancelled)}
                                 />
+                                <FilterTab
+                                    label="All"
+                                    count={orders.length}
+                                    active={filter === 'all'}
+                                    onClick={() => setFilter('all')}
+                                />
                             </div>
                         </div>
 
                         {/* Orders List */}
-                        <div className="space-y-6">
+                        <div className="space-y-4">
                             {filteredOrders.length === 0 ? (
-                                <div className="bg-white rounded-xl p-8 text-center shadow-sm border border-gray-100">
+                                <div className="bg-white rounded-2xl p-10 text-center shadow-sm border border-gray-100">
                                     <Package className="h-12 w-12 mx-auto text-gray-300 mb-3" />
-                                    <p className="text-gray-500">No {filter !== 'all' ? filter : ''} orders found</p>
+                                    <p className="text-gray-500 font-medium">No {filterLabel} orders found</p>
                                 </div>
                             ) : (
                                 filteredOrders.map((order) => (
@@ -122,19 +140,26 @@ function FilterTab({ label, count, active, onClick }: { label: string; count: nu
     return (
         <button
             onClick={onClick}
-            className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${active
-                ? 'bg-green-600 text-white shadow-md'
-                : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+            className={`px-4 py-2 rounded-full font-semibold text-xs border transition-all whitespace-nowrap ${active
+                ? 'bg-gray-900 text-white border-gray-900 shadow-md'
+                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                 }`}
         >
-            {label} <span className={`ml-1 ${active ? 'text-green-100' : 'text-gray-500'}`}>({count})</span>
+            {label}
+            {count > 0 && (
+                <span className={`ml-1.5 px-1.5 py-0.5 rounded-full text-[10px] ${active ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-600'}`}>
+                    {count}
+                </span>
+            )}
         </button>
     );
 }
 
 function OrderCard({ order, onUpdate }: { order: TransactionRecord; onUpdate: () => void }) {
     const { dbUser, user } = useAuth();
+    const [isExpanded, setIsExpanded] = useState(false);
     const [showCancelDialog, setShowCancelDialog] = useState(false);
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
 
     const handleCancelOrder = async (reason: string) => {
@@ -151,165 +176,379 @@ function OrderCard({ order, onUpdate }: { order: TransactionRecord; onUpdate: ()
     };
 
     const canCancel = order.status === OrderStatus.Open || order.status === OrderStatus.Accepted;
+    const isPaid = order.paymentStatus === PaymentStatus.PaidCash || order.paymentStatus === PaymentStatus.PaidOnline;
+    const grandTotal = getGrandTotal(order);
+    const remainingAmount = grandTotal - (order.paidAmount || 0);
+
+    // Helper to extract time string safely
+    const getTimeString = (date: any) => {
+        if (!date) return "";
+        try {
+            let jsDate: Date;
+            if (date instanceof Date) jsDate = date;
+            else if (typeof date.toDate === 'function') jsDate = date.toDate();
+            else if (typeof date === 'object' && date.seconds !== undefined) jsDate = new Date(date.seconds * 1000);
+            else jsDate = new Date(date);
+
+            // Check for invalid date
+            if (isNaN(jsDate.getTime())) return "";
+
+            return jsDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+        } catch (e) {
+            console.error("Error formatting time:", e);
+            return "";
+        }
+    };
 
     return (
         <>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:border-green-200 transition-colors">
-                <div className="p-6">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
-                        <div className="flex items-start md:items-center space-x-4 mb-4 md:mb-0">
-                            <div className="bg-green-50 p-3 rounded-lg">
-                                <Package className="h-6 w-6 text-green-600" />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-gray-900">Order #{order.billNo}</h3>
-                                <div className="flex items-center text-sm text-gray-500 mt-1">
-                                    <Calendar className="h-3 w-3 mr-1" />
-                                    {toNepali(order.date, "DD MMM YYYY")} {new Date(order.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </div>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all hover:shadow-md">
+                <div className="p-5">
+                    {/* Header: ID, Date, Amount */}
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 className="font-bold text-gray-900 text-lg">#{order.billNo}</h3>
+                            <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
+                                <Clock className="h-3 w-3" />
+                                <span>{toNepali(order.date, "DD MMM")} &bull; {getTimeString(order.date)}</span>
                             </div>
                         </div>
-                        <div className="flex items-center space-x-4">
-                            <ShareButton
-                                title={`Order #${order.billNo}`}
-                                text={`I just placed an order #${order.billNo} at Greenbird Homestead!`}
-                            />
-                            <StatusBadge status={order.status} />
-                            <div className="text-right">
-                                <span className="font-bold text-lg text-gray-900 block">Rs. {getGrandTotal(order).toLocaleString()}</span>
-                                {(getGrandTotal(order) - (order.paidAmount || 0)) > 0 && (order.paidAmount || 0) > 0 && (
-                                    <span className="text-xs font-semibold text-orange-600 block">
-                                        Remaining: Rs. {(getGrandTotal(order) - (order.paidAmount || 0)).toLocaleString()}
-                                    </span>
-                                )}
-                            </div>
+                        <div className="text-right">
+                            <span className="font-bold text-xl text-gray-900">Rs. {grandTotal.toLocaleString()}</span>
                         </div>
                     </div>
 
-                    {(order.expectedDeliveryTime || order.deliveryInstructions) && (
-                        <div className="border-t border-gray-100 pt-4 mb-4">
-                            <h4 className="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wider">Delivery Details</h4>
-                            <div className="space-y-3">
-                                {order.expectedDeliveryTime && (
-                                    <div className="flex items-center text-sm text-gray-700">
-                                        <Clock className="h-4 w-4 mr-2 text-green-600" />
-                                        <span className="font-medium mr-2">Expected Delivery:</span>
-                                        <span>
-                                            {typeof order.expectedDeliveryDate === 'string'
-                                                ? order.expectedDeliveryDate
-                                                : order.expectedDeliveryDate instanceof Date
-                                                    ? toNepali(order.expectedDeliveryDate, "DD MMM YYYY")
-                                                    : "Scheduled"} at {order.expectedDeliveryTime}
-                                        </span>
-                                    </div>
-                                )}
-                                {order.deliveryInstructions && (
-                                    <div className="flex items-start text-sm text-gray-700">
-                                        <MessageSquare className="h-4 w-4 mr-2 text-green-600 mt-0.5" />
-                                        <div className="flex-1">
-                                            <span className="font-medium mr-2">Delivery Note:</span>
-                                            <p className="mt-1 text-gray-600 bg-gray-50 p-2 rounded-lg border border-gray-100 italic">
-                                                "{order.deliveryInstructions}"
-                                            </p>
+                    {/* Status Icons */}
+                    <div className="flex gap-3 mb-5 flex-wrap">
+                        <StatusBadge status={order.status} />
+                        <PaymentStatusBadge status={order.paymentStatus} />
+
+                        {/* Delivery Time Badge if available */}
+                        {(order.expectedDeliveryTime || order.expectedDeliveryDate) && (
+                            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 rounded-lg border border-purple-100 text-xs font-bold text-purple-700 uppercase">
+                                <Clock className="h-3.5 w-3.5 text-purple-600" />
+                                <span>
+                                    {typeof order.expectedDeliveryDate === 'string'
+                                        ? order.expectedDeliveryDate
+                                        : (order.expectedDeliveryDate && (order.expectedDeliveryDate instanceof Date || typeof order.expectedDeliveryDate === 'object'))
+                                            ? toNepali(order.expectedDeliveryDate, "DD MMM")
+                                            : "Scheduled"}
+                                    {order.expectedDeliveryTime && ` • ${formatTime(order.expectedDeliveryTime)}`}
+                                </span>
+                            </span>
+                        )}
+
+
+                    </div>
+
+                    {/* Main Actions */}
+                    <div className="grid grid-cols-[1fr_auto] gap-3">
+                        {!isPaid && order.status !== OrderStatus.Cancelled ? (
+                            <button
+                                onClick={() => setShowPaymentModal(true)}
+                                className="flex items-center justify-center space-x-2 px-4 py-3 bg-green-600 text-white rounded-xl text-sm font-bold shadow-sm shadow-green-100 hover:bg-green-700 active:scale-95 transition-all"
+                            >
+                                <QrCode className="h-4 w-4" />
+                                <span>Pay Now</span>
+                            </button>
+                        ) : (
+                            <div className="flex-1"></div> /* Spacer if no pay button */
+                        )}
+
+                        <button
+                            onClick={() => setIsExpanded(!isExpanded)}
+                            className="px-4 py-3 bg-gray-50 text-gray-600 rounded-xl border border-gray-100 hover:bg-gray-100 transition-colors"
+                        >
+                            {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Expanded Details Section */}
+                <div className={`transition-all duration-300 ease-in-out bg-gray-50/50 border-t border-gray-100 ${isExpanded ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0 overflow-hidden"}`}>
+                    <div className="p-5">
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Order Details</p>
+
+                        {/* Order Items */}
+                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+                            {order.items.map((item, idx) => (
+                                <div key={idx} className="flex justify-between items-center p-3 border-b border-gray-50 last:border-0">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center text-xs font-bold text-gray-500">
+                                            {item.quantity}x
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-900">{item.productName}</p>
+                                            <p className="text-xs text-gray-500">{item.unit}</p>
                                         </div>
                                     </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="border-t border-gray-100 pt-4">
-                        <h4 className="text-sm font-semibold text-gray-500 mb-3 uppercase tracking-wider">Items</h4>
-                        <div className="space-y-3">
-                            {order.items.map((item, idx) => (
-                                <div key={idx} className="flex justify-between items-center text-sm">
-                                    <div className="flex items-center">
-                                        <span className="font-medium text-gray-900 mr-2">{item.productName}</span>
-                                        <span className="text-gray-500">
-                                            ({item.quantity} {item.unit} x Rs. {item.pricePerUnit}/{item.priceUnit})
-                                        </span>
+                                    <div className="text-right">
+                                        <p className="text-sm font-semibold text-gray-900">Rs. {(item.quantity * item.pricePerUnit).toLocaleString()}</p>
                                     </div>
-                                    <span className="font-medium text-gray-900">
-                                        Rs. {(item.quantity * item.pricePerUnit).toLocaleString()}
-                                    </span>
                                 </div>
                             ))}
                         </div>
-                    </div>
 
-                    {order.status === OrderStatus.Cancelled && order.cancellationReason && (
-                        <div className="mt-4 pt-4 border-t border-gray-100 bg-red-50 -mx-6 -mb-6 px-6 py-4">
-                            <div className="flex items-start gap-2">
-                                <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-                                <div>
-                                    <p className="text-sm font-semibold text-red-900">Order Cancelled</p>
-                                    <p className="text-sm text-red-700 mt-1">
-                                        <span className="font-medium">Reason:</span> {order.cancellationReason}
-                                    </p>
+                        {/* Order Summary */}
+                        <div className="space-y-2 mb-4 px-1">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Subtotal</span>
+                                <span className="font-medium">Rs. {order.items.reduce((sum, item) => sum + (item.quantity * item.pricePerUnit), 0).toLocaleString()}</span>
+                            </div>
+
+                            {(order.deliveryFee || 0) > 0 && (
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-600">Delivery Fee</span>
+                                    <span className="font-medium">Rs. {order.deliveryFee?.toLocaleString()}</span>
                                 </div>
+                            )}
+
+                            {(order.discount || 0) > 0 && (
+                                <div className="flex justify-between text-sm text-green-600">
+                                    <span>Discount</span>
+                                    <span>- Rs. {order.discount?.toLocaleString()}</span>
+                                </div>
+                            )}
+
+                            <div className="pt-2 border-t border-dashed border-gray-200 flex justify-between">
+                                <span className="font-bold text-gray-900">Grand Total</span>
+                                <span className="font-bold text-gray-900">Rs. {grandTotal.toLocaleString()}</span>
                             </div>
                         </div>
-                    )}
 
-                    {canCancel && (
-                        <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end">
-                            <button
-                                onClick={() => setShowCancelDialog(true)}
-                                disabled={isUpdating}
-                                className="px-4 py-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                            >
-                                Cancel Order
-                            </button>
-                        </div>
-                    )}
+                        {/* Cancel Button in Expanded View */}
+                        {canCancel && (
+                            <div className="mt-6 pt-4 border-t border-gray-200 flex justify-end">
+                                <button
+                                    onClick={() => setShowCancelDialog(true)}
+                                    disabled={isUpdating}
+                                    className="flex items-center gap-1.5 text-xs font-bold text-red-500 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
+                                >
+                                    <Ban className="h-3.5 w-3.5" />
+                                    <span>Cancel Order</span>
+                                </button>
+                            </div>
+                        )}
 
-                    {order.enteredBy === 'admin' ?
-                        <div className="mt-4 pt-4 border-t border-gray-50 text-xs text-gray-400 italic">
-                            Placed via Store
-                        </div>
-                        : null}
+                        {/* Delivery Info */}
+                        {(order.deliveryAddress || order.deliveryInstructions) && (
+                            <div className="mt-4 pt-4 border-t border-gray-100">
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                    <MapPin className="h-3 w-3" /> Delivery Info
+                                </h4>
+                                <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
+                                    {order.deliveryAddress && (
+                                        <p className="text-sm text-gray-800 mb-1 font-medium">{order.deliveryAddress}</p>
+                                    )}
+                                    {order.deliveryInstructions && (
+                                        <p className="text-xs text-gray-500 italic mt-2 border-t border-dashed border-gray-100 pt-2">
+                                            "{order.deliveryInstructions}"
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
             {showCancelDialog && (
                 <CancelOrderDialog
                     order={order}
+                    isLoading={isUpdating}
                     onClose={() => setShowCancelDialog(false)}
-                    onConfirm={(reason) => {
-                        handleCancelOrder(reason);
+                    onConfirm={async (reason) => {
+                        await handleCancelOrder(reason);
                         setShowCancelDialog(false);
                     }}
+                />
+            )}
+
+            {showPaymentModal && (
+                <PaymentModal
+                    order={order}
+                    onClose={() => setShowPaymentModal(false)}
                 />
             )}
         </>
     );
 }
 
-function StatusBadge({ status }: { status: OrderStatus }) {
-    const colors = {
-        [OrderStatus.Open]: "bg-blue-100 text-blue-800",
-        [OrderStatus.Accepted]: "bg-yellow-100 text-yellow-800",
-        [OrderStatus.Delivered]: "bg-green-100 text-green-800",
-        [OrderStatus.Cancelled]: "bg-red-100 text-red-800",
+function PaymentModal({ order, onClose }: { order: TransactionRecord; onClose: () => void }) {
+    const totalAmount = getGrandTotal(order);
+    const remainingAmount = totalAmount - (order.paidAmount || 0);
+
+    const handleDownload = (url: string, name: string) => {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = name;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     return (
-        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${colors[status] || "bg-gray-100 text-gray-800"}`}>
-            {status}
-        </span>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-sm w-full overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+                <div className="p-5">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-bold text-gray-900">Make Payment</h3>
+                        <button onClick={() => onClose()} className="p-2 -mr-2 hover:bg-gray-100 rounded-full transition-colors">
+                            <X className="h-5 w-5 text-gray-500" />
+                        </button>
+                    </div>
+
+                    <div className="bg-green-50 rounded-xl p-4 mb-6 border border-green-100 text-center">
+                        <span className="block text-green-800 text-xs uppercase font-bold tracking-wider mb-1">Amount Due</span>
+                        <span className="block text-3xl font-extrabold text-green-700">Rs. {remainingAmount.toLocaleString()}</span>
+                    </div>
+
+                    <p className="text-xs text-gray-500 text-center mb-4 font-medium">Scan QR to pay with any supported app</p>
+
+                    <div className="grid grid-cols-2 gap-4 mb-6">
+                        {/* eSewa QR */}
+                        <div className="flex flex-col items-center">
+                            <div className="p-1.5 bg-white border border-gray-200 rounded-xl shadow-sm w-full relative group">
+                                <img
+                                    src="/images/esewa_qr.jpg"
+                                    alt="eSewa QR Code"
+                                    className="w-full h-auto object-contain rounded-lg aspect-square"
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.src = "https://placehold.co/400x400/f0fdf4/166534?text=eSewa+QR";
+                                    }}
+                                />
+                                <button
+                                    onClick={() => handleDownload("/images/esewa_qr.jpg", "esewa_qr.jpg")}
+                                    className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white text-gray-600 hover:text-green-600 transition-all opacity-0 group-hover:opacity-100"
+                                    title="Download QR"
+                                >
+                                    <Download className="h-3.5 w-3.5" />
+                                </button>
+                            </div>
+                            <button
+                                onClick={() => handleDownload("/images/esewa_qr.jpg", "esewa_qr.jpg")}
+                                className="flex items-center gap-1.5 mt-2 px-3 py-1 bg-green-50 text-green-700 hover:bg-green-100 rounded-full text-[10px] font-bold transition-colors"
+                            >
+                                <Download className="h-3 w-3" />
+                                <span>Download</span>
+                            </button>
+                        </div>
+
+                        {/* Khalti QR */}
+                        <div className="flex flex-col items-center">
+                            <div className="p-1.5 bg-white border border-gray-200 rounded-xl shadow-sm w-full relative group">
+                                <img
+                                    src="/images/khalti_qr.jpg"
+                                    alt="Khalti QR Code"
+                                    className="w-full h-auto object-contain rounded-lg aspect-square"
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.src = "https://placehold.co/400x400/fbf0ff/6b21a8?text=Khalti+QR";
+                                    }}
+                                />
+                                <button
+                                    onClick={() => handleDownload("/images/khalti_qr.jpg", "khalti_qr.jpg")}
+                                    className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white text-gray-600 hover:text-purple-600 transition-all opacity-0 group-hover:opacity-100"
+                                    title="Download QR"
+                                >
+                                    <Download className="h-3.5 w-3.5" />
+                                </button>
+                            </div>
+                            <button
+                                onClick={() => handleDownload("/images/khalti_qr.jpg", "khalti_qr.jpg")}
+                                className="flex items-center gap-1.5 mt-2 px-3 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-full text-[10px] font-bold transition-colors"
+                            >
+                                <Download className="h-3 w-3" />
+                                <span>Download</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-4 text-center">
+                        <p className="text-xs font-medium text-blue-800 flex items-center justify-center gap-1.5">
+                            <MessageSquare className="h-3.5 w-3.5" />
+                            Please share the payment screenshot to us.
+                        </p>
+                    </div>
+
+                    <div className="text-center space-y-2">
+                        <p className="text-[10px] text-gray-400 max-w-[200px] mx-auto leading-relaxed">
+                            Payment status will be updated after verification.
+                        </p>
+                        <p className="text-sm font-bold text-gray-900">Thank you!</p>
+                    </div>
+                </div>
+                <div className="bg-gray-50 px-5 py-3 border-t border-gray-100">
+                    <button
+                        onClick={() => onClose()}
+                        className="w-full py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl font-bold text-sm hover:bg-gray-50 transition-colors shadow-sm"
+                    >
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function StatusBadge({ status }: { status: OrderStatus }) {
+    const styles = {
+        [OrderStatus.Open]: "bg-blue-50 text-blue-700 border-blue-100",
+        [OrderStatus.Accepted]: "bg-amber-50 text-amber-700 border-amber-100",
+        [OrderStatus.Delivered]: "bg-emerald-50 text-emerald-700 border-emerald-100",
+        [OrderStatus.Cancelled]: "bg-red-50 text-red-700 border-red-100",
+    };
+
+    return (
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${styles[status] || "bg-gray-50 text-gray-600 border-gray-200"}`}>
+            <Package className="h-3.5 w-3.5" />
+            <span className="text-xs font-bold uppercase">{status}</span>
+        </div>
+    );
+}
+
+function PaymentStatusBadge({ status }: { status: PaymentStatus }) {
+    const styles = {
+        [PaymentStatus.Pending]: "bg-orange-50 text-orange-700 border-orange-100",
+        [PaymentStatus.PaidCash]: "bg-green-50 text-green-700 border-green-100",
+        [PaymentStatus.PaidOnline]: "bg-blue-50 text-blue-700 border-blue-100",
+        [PaymentStatus.PartialCash]: "bg-yellow-50 text-yellow-700 border-yellow-100",
+        [PaymentStatus.PartialOnline]: "bg-yellow-50 text-yellow-700 border-yellow-100",
+    };
+
+    const labels = {
+        [PaymentStatus.Pending]: "Payment Pending",
+        [PaymentStatus.PaidCash]: "Paid (Cash)",
+        [PaymentStatus.PaidOnline]: "Paid (Online)",
+        [PaymentStatus.PartialCash]: "Partially Paid",
+        [PaymentStatus.PartialOnline]: "Partially Paid",
+    };
+
+    // Choose icon based on functionality (generic clock for pending, etc)
+    const Icon = status === PaymentStatus.Pending ? Banknote : CreditCard;
+
+    return (
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${styles[status] || "bg-gray-50 text-gray-600 border-gray-200"}`}>
+            <Icon className="h-3.5 w-3.5" />
+            <span className="text-xs font-bold uppercase">{labels[status] || status}</span>
+        </div>
     );
 }
 
 function getGrandTotal(order: TransactionRecord) {
-    return order.items.reduce((sum, item) => sum + (item.quantity * item.pricePerUnit), 0) - (order.discount || 0);
+    const subtotal = order.items.reduce((sum, item) => sum + (item.quantity * item.pricePerUnit), 0);
+    return subtotal + (order.deliveryFee || 0) - (order.discount || 0);
 }
 
 function CancelOrderDialog({
     order,
+    isLoading,
     onClose,
     onConfirm,
 }: {
     order: TransactionRecord;
+    isLoading: boolean;
     onClose: () => void;
     onConfirm: (reason: string) => void;
 }) {
@@ -336,27 +575,27 @@ function CancelOrderDialog({
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl max-w-md w-full p-6">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-gray-900">Cancel Order</h3>
+                    <h3 className="text-lg font-bold text-gray-900">Cancel Order</h3>
                     <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
                         <X className="h-5 w-5 text-gray-500" />
                     </button>
                 </div>
 
-                <p className="text-gray-600 mb-4">
-                    Are you sure you want to cancel order <span className="font-semibold">#{order.billNo}</span>?
+                <p className="text-sm text-gray-600 mb-6">
+                    Are you sure you want to cancel order <span className="font-bold text-gray-900">#{order.billNo}</span>?
                 </p>
 
                 <div className="mb-6">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Cancellation Reason <span className="text-red-500">*</span>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                        Reason
                     </label>
                     <select
                         value={selectedReason}
                         onChange={(e) => setSelectedReason(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500 mb-3"
+                        className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
                     >
                         <option value="">Select a reason...</option>
                         {predefinedReasons.map((reason) => (
@@ -370,25 +609,28 @@ function CancelOrderDialog({
                         <textarea
                             value={customReason}
                             onChange={(e) => setCustomReason(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                            className="mt-3 w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
                             rows={3}
                             placeholder="Please specify your reason..."
                         />
                     )}
                 </div>
 
-                <div className="flex gap-3">
+                <div className="grid grid-cols-2 gap-3">
                     <button
                         onClick={onClose}
-                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                        disabled={isLoading}
+                        className="px-4 py-2.5 border border-gray-200 rounded-xl text-gray-700 font-bold text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
                     >
                         Keep Order
                     </button>
                     <button
                         onClick={handleConfirm}
-                        className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+                        disabled={isLoading}
+                        className="px-4 py-2.5 bg-red-600 text-white rounded-xl font-bold text-sm hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-red-200 shadow-lg"
                     >
-                        Cancel Order
+                        {isLoading && <Loader2 className="h-3 w-3 animate-spin" />}
+                        {isLoading ? 'Cancelling...' : 'Cancel Order'}
                     </button>
                 </div>
             </div>

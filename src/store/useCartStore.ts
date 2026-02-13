@@ -22,12 +22,19 @@ export const useCartStore = create<CartState>()(
             addItem: (product, quantity) => {
                 const currentItems = get().items;
                 const existingItem = currentItems.find((item) => item.productId === product.id);
-                const { finalPrice } = calculateProductPrice(product);
+                const { finalPrice, originalPrice, discountAmount } = calculateProductPrice(product);
 
                 if (existingItem) {
                     const updatedItems = currentItems.map((item) =>
                         item.productId === product.id
-                            ? { ...item, quantity: item.quantity + quantity, price: finalPrice, priceUnit: product.priceUnit }
+                            ? {
+                                ...item,
+                                quantity: item.quantity + quantity,
+                                price: finalPrice,
+                                originalPrice: originalPrice,
+                                discount: discountAmount,
+                                priceUnit: product.priceUnit
+                            }
                             : item
                     );
                     set({ items: updatedItems });
@@ -36,6 +43,8 @@ export const useCartStore = create<CartState>()(
                         productId: product.id,
                         productName: product.name,
                         price: finalPrice,
+                        originalPrice: originalPrice,
+                        discount: discountAmount,
                         quantity: quantity,
                         unit: product.unit,
                         priceUnit: product.priceUnit,

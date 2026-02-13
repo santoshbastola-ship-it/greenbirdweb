@@ -24,10 +24,14 @@ import {
     Bell,
     ChevronDown,
     LucideIcon,
+    Store,
+    ChevronsDown,
+    ChevronsUp,
 } from "lucide-react";
 import clsx from "clsx";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { RESTRICTED_ROUTES_FOR_MANAGER } from "@/config/permissions";
 
 type NavItem = {
     href: string;
@@ -101,17 +105,7 @@ export default function AdminSidebar() {
     const isActive = (path: string) => pathname === path || pathname.startsWith(`${path}/`);
 
     // Filter logic
-    const restrictedForManager = [
-        "/admin/reports",
-        "/admin/blog",
-        "/admin/activities",
-        "/admin/users",
-        "/admin/settings",
-        "/admin/inventory",
-        "/admin/categories",
-        "/admin/notifications/push",
-        "/admin/testimonials",
-    ];
+    const restrictedForManager = RESTRICTED_ROUTES_FOR_MANAGER;
 
     const filterItems = (items: NavItem[]) => {
         return items.filter((link) => {
@@ -171,53 +165,45 @@ export default function AdminSidebar() {
             >
                 <div className="flex flex-col h-full">
                     {/* Header */}
-                    <div className="flex items-center justify-between h-20 border-b border-green-800 bg-green-900 px-4">
-                        {!isCollapsed && (
-                            <div className="bg-white p-2 rounded-lg flex items-center justify-center flex-1 transition-all duration-300 overflow-hidden">
+                    {/* Header */}
+                    <div className="relative flex flex-col items-center justify-center py-8 border-b border-green-800 bg-green-900">
+                        {!isCollapsed ? (
+                            <div className="bg-white p-4 rounded-full flex items-center justify-center h-32 w-32 shadow-xl transition-all duration-300 overflow-hidden mb-2">
                                 <img
                                     src="/images/logo.png"
                                     alt="Greenbird Logo"
-                                    className="h-16 object-contain"
+                                    className="h-full w-full object-contain"
                                 />
                             </div>
-                        )}
-                        {isCollapsed && (
-                            <div className="bg-white p-1 rounded-lg flex items-center justify-center w-10 h-10 transition-all duration-300">
+                        ) : (
+                            <div className="bg-white p-2 rounded-full flex items-center justify-center h-12 w-12 shadow-md transition-all duration-300 overflow-hidden mb-2">
                                 <img
                                     src="/images/logo.png"
                                     alt="Greenbird Logo"
-                                    className="h-10 object-contain"
+                                    className="h-full w-full object-contain"
                                 />
                             </div>
                         )}
+
                         <button
                             onClick={() => setIsCollapsed(!isCollapsed)}
-                            className="hidden md:flex ml-2 p-1.5 rounded-lg hover:bg-green-800 text-green-100 items-center justify-center transition-colors"
+                            className={clsx(
+                                "hidden md:flex p-2 rounded-lg hover:bg-green-800 text-green-100 items-center justify-center transition-colors absolute top-2 right-2",
+                                isCollapsed && "static mt-2"
+                            )}
                             title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
                         >
                             {isCollapsed ? (
-                                <ChevronRight className="h-5 w-5" />
+                                <ChevronRight className="h-6 w-6" />
                             ) : (
-                                <ChevronLeft className="h-5 w-5" />
+                                <ChevronLeft className="h-6 w-6" />
                             )}
                         </button>
                     </div>
 
                     {/* Nav Links */}
                     <nav className="flex-1 px-4 py-6 space-y-4 overflow-y-auto">
-                        {!isCollapsed && hasTitles && (
-                            <div className="px-4 mb-4 flex items-center justify-between">
-                                <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">
-                                    Navigation
-                                </span>
-                                <button
-                                    onClick={isAllExpanded ? collapseAll : expandAll}
-                                    className="text-[10px] font-medium text-green-400 hover:text-white transition-colors uppercase tracking-wider"
-                                >
-                                    {isAllExpanded ? "Collapse All" : "Expand All"}
-                                </button>
-                            </div>
-                        )}
+
 
                         {visibleSections.map((section, index) => {
                             const isSectionExpanded = !section.title || expandedSections[section.title];
@@ -244,31 +230,49 @@ export default function AdminSidebar() {
                                     )}>
                                         {section.items.map((link) => {
                                             const Icon = link.icon;
+                                            const isDashboard = link.label === 'Dashboard';
+
                                             return (
-                                                <Link
-                                                    key={link.href}
-                                                    href={link.href}
-                                                    onClick={() => setIsOpen(false)}
-                                                    className={clsx(
-                                                        "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors group relative",
-                                                        isActive(link.href)
-                                                            ? "bg-green-800 text-white shadow-sm"
-                                                            : "text-green-100 hover:bg-green-800/50 hover:text-white"
-                                                    )}
-                                                >
-                                                    <Icon
+                                                <div key={link.href} className="relative group">
+                                                    <Link
+                                                        href={link.href}
+                                                        onClick={() => setIsOpen(false)}
                                                         className={clsx(
-                                                            "h-5 w-5 flex-shrink-0",
-                                                            !isCollapsed && "mr-3"
+                                                            "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors relative",
+                                                            isActive(link.href)
+                                                                ? "bg-green-800 text-white shadow-sm"
+                                                                : "text-green-100 hover:bg-green-800/50 hover:text-white",
+                                                            isDashboard && !isCollapsed && "pr-10"
                                                         )}
-                                                    />
-                                                    {!isCollapsed && <span>{link.label}</span>}
-                                                    {isCollapsed && (
-                                                        <div className="absolute left-full ml-2 px-2 py-1 bg-green-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
-                                                            {link.label}
-                                                        </div>
+                                                    >
+                                                        <Icon
+                                                            className={clsx(
+                                                                "h-5 w-5 flex-shrink-0",
+                                                                !isCollapsed && "mr-3"
+                                                            )}
+                                                        />
+                                                        {!isCollapsed && <span>{link.label}</span>}
+                                                        {isCollapsed && (
+                                                            <div className="absolute left-full ml-2 px-2 py-1 bg-green-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                                                                {link.label}
+                                                            </div>
+                                                        )}
+                                                    </Link>
+
+                                                    {isDashboard && !isCollapsed && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                isAllExpanded ? collapseAll() : expandAll();
+                                                            }}
+                                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-green-300 hover:text-white hover:bg-green-700/50 rounded-md transition-colors z-10"
+                                                            title={isAllExpanded ? "Collapse All" : "Expand All"}
+                                                        >
+                                                            {isAllExpanded ? <ChevronsUp className="h-4 w-4" /> : <ChevronsDown className="h-4 w-4" />}
+                                                        </button>
                                                     )}
-                                                </Link>
+                                                </div>
                                             );
                                         })}
                                     </div>
@@ -296,6 +300,26 @@ export default function AdminSidebar() {
                                 </div>
                             )}
                         </button>
+                    </div>
+
+                    <div className="px-4 pb-4">
+                        <Link
+                            href="/"
+                            className="flex items-center w-full px-4 py-2 text-sm font-medium text-green-200 hover:text-white transition-colors group relative bg-green-800/30 rounded-lg hover:bg-green-800/50"
+                        >
+                            <Store
+                                className={clsx(
+                                    "h-5 w-5 flex-shrink-0",
+                                    !isCollapsed && "mr-3"
+                                )}
+                            />
+                            {!isCollapsed && <span>Back to Shop</span>}
+                            {isCollapsed && (
+                                <div className="absolute left-full ml-2 px-2 py-1 bg-green-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                                    Back to Shop
+                                </div>
+                            )}
+                        </Link>
                     </div>
                 </div>
             </aside>

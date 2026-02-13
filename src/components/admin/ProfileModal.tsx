@@ -130,6 +130,18 @@ export default function AdminProfileModal({ isOpen, onClose }: AdminProfileModal
                 <div className="p-6">
                     {activeTab === 'profile' ? (
                         <form onSubmit={handleSaveProfile} className="space-y-4">
+                            {/* Profile Image */}
+                            <div className="flex flex-col items-center justify-center pb-4 border-b border-gray-100 mb-4">
+                                <div className="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold text-2xl overflow-hidden shadow-sm mb-2 border-2 border-white ring-2 ring-green-50">
+                                    {user?.photoURL ? (
+                                        <img src={user.photoURL} alt={user.displayName || "User"} className="h-full w-full object-cover" />
+                                    ) : (
+                                        (user?.displayName || "U").charAt(0).toUpperCase()
+                                    )}
+                                </div>
+                                <p className="text-sm font-medium text-gray-500">{user?.email}</p>
+                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                                 <div className="relative">

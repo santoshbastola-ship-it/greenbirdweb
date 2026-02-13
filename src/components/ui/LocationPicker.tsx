@@ -22,12 +22,20 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, initi
 
     useEffect(() => {
         const loadGoogleMaps = () => {
-            const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+            const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+            const firebaseKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
             if (!apiKey) {
-                setError("Google Maps API key not found. Please set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY.");
-                setIsLoading(false);
-                return;
+                if (firebaseKey) {
+                    console.warn("Google Maps API key (NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) not found. Falling back to Firebase API key, which may not have Maps/Geocoding enabled.");
+                } else {
+                    setError("Google Maps API key not found. Please set NEXT_PUBLIC_GOOGLE_MAPS_API_KEY.");
+                    setIsLoading(false);
+                    return;
+                }
             }
+
+            const keyToUse = apiKey || firebaseKey;
 
             if (window.google && window.google.maps) {
                 if (typeof window.google.maps.Map === 'function') {
@@ -46,7 +54,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, initi
             }
 
             const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${keyToUse}&libraries=places`;
             script.async = true;
             script.defer = true;
             script.onload = () => initMap();
@@ -198,7 +206,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, initi
         <div className="flex flex-col gap-3">
             <div className="relative group">
                 <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                    <Search className="h-4 w-4 text-gray-400" />
+                    <Search className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                     ref={searchInputRef}
@@ -254,7 +262,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, initi
             {selectedLocation && (
                 <div className="bg-green-50/50 p-2.5 rounded-lg border border-green-100/50 flex flex-col gap-1">
                     <div className="flex items-center gap-2">
-                        <MapPin className="h-3.5 w-3.5 text-green-600 shrink-0" />
+                        <MapPin className="h-4 w-4 text-green-600 shrink-0" />
                         <p className="text-xs font-bold text-green-800">Selected Location</p>
                     </div>
                     <p className="text-[10px] text-green-700 pl-5.5 leading-relaxed">

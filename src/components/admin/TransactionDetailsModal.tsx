@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { TransactionService } from "@/services/transaction.service";
 import { TransactionRecord, OrderStatus, TransactionType, PaymentStatus, PaymentRecord, OrderLog, Product, SalesItem, BusinessType } from "@/types";
 import { Plus, X, Calendar, Clock, MapPin, User, ShoppingBag, CreditCard, Edit2, Save, RotateCcw, ChevronDown, ArrowUpRight, ArrowDownLeft, Share2, Loader2, Trash2, ExternalLink, Paperclip } from "lucide-react";
-import { toNepali, formatDateTime } from "@/lib/date-helper";
+import { toNepali, formatDateTime, formatTime } from "@/lib/date-helper";
 import NepaliDate from "nepali-date-converter";
 import dynamic from 'next/dynamic';
 import { toPng } from 'html-to-image';
@@ -17,6 +17,8 @@ import OrderPartialPaymentDialog from "@/components/admin/OrderPartialPaymentDia
 import { useAuth } from "@/context/AuthContext";
 import { ProductService } from "@/services/product.service";
 import CancelOrderDialog from "@/components/admin/CancelOrderDialog";
+import UserName from "@/components/ui/UserName";
+
 
 const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
     ssr: false,
@@ -477,7 +479,10 @@ export default function TransactionDetailsModal({
                                             </a>
                                         </div>
                                     )}
-                                    <p className="text-xs text-gray-400 mt-2 pt-2 border-t border-gray-200">Entered On: {transaction.entryTimestamp ? formatDateTime(transaction.entryTimestamp) : 'N/A'}</p>
+                                    <div className="flex justify-between items-center mt-2 pt-2 border-t border-gray-200">
+                                        <p className="text-xs text-gray-400">Entered By: <UserName nameOrId={transaction.enteredBy} fallback="Admin" className="font-medium text-gray-600" /></p>
+                                        <p className="text-xs text-gray-400">On: {transaction.entryTimestamp ? formatDateTime(transaction.entryTimestamp) : 'N/A'}</p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -532,22 +537,24 @@ export default function TransactionDetailsModal({
                                                     </div>
                                                 )}
                                             </div>
-                                            <div>
-                                                <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5 ml-0.5">Time</label>
-                                                {isEditing ? (
-                                                    <input
-                                                        type="time"
-                                                        value={editForm.expectedDeliveryTime || ''}
-                                                        onChange={(e) => setEditForm({ ...editForm, expectedDeliveryTime: e.target.value })}
-                                                        className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                                                    />
-                                                ) : (
-                                                    <div className="flex items-center gap-2 text-sm text-gray-900 bg-white/50 p-2.5 rounded-lg">
-                                                        <Clock className="h-4 w-4 text-gray-400" />
-                                                        <span>{transaction.expectedDeliveryTime || "Anytime"}</span>
-                                                    </div>
-                                                )}
-                                            </div>
+                                            {(transaction.expectedDeliveryTime || isEditing) && (
+                                                <div>
+                                                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1.5 ml-0.5">Time</label>
+                                                    {isEditing ? (
+                                                        <input
+                                                            type="time"
+                                                            value={editForm.expectedDeliveryTime || ''}
+                                                            onChange={(e) => setEditForm({ ...editForm, expectedDeliveryTime: e.target.value })}
+                                                            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                                        />
+                                                    ) : (
+                                                        <div className="flex items-center gap-2 text-sm text-gray-900 bg-white/50 p-2.5 rounded-lg">
+                                                            <Clock className="h-4 w-4 text-gray-400" />
+                                                            <span>{formatTime(transaction.expectedDeliveryTime)}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div>
@@ -804,7 +811,7 @@ export default function TransactionDetailsModal({
                                                 <p className="text-sm font-bold text-gray-900">Rs. {p.amount.toLocaleString()}</p>
                                                 <p className="text-xs text-gray-500">
                                                     {toNepali(p.date, "DD MMM YYYY")}
-                                                    {p.enteredBy && <span className="hidden sm:inline"> • {p.enteredBy}</span>}
+                                                    {p.enteredBy && <span className="hidden sm:inline"> • <UserName nameOrId={p.enteredBy} /></span>}
                                                 </p>
                                             </div>
                                         </div>
@@ -881,7 +888,7 @@ export default function TransactionDetailsModal({
                                             <div className="text-xs text-gray-600 bg-white/50 p-2 rounded border border-gray-100 mt-1">
                                                 {log.details}
                                             </div>
-                                            <p className="text-[10px] text-gray-400 mt-1">by {log.changedBy}</p>
+                                            <p className="text-[10px] text-gray-400 mt-1">by <UserName nameOrId={log.changedBy} /></p>
                                         </div>
                                     ))}
                                 </div>

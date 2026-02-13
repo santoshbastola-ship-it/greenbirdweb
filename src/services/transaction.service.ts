@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, query, where, orderBy, doc, getDoc, updateDoc, deleteDoc, arrayUnion } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, orderBy, doc, getDoc, updateDoc, deleteDoc, arrayUnion, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { TransactionRecord, TransactionType, OrderStatus, PaymentStatus, PaymentRecord, NotificationType, SalesItem } from "@/types";
 import { NotificationService } from "./notification.service";
@@ -550,12 +550,9 @@ export const TransactionService = {
                 // we will read-modify-write or just rely on the fact that we might already have the latest data in the component
                 // For better concurrency, let's use arrayUnion if possible, but we haven't imported it.
                 // Let's stick to simple update for now, assuming the component passes the FULL new logs array or we handle it here.
-                // Actually, let's just use arrayUnion to append safely.
-                // But wait, I need to import arrayUnion. Let's start with a fetch-update approach or just assuming 'logs' in 'updates' is the complete new list if we pass it that way.
 
                 // Better approach: User passes the NEW logs array in `updates.logs` if they want to update it.
                 // BUT, the requirement is to "keep the log".
-
                 // Let's actually fetch the current doc to safely append if we want to be very safe,
                 // OR since we are likely the only one editing, we can just pass the new logs list from the UI.
                 // However, to be robust, let's follow the pattern of other methods. 
@@ -633,6 +630,29 @@ export const TransactionService = {
         } catch (error) {
             console.error("Error deleting transaction:", error);
             throw error;
+        }
+    },
+
+    // Subscribe to active order count for a customer
+    subscribeToActiveOrderCount: (customerId: string, callback: (count: number) => void): () => void => {
+        try {
+            const q = query(
+                collection(db, COLLECTION_NAME),
+                where("customerId", "==", customerId),
+                where("type", "==", TransactionType.Sale),
+                where("status", "in", [OrderStatus.Open, OrderStatus.Accepted])
+            );
+
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                callback(snapshot.size);
+            }, (error) => {
+                console.error("Error subscribing to active order count:", error);
+            });
+
+            return unsubscribe;
+        } catch (error) {
+            console.error("Error setting up active order count subscription:", error);
+            return () => { };
         }
     }
 };

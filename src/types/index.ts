@@ -45,6 +45,8 @@ export interface SalesItem {
     unit: StockUnit;
     priceUnit: StockUnit;
     pricePerUnit: number;
+    originalPrice?: number; // Price before discount
+    discount?: number; // Discount amount per unit
     description?: string;
     // Computed fields in UI, but useful to store snapshot
     totalPrice: number;
@@ -225,6 +227,8 @@ export interface CartItem {
     productId: string;
     productName: string;
     price: number;
+    originalPrice?: number; // Price before discount
+    discount?: number;     // Discount amount
     quantity: number;
     weight?: number; // Weight in priceUnit (e.g., kg) when priceUnit !== unit
     unit: StockUnit;

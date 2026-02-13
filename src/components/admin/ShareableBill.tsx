@@ -13,7 +13,7 @@ const ShareableBill = forwardRef<HTMLDivElement, ShareableBillProps>(({ transact
     const paidAmount = transaction.paidAmount || 0;
     const remaining = totalAmount - paidAmount;
 
-    const [qrError, setQrError] = useState(false);
+
 
     return (
         <div
@@ -135,20 +135,48 @@ const ShareableBill = forwardRef<HTMLDivElement, ShareableBillProps>(({ transact
             </div>
 
             {/* QR Code Section */}
-            {/* NOTE: QR code requires /public/images/qr_payment.jpg file to be present */}
-            {!qrError && (
-                <div className="flex flex-col items-center justify-center mb-6">
-                    <p className="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Scan to Pay</p>
-                    <div className="border-2 border-gray-100 rounded-xl p-2 bg-white shadow-sm">
-                        <img
-                            src="/images/qr_payment.jpg"
-                            alt="Payment QR Code"
-                            className="w-32 h-32 object-contain"
-                            onError={() => setQrError(true)}
-                        />
+            {/* NOTE: QR code requires /public/images/esewa_qr.jpg and /public/images/khalti_qr.jpg files to be present */}
+            <div className="mb-6">
+                <p className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider text-center">Scan to Pay</p>
+
+                <div className="flex justify-center items-start gap-4">
+                    {/* eSewa */}
+                    <div className="flex flex-col items-center">
+                        <div className="border border-green-100 rounded-lg p-1.5 bg-white shadow-sm mb-1">
+                            <img
+                                src="/images/esewa_qr.jpg"
+                                alt="eSewa QR"
+                                className="w-24 h-24 object-contain"
+                                onError={(e) => {
+                                    // If image fails, try to load placeholder or just hide
+                                    // check if we want to hide or show placeholder
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = "https://placehold.co/200x200/f0fdf4/166534?text=eSewa";
+                                    // validation that both failed can be done but for now fallback to placeholder
+                                }}
+                            />
+                        </div>
+                        <span className="text-[10px] font-bold text-green-800 uppercase">eSewa</span>
+                    </div>
+
+                    {/* Khalti */}
+                    <div className="flex flex-col items-center">
+                        <div className="border border-purple-100 rounded-lg p-1.5 bg-white shadow-sm mb-1">
+                            <img
+                                src="/images/khalti_qr.jpg"
+                                alt="Khalti QR"
+                                className="w-24 h-24 object-contain"
+                                onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = "https://placehold.co/200x200/fbf0ff/6b21a8?text=Khalti";
+                                }}
+                            />
+                        </div>
+                        <span className="text-[10px] font-bold text-purple-800 uppercase">Khalti</span>
                     </div>
                 </div>
-            )}
+            </div>
+
 
             {/* Footer */}
             <div className="text-center mt-auto">

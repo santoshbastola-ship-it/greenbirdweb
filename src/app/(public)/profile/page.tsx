@@ -108,6 +108,19 @@ export default function ProfilePage() {
                         </h2>
                     </div>
                     <div className="p-6 space-y-6">
+                        {/* Profile Image */}
+                        <div className="flex flex-col items-center justify-center pb-6 border-b border-gray-100 mb-6">
+                            <div className="h-24 w-24 bg-green-100 rounded-full flex items-center justify-center text-green-700 font-bold text-3xl overflow-hidden shadow-inner mb-3 border-4 border-white ring-4 ring-green-50">
+                                {user.photoURL ? (
+                                    <img src={user.photoURL} alt={user.displayName || "User"} className="h-full w-full object-cover" />
+                                ) : (
+                                    (user.displayName || "U").charAt(0).toUpperCase()
+                                )}
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900">{user.displayName || "User"}</h3>
+                            <p className="text-sm text-gray-500">{user.email}</p>
+                        </div>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Name */}
                             <div>

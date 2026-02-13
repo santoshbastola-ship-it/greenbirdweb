@@ -3,6 +3,8 @@
 import { X } from "lucide-react";
 import { Product, StockHistoryEntry } from "@/types";
 import { toNepali, formatDateTime } from "@/lib/date-helper";
+import UserName from "@/components/ui/UserName";
+
 
 interface StockHistoryModalProps {
     product: Product;
@@ -91,7 +93,7 @@ export default function StockHistoryModal({ product, onClose }: StockHistoryModa
                                                 {entry.note || "-"}
                                             </td>
                                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-medium">
-                                                {entry.changedBy || "admin"}
+                                                <UserName nameOrId={entry.changedBy} />
                                             </td>
                                         </tr>
                                     ))}

@@ -2,6 +2,7 @@ import { collection, addDoc, query, where, orderBy, limit, getDocs, updateDoc, d
 import { db } from "@/lib/firebase";
 import { Notification, NotificationType, NotificationChannel } from "@/types";
 import { sanitizeFirestoreData } from "@/lib/firestore-utils";
+import { RESTRICTED_ROUTES_FOR_MANAGER } from "@/config/permissions";
 
 const COLLECTION_NAME = "notifications";
 const WHATSAPP_LOGS_COLLECTION = "whatsapp_logs";
@@ -267,7 +268,7 @@ export const NotificationService = {
             console.log(`[NotificationService] notifyAdmins called. Title: ${title}, ID: ${relatedEntityId}`);
 
             if (triggeredBy) {
-                message += ` (Triggered by: ${triggeredBy})`;
+                message += ` (Updated by: ${triggeredBy})`;
             }
 
             // 1. Fetch all admins and managers
@@ -283,8 +284,31 @@ export const NotificationService = {
                 return;
             }
 
+            // FILTER RECIPIENTS BASED ON ACCESS
+            const filteredRecipients = recipients.filter(doc => {
+                const userRole = doc.data().role;
+                if (userRole === 'manager' && route) {
+                    // Check if the notification route is restricted for managers
+                    // We check if the route STARTS WITH any of the restricted paths
+                    const isRestricted = RESTRICTED_ROUTES_FOR_MANAGER.some(restrictedPath =>
+                        route === restrictedPath || route.startsWith(restrictedPath + '/')
+                    );
+
+                    if (isRestricted) {
+                        console.log(`[NotificationService] Skipping notification for manager ${doc.id} due to restricted route: ${route}`);
+                        return false;
+                    }
+                }
+                return true;
+            });
+
+            if (filteredRecipients.length === 0) {
+                console.log("[NotificationService] No valid recipients after access filtering.");
+                return;
+            }
+
             // 2. Send In-App Notifications
-            const recipientIds = recipients.map(d => d.id);
+            const recipientIds = filteredRecipients.map(d => d.id);
             const inAppPromises = recipientIds.map(async (userId) => {
                 try {
                     await NotificationService.createNotification({
@@ -307,7 +331,7 @@ export const NotificationService = {
 
             // 3. Send WhatsApp to UNIQUE phone numbers
             const uniquePhoneRecipients = new Map<string, string>();
-            recipients.forEach(doc => {
+            filteredRecipients.forEach(doc => {
                 const data = doc.data();
                 // Check both phoneNumber and phone fields
                 const phone = data.phoneNumber || data.phone;

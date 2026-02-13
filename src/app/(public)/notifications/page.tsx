@@ -132,17 +132,12 @@ export default function NotificationsPage() {
     });
 
     return (
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 pb-24">
+            <div className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                    <h1 className="text-4xl font-black text-gray-900 flex items-center gap-4">
-                        <div className="p-3 bg-green-100 rounded-2xl">
-                            <Bell className="h-8 w-8 text-green-600" />
-                        </div>
-                        Notifications
-                    </h1>
-                    <div className="flex flex-col gap-2">
-                        <p className="text-gray-500 mt-2 font-medium">
+                    <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+                    <div className="flex flex-col gap-1">
+                        <p className="text-sm text-gray-500 mt-1">
                             Stay updated with your orders and latest offers
                         </p>
                         <button
@@ -154,12 +149,12 @@ export default function NotificationsPage() {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     {/* Filter Tabs */}
-                    <div className="bg-gray-100 p-1 rounded-xl flex items-center">
+                    <div className="bg-gray-100 p-1 rounded-lg flex items-center">
                         <button
                             onClick={() => setFilter('all')}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${filter === 'all'
+                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${filter === 'all'
                                 ? 'bg-white text-gray-900 shadow-sm'
                                 : 'text-gray-500 hover:text-gray-700'
                                 }`}
@@ -168,7 +163,7 @@ export default function NotificationsPage() {
                         </button>
                         <button
                             onClick={() => setFilter('unread')}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${filter === 'unread'
+                            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-2 ${filter === 'unread'
                                 ? 'bg-white text-green-600 shadow-sm'
                                 : 'text-gray-500 hover:text-gray-700'
                                 }`}
@@ -186,10 +181,10 @@ export default function NotificationsPage() {
                     {notifications.some(n => !n.isRead) && (
                         <button
                             onClick={handleMarkAllAsRead}
-                            className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-100 rounded-2xl text-sm font-bold text-gray-700 hover:border-green-200 hover:text-green-600 transition-all shadow-sm"
+                            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:border-green-200 hover:text-green-600 transition-all shadow-sm"
                         >
-                            <Check className="h-4 w-4" />
-                            <span className="hidden sm:inline">Mark all as read</span>
+                            <Check className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">Mark all read</span>
                         </button>
                     )}
                 </div>

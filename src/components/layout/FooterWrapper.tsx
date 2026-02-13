@@ -5,8 +5,11 @@ import Footer from "./Footer";
 
 export default function FooterWrapper() {
     const pathname = usePathname();
-    const isCartPage = pathname === "/cart";
-    const isProductPage = pathname.startsWith("/shop/") && pathname !== "/shop";
+    // List of paths where the footer should be hidden completely
+    const hiddenPaths = ['/cart', '/orders', '/notifications', '/profile', '/blog', '/shop'];
+    const shouldHide = hiddenPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
 
-    return <Footer minimized={isCartPage || isProductPage} />;
+    if (shouldHide) return null;
+
+    return <Footer />;
 }

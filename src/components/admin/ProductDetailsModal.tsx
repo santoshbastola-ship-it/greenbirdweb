@@ -3,6 +3,8 @@ import { formatProductDescription } from "@/lib/text-helper";
 import { X, Edit2, Package, Check, ShoppingCart, Home, History } from "lucide-react";
 import Link from "next/link";
 import { toNepali } from "@/lib/date-helper";
+import UserName from "@/components/ui/UserName";
+
 
 interface ProductDetailsModalProps {
     product: Product;
@@ -21,9 +23,14 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
                                 {product.businessType}
                             </span>
                         </div>
-                        <p className="text-xs text-gray-500">
-                            Created on {new Date(product.createdAt).toLocaleDateString()}
-                        </p>
+                        <div className="flex flex-col gap-0.5">
+                            <p className="text-xs text-gray-500">
+                                Created by <UserName nameOrId={product.createdBy} className="font-medium text-gray-700" />
+                            </p>
+                            <p className="text-xs text-gray-500">
+                                on {product.createdAt ? toNepali(product.createdAt, "DD MMM YYYY, hh:mm A") : 'N/A'}
+                            </p>
+                        </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <Link
@@ -173,7 +180,7 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
                                                 </div>
                                                 {history.changedBy && (
                                                     <span className="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded-full capitalize">
-                                                        {history.changedBy === 'admin' ? 'Admin' : history.changedBy}
+                                                        <UserName nameOrId={history.changedBy} />
                                                     </span>
                                                 )}
                                             </div>

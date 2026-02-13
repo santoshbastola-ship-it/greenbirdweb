@@ -91,21 +91,21 @@ export default function ShareButton({ title, text, url, className = "" }: ShareB
                         onClick={() => shareToSocial('whatsapp')}
                         className="w-full text-left px-4 py-3 hover:bg-green-50 text-sm text-gray-700 flex items-center gap-3 transition-colors"
                     >
-                        <Phone className="w-4 h-4 text-green-600" />
+                        <Phone className="w-5 h-5 text-green-600" />
                         <span className="font-medium">WhatsApp</span>
                     </button>
                     <button
                         onClick={() => shareToSocial('facebook')}
                         className="w-full text-left px-4 py-3 hover:bg-blue-50 text-sm text-gray-700 flex items-center gap-3 transition-colors"
                     >
-                        <Facebook className="w-4 h-4 text-blue-600" />
+                        <Facebook className="w-5 h-5 text-blue-600" />
                         <span className="font-medium">Facebook</span>
                     </button>
                     <button
                         onClick={() => shareToSocial('twitter')}
                         className="w-full text-left px-4 py-3 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-3 transition-colors"
                     >
-                        <Twitter className="w-4 h-4 text-sky-500" />
+                        <Twitter className="w-5 h-5 text-sky-500" />
                         <span className="font-medium">X (Twitter)</span>
                     </button>
                     <div className="h-px bg-gray-100 my-1" />
@@ -115,12 +115,12 @@ export default function ShareButton({ title, text, url, className = "" }: ShareB
                     >
                         {copied ? (
                             <>
-                                <Check className="w-4 h-4 text-green-600" />
+                                <Check className="w-5 h-5 text-green-600" />
                                 <span className="text-green-600 font-medium">Copied!</span>
                             </>
                         ) : (
                             <>
-                                <LinkIcon className="w-4 h-4 text-gray-400" />
+                                <LinkIcon className="w-5 h-5 text-gray-400" />
                                 <span className="font-medium">Copy Link</span>
                             </>
                         )}

@@ -137,7 +137,7 @@ async function cleanupTestProducts(): Promise<number> {
 /**
  * Delete all transactions associated with test users
  */
-async function cleanupTestTransactions(testUserIds: TestUserIds): Promise<number> {
+async function cleanupTestTransactions(testUserIds: TestUserIds): Promise<string[]> {
     try {
         const transactionsRef = collection(db, 'transactions');
         const allTransactions: any[] = [];
@@ -174,7 +174,7 @@ async function cleanupTestTransactions(testUserIds: TestUserIds): Promise<number
 
         if (uniqueTransactions.size === 0) {
             console.log('  No test transactions found');
-            return 0;
+            return [];
         }
 
         console.log(`  Found ${uniqueTransactions.size} test transactions`);
@@ -187,17 +187,17 @@ async function cleanupTestTransactions(testUserIds: TestUserIds): Promise<number
 
         await Promise.all(deletePromises);
         console.log(`  ✓ Deleted ${uniqueTransactions.size} test transactions\n`);
-        return uniqueTransactions.size;
+        return Array.from(uniqueTransactions.keys());
     } catch (error) {
         console.error('  ❌ Error cleaning up test transactions:', error);
-        return 0;
+        return [];
     }
 }
 
 /**
- * Delete all notifications associated with test users
+ * Delete all notifications associated with test users OR deleted transactions
  */
-async function cleanupTestNotifications(testUserIds: TestUserIds): Promise<number> {
+async function cleanupTestNotifications(testUserIds: TestUserIds, deletedTransactionIds: string[]): Promise<number> {
     try {
         const notificationsRef = collection(db, 'notifications');
 
@@ -209,7 +209,27 @@ async function cleanupTestNotifications(testUserIds: TestUserIds): Promise<numbe
         const adminQuery = query(notificationsRef, where('targetUserId', '==', testUserIds.adminId));
         const adminSnapshot = await getDocs(adminQuery);
 
-        const totalDocs = customerSnapshot.size + adminSnapshot.size;
+        // Query for notifications related to deleted transactions
+        // Note: 'in' query allows up to 10 values. If we have more, we need to batch or just get all and filter in memory.
+        // Given this is a cleanup script, let's fetch all notifications and filter in memory to be safe and simple
+        // (assuming notification count isn't massive yet, or we could optimize later)
+        const allNotificationsSnapshot = await getDocs(notificationsRef);
+        const relatedNotifications = allNotificationsSnapshot.docs.filter(doc => {
+            const data = doc.data();
+            const message = data.message || '';
+            const isRelatedToTransaction = deletedTransactionIds.includes(data.relatedEntityId) && data.relatedEntityType === 'transaction';
+            const isTriggeredByTestAdmin = message.includes('Test Admin') || message.includes('Triggered by: Test Admin') || message.includes('Updated by: Test Admin');
+
+            return isRelatedToTransaction || isTriggeredByTestAdmin;
+        });
+
+        // Combine all unique notifications to delete
+        const notificationsToDelete = new Map(); // Map prevents duplicates
+        customerSnapshot.docs.forEach(doc => notificationsToDelete.set(doc.id, doc));
+        adminSnapshot.docs.forEach(doc => notificationsToDelete.set(doc.id, doc));
+        relatedNotifications.forEach(doc => notificationsToDelete.set(doc.id, doc));
+
+        const totalDocs = notificationsToDelete.size;
 
         if (totalDocs === 0) {
             console.log('  No test notifications found');
@@ -218,16 +238,11 @@ async function cleanupTestNotifications(testUserIds: TestUserIds): Promise<numbe
 
         console.log(`  Found ${totalDocs} test notifications`);
 
-        const deletePromises = [
-            ...customerSnapshot.docs.map(docSnapshot => {
-                console.log(`  - Deleting notification: ${docSnapshot.id}`);
-                return deleteDoc(doc(db, 'notifications', docSnapshot.id));
-            }),
-            ...adminSnapshot.docs.map(docSnapshot => {
-                console.log(`  - Deleting notification: ${docSnapshot.id}`);
-                return deleteDoc(doc(db, 'notifications', docSnapshot.id));
-            })
-        ];
+        const deletePromises = Array.from(notificationsToDelete.values()).map(docSnapshot => {
+            const data = docSnapshot.data();
+            console.log(`  - Deleting notification: ${docSnapshot.id} (${data.title})`);
+            return deleteDoc(doc(db, 'notifications', docSnapshot.id));
+        });
 
         await Promise.all(deletePromises);
         console.log(`  ✓ Deleted ${totalDocs} test notifications\n`);
@@ -266,10 +281,11 @@ async function main() {
         totalDeleted += await cleanupTestProducts();
 
         console.log('📋 Cleaning up test transactions...');
-        totalDeleted += await cleanupTestTransactions(testUserIds);
+        const deletedTransactionIds = await cleanupTestTransactions(testUserIds);
+        totalDeleted += deletedTransactionIds.length;
 
         console.log('🔔 Cleaning up test notifications...');
-        totalDeleted += await cleanupTestNotifications(testUserIds);
+        totalDeleted += await cleanupTestNotifications(testUserIds, deletedTransactionIds);
 
         // Summary
         console.log('╔════════════════════════════════════════════════════════════╗');

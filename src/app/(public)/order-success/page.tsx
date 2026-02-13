@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Check, MessageCircle, ArrowRight } from "lucide-react";
+import { Check, MessageCircle, ArrowRight, X } from "lucide-react";
 
 export default function OrderSuccessPage() {
     const handleWhatsAppClick = () => {
@@ -15,7 +15,14 @@ export default function OrderSuccessPage() {
 
     return (
         <div className="min-h-[60vh] flex flex-col items-center justify-center p-4 bg-gray-50">
-            <div className="bg-white p-8 rounded-2xl shadow-sm text-center max-w-md w-full animate-in fade-in zoom-in-95 duration-500">
+            <div className="bg-white p-8 rounded-2xl shadow-sm text-center max-w-md w-full animate-in fade-in zoom-in-95 duration-500 relative">
+                <Link
+                    href="/shop"
+                    className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                    aria-label="Close"
+                >
+                    <X className="h-5 w-5" />
+                </Link>
                 <div className="h-24 w-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
                     <Check className="h-12 w-12 text-green-600" />
                 </div>
@@ -42,11 +49,14 @@ export default function OrderSuccessPage() {
                         <span>Continue Shopping</span>
                         <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </Link>
-                </div>
 
-                <p className="mt-6 text-xs text-gray-400">
-                    You can also track your order in the "My Orders" section.
-                </p>
+                    <Link
+                        href="/orders"
+                        className="block w-full text-center text-gray-500 hover:text-gray-900 font-medium transition-colors py-2"
+                    >
+                        Track your order
+                    </Link>
+                </div>
             </div>
         </div>
     );

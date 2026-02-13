@@ -55,7 +55,7 @@ export default function CartPage() {
 
     // Delivery Preferences
     const [deliveryInstructions, setDeliveryInstructions] = useState("");
-    const [expectedDate, setExpectedDate] = useState(getTodayNepali());
+    const [expectedDate, setExpectedDate] = useState("");
     const [expectedTime, setExpectedTime] = useState("");
     const [deliveryLocation, setDeliveryLocation] = useState<{ lat: number; lng: number, address?: string } | null>(null);
     const [activeTab, setActiveTab] = useState<'address' | 'map'>('address');
@@ -142,7 +142,7 @@ export default function CartPage() {
             return;
         }
 
-        if (!phoneNumber) {
+        if (!phoneNumber || !phoneNumber.trim()) {
             setShowValidationErrors(true);
             const phoneInput = document.getElementById('phone-input');
             if (phoneInput) {
@@ -152,7 +152,8 @@ export default function CartPage() {
             return;
         }
 
-        if (addresses.length === 0 && !deliveryLocation) {
+        const isAddressSelected = isMapSelected ? !!deliveryLocation : (addresses.length > 0 && selectedAddressIndex >= 0 && !!addresses[selectedAddressIndex]);
+        if (!isAddressSelected) {
             setShowValidationErrors(true);
             const addressSection = document.getElementById('address-section');
             if (addressSection) {
@@ -257,6 +258,8 @@ export default function CartPage() {
                         unit: i.unit,
                         priceUnit: priceUnit,
                         pricePerUnit: i.price,
+                        originalPrice: i.originalPrice,
+                        discount: i.discount,
                         totalPrice: i.quantity * i.price // quantity holds weight for weight-based items
                     };
                 }),
@@ -267,7 +270,7 @@ export default function CartPage() {
                 discountDetails: discountDetails,
                 deliveryFee: deliveryFee,
                 soldBy: "Online",
-                enteredBy: user.uid,
+                enteredBy: activeProfile.name || dbUser?.name || "Customer",
                 entryTimestamp: new Date(),
                 paymentStatus: PaymentStatus.Pending,
                 status: OrderStatus.Open,
@@ -434,11 +437,32 @@ export default function CartPage() {
                                                 <div className="flex justify-between items-start gap-2 mb-1.5">
                                                     <div className="flex-1 min-w-0">
                                                         <h3 className="text-sm md:text-base font-bold text-gray-900 truncate">{item.productName}</h3>
-                                                        <p className="text-xs text-gray-500">Rs. {item.price} / {getSafeUnit(item.priceUnit || item.unit)}</p>
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <p className="text-xs text-gray-500">
+                                                                Rs. {item.price} / {getSafeUnit(item.priceUnit || item.unit)}
+                                                            </p>
+                                                            {item.originalPrice && item.originalPrice > item.price ? (
+                                                                <span className="text-xs text-gray-400 line-through">
+                                                                    Rs. {item.originalPrice}
+                                                                </span>
+                                                            ) : null}
+                                                            {item.discount && item.discount > 0 ? (
+                                                                <span className="text-[10px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full">
+                                                                    Save Rs. {item.discount}
+                                                                </span>
+                                                            ) : null}
+                                                        </div>
                                                     </div>
-                                                    <p className="text-sm md:text-base font-bold text-[#2D5A27] whitespace-nowrap">
-                                                        Rs. {((item.priceUnit && item.priceUnit !== item.unit) ? (item.quantity * item.price) : (item.price * item.quantity)).toFixed(2)}
-                                                    </p>
+                                                    <div className="text-right">
+                                                        <p className="text-sm md:text-base font-bold text-[#2D5A27] whitespace-nowrap">
+                                                            Rs. {((item.priceUnit && item.priceUnit !== item.unit) ? (item.quantity * item.price) : (item.price * item.quantity)).toFixed(2)}
+                                                        </p>
+                                                        {item.originalPrice && item.originalPrice > item.price && (
+                                                            <p className="text-xs text-gray-400 line-through whitespace-nowrap">
+                                                                Rs. {((item.priceUnit && item.priceUnit !== item.unit) ? (item.quantity * item.originalPrice) : (item.originalPrice * item.quantity)).toFixed(2)}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
 
                                                 {/* Quantity Controls and Remove - Mobile Optimized */}
@@ -574,10 +598,16 @@ export default function CartPage() {
                                     </div>
 
                                     {/* Address Selection */}
-                                    <div id="address-section">
-                                        <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-4">
+                                    <div id="address-section" className="space-y-4">
+                                        <div className={`p-1 rounded-xl flex gap-1 bg-gray-100 transition-all border-2 ${showValidationErrors && !isMapSelected && (addresses.length === 0 || selectedAddressIndex < 0) && !deliveryLocation
+                                            ? "border-red-500 bg-red-50"
+                                            : "border-transparent"
+                                            }`}>
                                             <button
-                                                onClick={() => setActiveTab('address')}
+                                                onClick={() => {
+                                                    setActiveTab('address');
+                                                    setIsMapSelected(false);
+                                                }}
                                                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${activeTab === 'address'
                                                     ? "bg-white text-green-700 shadow-sm"
                                                     : "text-gray-500 hover:text-gray-700"
@@ -597,6 +627,12 @@ export default function CartPage() {
                                                 Pin on Map
                                             </button>
                                         </div>
+
+                                        {showValidationErrors && !isMapSelected && addresses.length === 0 && !deliveryLocation && (
+                                            <p className="text-red-500 text-[10px] font-bold mt-1 px-1 animate-in slide-in-from-top-1">
+                                                Please add or select a delivery address
+                                            </p>
+                                        )}
 
                                         {activeTab === 'map' ? (
                                             <div className="mb-4 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -764,7 +800,7 @@ export default function CartPage() {
 
                                         <div className="grid grid-cols-2 gap-3">
                                             <div>
-                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Date</label>
+                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Date (Optional)</label>
                                                 <div className="nepali-datepicker-container">
                                                     <NepaliDatePicker
                                                         value={expectedDate}
@@ -775,7 +811,7 @@ export default function CartPage() {
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Time</label>
+                                                <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">Time (Optional)</label>
                                                 <input
                                                     type="time"
                                                     value={expectedTime}
@@ -809,6 +845,25 @@ export default function CartPage() {
                                 <span>Subtotal</span>
                                 <span>Rs. {subtotal.toFixed(2)}</span>
                             </div>
+
+                            {/* Product Savings */}
+                            {validItems.reduce((acc, item) => {
+                                if (item.originalPrice && item.originalPrice > item.price) {
+                                    return acc + ((item.originalPrice - item.price) * item.quantity);
+                                }
+                                return acc;
+                            }, 0) > 0 && (
+                                    <div className="flex justify-between text-sm text-green-600">
+                                        <span>Product Savings</span>
+                                        <span>- Rs. {validItems.reduce((acc, item) => {
+                                            if (item.originalPrice && item.originalPrice > item.price) {
+                                                return acc + ((item.originalPrice - item.price) * item.quantity);
+                                            }
+                                            return acc;
+                                        }, 0).toFixed(2)}</span>
+                                    </div>
+                                )}
+
                             <div className="flex justify-between text-sm text-gray-600">
                                 <span className="flex items-center">Delivery {subtotal >= appSettings.freeDeliveryThreshold && <span className="ml-2 text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full font-black uppercase">FREE</span>}</span>
                                 <span className={subtotal >= appSettings.freeDeliveryThreshold ? "line-through opacity-50" : ""}>Rs. {deliveryFee}</span>

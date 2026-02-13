@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { TransactionService } from "@/services/transaction.service";
 import { TransactionRecord, OrderStatus, TransactionType, PaymentStatus, PaymentRecord, OrderLog, Product, SalesItem, BusinessType } from "@/types";
 import { Plus, Check, X, Calendar, Clock, MapPin, User, Search, Filter, Download, ShoppingBag, CreditCard, AlertCircle, Edit2, Save, Trash, RotateCcw, ChevronDown, Package } from "lucide-react";
-import { toNepali } from "@/lib/date-helper";
+import { toNepali, formatTime } from "@/lib/date-helper";
 import NepaliDate from "nepali-date-converter";
 import dynamic from 'next/dynamic';
 
@@ -105,8 +105,11 @@ export default function AdminOrdersPage() {
             // Filter by Date: Last 30 Days only
             const oneMonthAgo = new Date();
             oneMonthAgo.setDate(oneMonthAgo.getDate() - 30);
+            // Reset time to start of day for accurate comparison
+            oneMonthAgo.setHours(0, 0, 0, 0);
 
-            if (new Date(order.date) < oneMonthAgo) {
+            const orderDate = new Date(order.date);
+            if (orderDate < oneMonthAgo) {
                 return false;
             }
         }
@@ -262,7 +265,7 @@ function OrderCard({ order, onSelect, onDelete }: { order: TransactionRecord; on
                 ? toNepali(order.expectedDeliveryDate, "DD MMM YYYY")
                 : "Scheduled";
 
-        return `${dateStr} ${order.expectedDeliveryTime ? `at ${order.expectedDeliveryTime}` : ''}`;
+        return `${dateStr} ${order.expectedDeliveryTime ? `at ${formatTime(order.expectedDeliveryTime)}` : ''}`;
     };
 
     return (

@@ -297,7 +297,7 @@ export default function NewSalePage() {
                 date: new NepaliDate(date).toJsDate(),
                 discount: Number(discount),
                 soldBy: soldBy || "Admin",
-                enteredBy: "admin",
+                enteredBy: dbUser?.name || "Admin",
                 entryTimestamp: new Date(),
                 paymentStatus: paymentStatus,
                 status: orderStatus,

@@ -7,6 +7,8 @@ import { toNepali } from "@/lib/date-helper";
 import { updatePaymentStatus, getEnergyTypeDisplayName, calculateRemainingAmount, getPaymentStatusDisplayName } from "@/services/energyService";
 import PaymentStatusDropdown from "@/components/admin/PaymentStatusDropdown";
 import { useAuth } from "@/context/AuthContext";
+import UserName from "@/components/ui/UserName";
+
 
 export default function EnergyBillDetailsModal({
     bill,
@@ -134,7 +136,7 @@ export default function EnergyBillDetailsModal({
                                 </div>
                                 <div className="flex justify-between items-center h-8">
                                     <span className="text-gray-500">Entered By:</span>
-                                    <span className="font-medium text-gray-900">{currentBill.enteredBy || "Admin"}</span>
+                                    <UserName nameOrId={currentBill.enteredBy} className="font-medium text-gray-900" />
                                 </div>
                             </div>
                         </div>
@@ -210,7 +212,7 @@ export default function EnergyBillDetailsModal({
                                                 <p className="text-sm font-bold text-gray-900">Rs. {p.amount.toLocaleString()}</p>
                                                 <p className="text-xs text-gray-500">
                                                     {toNepali(p.date, "DD MMM YYYY")} at {new Date(p.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    {p.enteredBy && <span className="block text-[10px] text-gray-400">Updated by: {p.enteredBy}</span>}
+                                                    {p.enteredBy && <span className="block text-[10px] text-gray-400">Updated by: <UserName nameOrId={p.enteredBy} /></span>}
                                                 </p>
                                             </div>
                                         </div>

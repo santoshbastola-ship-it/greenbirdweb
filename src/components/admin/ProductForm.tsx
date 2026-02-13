@@ -17,6 +17,8 @@ import { UnitService } from "@/services/unit.service";
 import { Category, Unit } from "@/types";
 import { useEffect } from "react";
 import ImageCropperModal from "./ImageCropperModal";
+import UserName from "@/components/ui/UserName";
+
 
 interface ProductFormProps {
     initialData?: Product;
@@ -576,7 +578,7 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                                     Rs {entry.price.toLocaleString()}
                                                 </td>
                                                 <td className="px-4 py-2 text-gray-500">
-                                                    {entry.changedBy}
+                                                    <UserName nameOrId={entry.changedBy} />
                                                 </td>
                                             </tr>
                                         ))}

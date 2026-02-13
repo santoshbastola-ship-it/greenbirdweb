@@ -27,6 +27,7 @@ export default function FloatingCheckoutButton() {
     }, [mounted, items.length]);
 
     // Don't render on server, if no items, if on cart page, or if on product detail page
+    // Don't render on server, if no items, if on cart page, or if on product detail page
     const isProductPage = pathname.startsWith('/shop/') && pathname !== '/shop';
     if (!mounted || items.length === 0 || pathname === '/cart' || isProductPage) return null;
 

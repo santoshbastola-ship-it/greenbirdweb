@@ -22,7 +22,7 @@ export default async function ShopPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex flex-col gap-8">
                     <Suspense fallback={<div className="w-full bg-white rounded-xl h-20 animate-pulse" />}>
-                        <CategoryFilter />
+                        <CategoryFilter categories={categories} />
                     </Suspense>
 
                     {/* Product Grid - Handles filtering client-side */}

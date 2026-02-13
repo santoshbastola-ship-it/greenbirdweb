@@ -173,7 +173,7 @@ export default function NewPurchasePage() {
                 date: adDate,
                 discount: parseFloat(discount) || 0,
                 soldBy: purchasedBy,
-                enteredBy: "Admin",
+                enteredBy: dbUser?.name || "Admin",
                 entryTimestamp: new Date(),
                 paymentStatus: paymentStatus,
                 status: OrderStatus.Delivered,
