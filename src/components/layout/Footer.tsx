@@ -1,4 +1,5 @@
 import { Facebook, MessageCircle, Mail, MapPin, Phone, Instagram, Youtube } from "lucide-react";
+import { VersionManager } from "../VersionManager";
 
 interface FooterProps {
     minimized?: boolean;
@@ -180,9 +181,9 @@ export default function Footer({ minimized = false }: FooterProps) {
                     </div>
                 </div>
 
-                {/* Bottom Bar */}
-                <div className="border-t border-white/20 pt-8 text-center text-sm text-gray-300">
-                    &copy; {new Date().getFullYear()} Greenbird Homestead. All rights reserved. v{process.env.NEXT_PUBLIC_APP_VERSION || '0.1.3'}
+                <div className="border-t border-white/20 pt-8 text-center text-sm text-gray-300 flex flex-col items-center gap-2">
+                    <div>&copy; {new Date().getFullYear()} Greenbird Homestead. All rights reserved.</div>
+                    <VersionManager className="opacity-50 hover:opacity-100 transition-opacity" />
                 </div>
             </div>
         </footer>

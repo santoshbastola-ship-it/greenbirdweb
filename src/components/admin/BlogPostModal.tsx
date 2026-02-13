@@ -6,6 +6,7 @@ import { BlogService } from "@/services/blog.service";
 import { X, Upload, Save, Loader2 } from "lucide-react";
 import { cleanInput } from "@/lib/input-validation";
 import ImageCropperModal from "./ImageCropperModal";
+import RichTextEditor from "./RichTextEditor";
 
 import { useAuth } from "@/context/AuthContext";
 
@@ -298,15 +299,12 @@ export default function BlogPostModal({ isOpen, onClose, post, onSave }: BlogPos
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-gray-700 mb-1">Content (Markdown Support)</label>
-                        <textarea
-                            required
-                            rows={10}
-                            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-green-500 focus:border-green-500 font-mono text-sm"
-                            placeholder="Write your blog post content here..."
+                        <label className="block text-sm font-bold text-gray-700 mb-1">Content (Rich Text Editor)</label>
+                        <RichTextEditor
                             value={formData.content}
-                            onChange={(e) => setFormData({ ...formData, content: cleanInput(e.target.value) })}
-                        ></textarea>
+                            onChange={(content) => setFormData({ ...formData, content })}
+                            placeholder="Write your blog post content here..."
+                        />
                     </div>
 
                     <div className="flex gap-4 pt-4 sticky bottom-0 bg-white pb-2">

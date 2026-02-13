@@ -1,5 +1,9 @@
 # Release Notes
 
+## [0.2.21] - 2026-02-13
+- PWA: Added hidden 'Force Refresh' mechanism (5 taps on version) and updated cache-control headers to fix stuck version issue
+
+
 ## [0.2.20] - 2026-02-13
 - PWA: Implemented automated update detection and force-refresh mechanism to ensure latest version availability
 

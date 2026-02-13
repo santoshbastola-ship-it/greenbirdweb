@@ -90,9 +90,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                         ))}
                     </div>
 
-                    <div className="prose prose-lg prose-green max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
-                        {post.content || post.excerpt}
-                    </div>
+                    <div
+                        className="prose prose-lg prose-green max-w-none text-gray-700 leading-relaxed ql-editor"
+                        dangerouslySetInnerHTML={{ __html: post.content || post.excerpt }}
+                    />
 
                     <div className="mt-16 pt-10 border-t border-gray-100 flex justify-between items-center">
                         <div className="flex items-center gap-4">

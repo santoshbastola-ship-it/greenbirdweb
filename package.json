@@ -1,6 +1,6 @@
 {
   "name": "greenbird-pwa",
-  "version": "0.2.20",
+  "version": "0.2.21",
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
@@ -29,6 +29,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-image-crop": "^11.0.10",
+    "react-quill-new": "^3.8.3",
     "sharp": "^0.34.5",
     "tailwind-merge": "^3.4.0",
     "twilio": "^5.12.0",

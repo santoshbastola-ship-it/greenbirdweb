@@ -1,5 +1,7 @@
 "use client";
 
+import { VersionManager } from "../VersionManager";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -320,6 +322,10 @@ export default function AdminSidebar() {
                                 </div>
                             )}
                         </Link>
+                    </div>
+
+                    <div className="px-8 pb-4 opacity-50 text-[10px] text-green-300">
+                        <VersionManager />
                     </div>
                 </div>
             </aside>
