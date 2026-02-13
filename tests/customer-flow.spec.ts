@@ -20,29 +20,29 @@ test.describe('Full Customer Journey', () => {
 
         // Check/Create Category
         await page.goto('/admin/categories');
-        if (!(await page.locator('h3:has-text("Test Category")').isVisible())) {
+        if (!(await page.locator('h3:has-text("Customer Test Category")').isVisible())) {
             await page.click('button:has-text("New Category")');
-            await page.fill('input[placeholder*="e.g., Dairy"]', 'Test Category');
+            await page.fill('input[placeholder*="e.g., Dairy"]', 'Customer Test Category');
             await page.selectOption('select', { label: 'Products' });
             await page.click('button:has-text("Save Category")');
-            await expect(page.locator('h3:has-text("Test Category")')).toBeVisible();
+            await expect(page.locator('h3:has-text("Customer Test Category")')).toBeVisible();
         }
 
         // Check/Create Product
         await page.goto('/admin/inventory');
         await page.click('button:has-text("Products")');
-        if (!(await page.locator('div', { hasText: 'Test Product' }).first().isVisible())) {
+        if (!(await page.locator('div', { hasText: 'Customer Test Product' }).first().isVisible())) {
             await page.goto('/admin/inventory/add');
-            await page.fill('input[name="name"]', 'Test Product');
+            await page.fill('input[name="name"]', 'Customer Test Product');
             await page.selectOption('select[name="businessType"]', 'product');
-            await page.selectOption('select[name="categoryId"]', { label: 'Test Category' });
+            await page.selectOption('select[name="categoryId"]', { label: 'Customer Test Category' });
             await page.fill('input[name="currentPrice"]', '100');
             await page.click('button:has-text("Save Product")');
             await expect(page).toHaveURL(/\/admin\/inventory/);
 
             // Add stock
             await page.click('button:has-text("Products")');
-            const productCard = page.locator('div', { hasText: 'Test Product' }).first();
+            const productCard = page.locator('div', { hasText: 'Customer Test Product' }).first();
             const stockBtn = productCard.locator('button', { hasText: /0\s/ });
             if (await stockBtn.isVisible()) {
                 await stockBtn.click();
@@ -104,7 +104,9 @@ test.describe('Full Customer Journey', () => {
         if (await addNewAddrBtn.isVisible()) {
             await addNewAddrBtn.click();
             await page.fill('input[placeholder*="House No"]', 'Test Address, Kathmandu');
-            await page.click('button:has-text("Save")', { force: true });
+            const saveBtn = page.locator('button:has-text("Save")');
+            await expect(saveBtn).toBeEnabled();
+            await saveBtn.click();
             // Wait for input to disappear (form closed)
             await expect(page.locator('input[placeholder*="House No"]')).not.toBeVisible();
             // Verify address appears

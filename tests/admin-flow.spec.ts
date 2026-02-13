@@ -27,7 +27,7 @@ test.describe('Admin Workflows', () => {
 
         // 2. Create Category (if not exists)
         await page.goto('/admin/categories');
-        const catName = 'Test Category';
+        const catName = 'Admin Test Category';
         const catRow = page.locator(`h3:has-text("${catName}")`);
 
         if (!(await catRow.isVisible())) {
@@ -43,7 +43,7 @@ test.describe('Admin Workflows', () => {
 
         // 3. Create Product
         await page.goto('/admin/inventory/add');
-        await page.fill('input[name="name"]', 'Test Product');
+        await page.fill('input[name="name"]', 'Admin Test Product');
 
         // Select Business Type "Product"
         await page.selectOption('select[name="businessType"]', 'product');
@@ -75,7 +75,7 @@ test.describe('Admin Workflows', () => {
         // We filter by "Products" tab to make finding easier
         await page.click('button:has-text("Products")');
 
-        const productCard = page.locator('div', { hasText: 'Test Product' }).last();
+        const productCard = page.locator('div', { hasText: 'Admin Test Product' }).last();
         // We use last() in case of duplicates, though logic should prevent it ideally.
 
         // Check stock button (it should be 0 unit)
@@ -101,7 +101,7 @@ test.describe('Admin Workflows', () => {
         await page.waitForTimeout(2000); // Simple wait instead of networkidle
 
         // Check if Test Product appears
-        const testProductCard = page.locator('text=Test Product');
+        const testProductCard = page.locator('text=Admin Test Product');
         const isVisible = await testProductCard.isVisible().catch(() => false);
         console.log(isVisible ? "✓ Test Product is visible on shop page" : "✗ Test Product NOT visible on shop page");
 

@@ -50,21 +50,26 @@ export async function getTestUserIds(): Promise<{ adminId: string; customerId: s
 }
 
 /**
- * Delete all categories with name "Test Category"
+ * Delete all test categories
  */
 export async function cleanupTestCategories(): Promise<void> {
     try {
         const categoriesRef = collection(db, 'categories');
-        const q = query(categoriesRef, where('name', '==', 'Test Category'));
-        const querySnapshot = await getDocs(q);
+        // We can't use 'in' query easily with other constraints sometimes, but here it's fine.
+        // Or just run multiple queries.
+        const names = ['Test Category', 'Admin Test Category', 'Customer Test Category'];
 
-        console.log(`Found ${querySnapshot.size} test categories to delete`);
-
-        const deletePromises = querySnapshot.docs.map(docSnapshot =>
-            deleteDoc(doc(db, 'categories', docSnapshot.id))
-        );
-
-        await Promise.all(deletePromises);
+        for (const name of names) {
+            const q = query(categoriesRef, where('name', '==', name));
+            const querySnapshot = await getDocs(q);
+            if (!querySnapshot.empty) {
+                console.log(`Found ${querySnapshot.size} categories with name "${name}" to delete`);
+                const deletePromises = querySnapshot.docs.map(docSnapshot =>
+                    deleteDoc(doc(db, 'categories', docSnapshot.id))
+                );
+                await Promise.all(deletePromises);
+            }
+        }
         console.log('✓ Test categories cleaned up');
     } catch (error) {
         console.error('Error cleaning up test categories:', error);
@@ -72,21 +77,24 @@ export async function cleanupTestCategories(): Promise<void> {
 }
 
 /**
- * Delete all products with name "Test Product"
+ * Delete all test products
  */
 export async function cleanupTestProducts(): Promise<void> {
     try {
         const productsRef = collection(db, 'products');
-        const q = query(productsRef, where('name', '==', 'Test Product'));
-        const querySnapshot = await getDocs(q);
+        const names = ['Test Product', 'Admin Test Product', 'Customer Test Product'];
 
-        console.log(`Found ${querySnapshot.size} test products to delete`);
-
-        const deletePromises = querySnapshot.docs.map(docSnapshot =>
-            deleteDoc(doc(db, 'products', docSnapshot.id))
-        );
-
-        await Promise.all(deletePromises);
+        for (const name of names) {
+            const q = query(productsRef, where('name', '==', name));
+            const querySnapshot = await getDocs(q);
+            if (!querySnapshot.empty) {
+                console.log(`Found ${querySnapshot.size} products with name "${name}" to delete`);
+                const deletePromises = querySnapshot.docs.map(docSnapshot =>
+                    deleteDoc(doc(db, 'products', docSnapshot.id))
+                );
+                await Promise.all(deletePromises);
+            }
+        }
         console.log('✓ Test products cleaned up');
     } catch (error) {
         console.error('Error cleaning up test products:', error);
