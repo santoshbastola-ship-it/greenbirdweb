@@ -104,7 +104,7 @@ test.describe('Full Customer Journey', () => {
         if (await addNewAddrBtn.isVisible()) {
             await addNewAddrBtn.click();
             await page.fill('input[placeholder*="House No"]', 'Test Address, Kathmandu');
-            const saveBtn = page.locator('button:has-text("Save")');
+            const saveBtn = page.getByRole('button', { name: 'Save', exact: true });
             await expect(saveBtn).toBeEnabled();
             await saveBtn.click();
             // Wait for input to disappear (form closed)
