@@ -102,8 +102,9 @@ export default function PartialPaymentDialog({ bill, onClose }: PartialPaymentDi
                             <input
                                 type="number"
                                 step="0.01"
-                                value={amount}
+                                value={amount || ""}
                                 onChange={(e) => setAmount(e.target.value)}
+                                onFocus={(e) => e.target.select()}
                                 className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                 placeholder="0.00"
                                 autoFocus

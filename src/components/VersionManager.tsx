@@ -1,15 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface VersionManagerProps {
     className?: string;
 }
 
 const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || '0.1.3';
+const BUILD_TIME = new Date().toLocaleString();
 
 export function VersionManager({ className }: VersionManagerProps) {
     const [tapCount, setTapCount] = useState(0);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const handleTap = () => {
         const newCount = tapCount + 1;
@@ -42,11 +48,14 @@ export function VersionManager({ className }: VersionManagerProps) {
                     }
                 }
 
-                // 3. Clear local storage that might be blocking updates
-                localStorage.removeItem('pwa-install-dismissed');
+                // 3. Clear all storage
+                localStorage.clear();
+                sessionStorage.clear();
 
-                // 4. Force reload from server
-                window.location.reload();
+                // 4. Force reload from server with cache busting
+                const url = new URL(window.location.href);
+                url.searchParams.set('v', Date.now().toString());
+                window.location.href = url.toString();
             } catch (error) {
                 console.error('Failed to force refresh:', error);
                 window.location.reload();
@@ -58,7 +67,7 @@ export function VersionManager({ className }: VersionManagerProps) {
         <span
             onClick={handleTap}
             className={`${className} cursor-pointer select-none active:opacity-50`}
-            title="Tap 5 times to force update"
+            title={mounted ? `Build: ${BUILD_TIME}. Tap 5 times to force update` : undefined}
         >
             v{APP_VERSION}
         </span>

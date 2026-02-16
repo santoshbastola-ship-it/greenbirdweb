@@ -1,8 +1,9 @@
-import { collection, addDoc, query, where, orderBy, limit, getDocs, updateDoc, doc, Timestamp, getDoc, onSnapshot, writeBatch } from "firebase/firestore";
+import { CollectionReference, collection, addDoc, query, where, orderBy, limit, getDocs, updateDoc, doc, Timestamp, getDoc, onSnapshot, writeBatch } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Notification, NotificationType, NotificationChannel } from "@/types";
 import { sanitizeFirestoreData } from "@/lib/firestore-utils";
 import { RESTRICTED_ROUTES_FOR_MANAGER } from "@/config/permissions";
+import { WHATSAPP_API, PUSH_API } from "@/config/api";
 
 const COLLECTION_NAME = "notifications";
 const WHATSAPP_LOGS_COLLECTION = "whatsapp_logs";
@@ -193,7 +194,7 @@ export const NotificationService = {
         try {
             // Call API route to handle secure server-side sending
             // This prevents "process.env" issues on the client-side
-            await fetch('/api/whatsapp/notification', {
+            await fetch(WHATSAPP_API.NOTIFICATION, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ toUserId, title, body, templateName, templateParams })
@@ -207,7 +208,7 @@ export const NotificationService = {
     // Send Push Notification
     sendPushNotification: async (toUserId: string, title: string, body: string, imageUrl?: string, data?: any): Promise<void> => {
         try {
-            await fetch('/api/notifications/push', {
+            await fetch(PUSH_API.SEND, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ toUserId, title, body, imageUrl, data })

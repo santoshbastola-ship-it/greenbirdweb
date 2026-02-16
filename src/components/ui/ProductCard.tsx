@@ -25,7 +25,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     return (
         <div className="group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-xl dark:hover:shadow-green-900/10 transition-all duration-300 relative">
             <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
-                <Link href={`/shop/${product.id}`} className="block w-full h-full">
+                <Link href={`/shop?view=${product.id}`} className="block w-full h-full">
                     <Image
                         src={imageSrc}
                         alt={product.name}
@@ -78,7 +78,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                         <p className="text-xs text-[#2D5A27] dark:text-green-500 font-semibold mb-1 uppercase tracking-wider">
                             {product.categoryName || (isAdminOrManager ? product.businessType : "")}
                         </p>
-                        <Link href={`/shop/${product.id}`}>
+                        <Link href={`/shop?view=${product.id}`}>
                             <h3 className="font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-[#2D5A27] dark:group-hover:text-green-400 transition-colors">
                                 {product.name}
                             </h3>

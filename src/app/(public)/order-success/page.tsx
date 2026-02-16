@@ -2,15 +2,22 @@
 
 import Link from "next/link";
 import { Check, MessageCircle, ArrowRight, X } from "lucide-react";
+import { SettingsService } from "@/services/settings.service";
 
 export default function OrderSuccessPage() {
-    const handleWhatsAppClick = () => {
-        // TODO: Replace with ACTUAL Bot Number (Business Account Number)
-        // This initiates the "Track my order" message which OPENS the 24h window.
-        // Format: 977[NUMBER]
-        const BOT_NUMBER = "9779800000000";
+    const handleWhatsAppClick = async () => {
+        let botNumber = "9779800000000"; // Fallback
+        try {
+            const settings = await SettingsService.getSettings();
+            if (settings.whatsappBotNumber) {
+                botNumber = settings.whatsappBotNumber;
+            }
+        } catch (error) {
+            console.error("Error fetching settings for WhatsApp link:", error);
+        }
+
         const text = encodeURIComponent("Track my order");
-        window.open(`https://wa.me/${BOT_NUMBER}?text=${text}`, '_blank');
+        window.open(`https://wa.me/${botNumber}?text=${text}`, '_blank');
     };
 
     return (

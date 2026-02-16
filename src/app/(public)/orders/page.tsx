@@ -316,19 +316,6 @@ function OrderCard({ order, onUpdate }: { order: TransactionRecord; onUpdate: ()
                             </div>
                         </div>
 
-                        {/* Cancel Button in Expanded View */}
-                        {canCancel && (
-                            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
-                                <button
-                                    onClick={() => setShowCancelDialog(true)}
-                                    disabled={isUpdating}
-                                    className="flex items-center gap-1.5 text-xs font-bold text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
-                                >
-                                    <Ban className="h-3.5 w-3.5" />
-                                    <span>Cancel Order</span>
-                                </button>
-                            </div>
-                        )}
 
                         {/* Delivery Info */}
                         {(order.deliveryAddress || order.deliveryInstructions) && (
@@ -346,6 +333,20 @@ function OrderCard({ order, onUpdate }: { order: TransactionRecord; onUpdate: ()
                                         </p>
                                     )}
                                 </div>
+                            </div>
+                        )}
+
+                        {/* Cancel Button - Relocated to the bottom */}
+                        {canCancel && (
+                            <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+                                <button
+                                    onClick={() => setShowCancelDialog(true)}
+                                    disabled={isUpdating}
+                                    className="flex items-center gap-1.5 text-xs font-bold text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
+                                >
+                                    <Ban className="h-3.5 w-3.5" />
+                                    <span>Cancel Order</span>
+                                </button>
                             </div>
                         )}
                     </div>

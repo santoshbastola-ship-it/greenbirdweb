@@ -20,6 +20,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     enableFirstOrderDiscount: false,
     firstOrderDiscountAmount: 0,
     firstOrderCountThreshold: 1, // Default: First 1 order
+    whatsappBotNumber: "9779800000000",
 };
 
 export const SettingsService = {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Plus, Search, Zap, Droplet, Flame, UtensilsCrossed, X, Trash2, Edit, Calendar, Clock, DollarSign } from "lucide-react";
 import { EnergyBill, EnergyType, PaymentStatus } from "@/types";
+import { FilterTab } from "@/components/ui/FilterTab";
 import {
     subscribeToEnergyBills,
     deleteEnergyBill,
@@ -181,27 +182,16 @@ export default function EnergyBillsPage() {
                 />
 
                 {/* Tabs */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
-                    <div className="flex border-b border-gray-200 overflow-x-auto">
+                <div className="mb-6 -mx-4 px-4 overflow-x-auto pb-2 no-scrollbar">
+                    <div className="flex gap-2 min-w-max">
                         {tabs.map((tab) => (
-                            <button
+                            <FilterTab
                                 key={tab.status}
+                                label={tab.label}
+                                count={getTabCount(tab.status)}
+                                active={activeTab === tab.status}
                                 onClick={() => setActiveTab(tab.status)}
-                                className={`flex-1 min-w-[100px] sm:min-w-[120px] px-4 sm:px-6 py-4 text-sm font-medium transition-colors relative whitespace-nowrap ${activeTab === tab.status
-                                    ? "text-green-600 border-b-2 border-green-600"
-                                    : "text-gray-500 hover:text-gray-700"
-                                    }`}
-                            >
-                                <div className="flex items-center justify-center gap-2">
-                                    <span>{tab.label}</span>
-                                    <span className={`px-2 py-0.5 rounded-full text-xs ${activeTab === tab.status
-                                        ? "bg-green-100 text-green-700"
-                                        : "bg-gray-100 text-gray-600"
-                                        }`}>
-                                        {getTabCount(tab.status)}
-                                    </span>
-                                </div>
-                            </button>
+                            />
                         ))}
                     </div>
                 </div>

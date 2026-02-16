@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Category, BusinessType, Unit, UnitType } from "@/types";
+import { FilterTab } from "@/components/ui/FilterTab";
 import { CategoryService } from "@/services/category.service";
 import { UnitService } from "@/services/unit.service";
 import {
@@ -262,6 +263,13 @@ export default function CategoriesAndUnitsPage() {
         { label: "Assets", status: "asset" },
     ];
 
+    const getCategoryCount = (type: CategoryTab) => {
+        if (type === "ALL") {
+            return categories.length;
+        }
+        return categories.filter(cat => cat.businessType === type).length;
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-96">
@@ -333,28 +341,17 @@ export default function CategoriesAndUnitsPage() {
                             placeholder="Search"
                         />
 
-                        {/* Category Sub-Tabs */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
-                            <div className="flex border-b border-gray-200 overflow-x-auto">
+                        {/* Category Type Filter Tabs */}
+                        <div className="mb-6 -mx-4 px-4 overflow-x-auto pb-2 no-scrollbar">
+                            <div className="flex gap-2 min-w-max">
                                 {categoryTabs.map((tab) => (
-                                    <button
+                                    <FilterTab
                                         key={tab.status}
+                                        label={tab.label}
+                                        count={getCategoryCount(tab.status)}
+                                        active={activeCategoryTab === tab.status}
                                         onClick={() => setActiveCategoryTab(tab.status)}
-                                        className={`flex-1 min-w-[100px] sm:min-w-[120px] px-4 sm:px-6 py-4 text-sm font-medium transition-colors relative whitespace-nowrap ${activeCategoryTab === tab.status
-                                            ? "text-green-600 border-b-2 border-green-600"
-                                            : "text-gray-500 hover:text-gray-700"
-                                            }`}
-                                    >
-                                        <div className="flex items-center justify-center gap-2">
-                                            <span>{tab.label}</span>
-                                            <span className={`px-2 py-0.5 rounded-full text-xs ${activeCategoryTab === tab.status
-                                                ? "bg-green-100 text-green-700"
-                                                : "bg-gray-100 text-gray-600"
-                                                }`}>
-                                                {categories.filter(cat => tab.status === "ALL" || cat.businessType === tab.status).length}
-                                            </span>
-                                        </div>
-                                    </button>
+                                    />
                                 ))}
                             </div>
                         </div>

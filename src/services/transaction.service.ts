@@ -406,11 +406,15 @@ export const TransactionService = {
                                 title = 'Order Delivered!';
                                 message = `Your order ${data.billNo} ( ${itemList} ) has been delivered! Thank you for shopping with Greenbird Homestead. 🌱${WHATSAPP_SUPPORT_FOOTER}`;
                                 type = 'success';
+                                whatsappTemplate = 'order_shipped'; // Mapping delivered to shipped template for now
+                                whatsappTemplateParams = [data.billNo, 'Delivered'];
                                 break;
                             case 'accepted':
                                 title = 'Order Confirmed';
                                 message = `Your order ${data.billNo} ( ${itemList} ) has been confirmed and is being prepared.${WHATSAPP_SUPPORT_FOOTER}`;
                                 type = 'success';
+                                whatsappTemplate = 'order_confirmation';
+                                whatsappTemplateParams = [data.billNo, 'Confirmed'];
                                 break;
                             case 'open':
                                 title = 'Order Received';

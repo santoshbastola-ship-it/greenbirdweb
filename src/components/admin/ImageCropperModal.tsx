@@ -101,6 +101,7 @@ export default function ImageCropperModal({ imageSrc, aspect, onCropComplete, on
                         <p className="text-sm text-gray-500 mt-1">Adjust the frame to select the best part of your photo.</p>
                     </div>
                     <button
+                        type="button"
                         onClick={onClose}
                         className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                     >
@@ -130,6 +131,7 @@ export default function ImageCropperModal({ imageSrc, aspect, onCropComplete, on
                 {/* Actions */}
                 <div className="p-6 border-t border-gray-100 flex justify-between items-center bg-white">
                     <button
+                        type="button"
                         onClick={() => {
                             // Reset crop
                             if (imgRef.current) {
@@ -144,12 +146,14 @@ export default function ImageCropperModal({ imageSrc, aspect, onCropComplete, on
 
                     <div className="flex gap-4">
                         <button
+                            type="button"
                             onClick={onClose}
                             className="px-6 py-2.5 text-gray-600 font-medium hover:bg-gray-50 rounded-xl transition-colors"
                         >
                             Cancel
                         </button>
                         <button
+                            type="button"
                             onClick={handleSave}
                             className="px-8 py-2.5 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition-all shadow-lg shadow-green-600/20 flex items-center gap-2"
                         >

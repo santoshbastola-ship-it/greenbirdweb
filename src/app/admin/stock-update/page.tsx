@@ -10,6 +10,7 @@ import AdvancedSearch from "@/components/admin/AdvancedSearch";
 import { toNepali } from "@/lib/date-helper";
 import NepaliDate from "nepali-date-converter";
 import LogoLoader from "@/components/ui/LogoLoader";
+import { FilterTab } from "@/components/ui/FilterTab";
 
 export default function QuickStockUpdatePage() {
     const [searchTerm, setSearchTerm] = useState("");
@@ -126,27 +127,16 @@ export default function QuickStockUpdatePage() {
                 />
 
                 {/* Tabs */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
-                    <div className="flex border-b border-gray-200 overflow-x-auto">
+                <div className="mb-6 -mx-4 px-4 overflow-x-auto pb-2 no-scrollbar">
+                    <div className="flex gap-2 min-w-max">
                         {tabs.map((tab) => (
-                            <button
+                            <FilterTab
                                 key={tab.type}
+                                label={tab.label}
+                                count={getTabCount(tab.type)}
+                                active={filterType === tab.type}
                                 onClick={() => setFilterType(tab.type)}
-                                className={`flex-1 min-w-[120px] px-6 py-4 text-sm font-medium transition-colors relative ${filterType === tab.type
-                                    ? "text-green-600 border-b-2 border-green-600"
-                                    : "text-gray-500 hover:text-gray-700"
-                                    }`}
-                            >
-                                <div className="flex items-center justify-center gap-2">
-                                    <span>{tab.label}</span>
-                                    <span className={`px-2 py-0.5 rounded-full text-xs ${filterType === tab.type
-                                        ? "bg-green-100 text-green-700"
-                                        : "bg-gray-100 text-gray-600"
-                                        }`}>
-                                        {getTabCount(tab.type)}
-                                    </span>
-                                </div>
-                            </button>
+                            />
                         ))}
                     </div>
                 </div>

@@ -336,8 +336,9 @@ export default function NewPurchasePage() {
                                         type="number"
                                         placeholder="Qty"
                                         className="flex-1 px-4 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-red-500 transition-all"
-                                        value={entryItem.quantity}
+                                        value={entryItem.quantity === "0" ? "" : entryItem.quantity}
                                         onChange={e => setEntryItem({ ...entryItem, quantity: e.target.value })}
+                                        onFocus={e => e.target.select()}
                                     />
                                     <select
                                         className="w-28 px-4 py-2.5 bg-white border border-gray-200 rounded-xl outline-none text-sm transition-all focus:ring-2 focus:ring-red-500"
@@ -357,8 +358,9 @@ export default function NewPurchasePage() {
                                         type="number"
                                         placeholder="Total Price"
                                         className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-red-500 transition-all font-bold"
-                                        value={entryItem.totalPrice}
+                                        value={entryItem.totalPrice === "0" ? "" : entryItem.totalPrice}
                                         onChange={e => setEntryItem({ ...entryItem, totalPrice: e.target.value })}
+                                        onFocus={e => e.target.select()}
                                     />
                                 </div>
                             </div>
@@ -451,8 +453,9 @@ export default function NewPurchasePage() {
                                 <input
                                     type="number"
                                     className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all"
-                                    value={discount}
+                                    value={discount === "0" ? "" : discount}
                                     onChange={e => setDiscount(e.target.value)}
+                                    onFocus={e => e.target.select()}
                                 />
                             </div>
                         </div>
@@ -471,8 +474,9 @@ export default function NewPurchasePage() {
                                 <input
                                     type="number"
                                     className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition-all font-bold text-green-700"
-                                    value={paidAmount}
+                                    value={paidAmount === "0" ? "" : paidAmount}
                                     onChange={e => setPaidAmount(e.target.value)}
+                                    onFocus={e => e.target.select()}
                                 />
                             </div>
                         </div>

@@ -15,6 +15,9 @@ function CategoryFilterContent({ categories }: CategoryFilterProps) {
     const searchParams = useSearchParams();
     const { dbUser } = useAuth();
     const currentCategory = searchParams.get("category") || "all";
+    const viewId = searchParams.get("view");
+
+    if (viewId) return null;
 
     const isAdminOrManager = dbUser?.role === 'admin' || dbUser?.role === 'manager';
 

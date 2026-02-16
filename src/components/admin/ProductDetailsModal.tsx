@@ -4,6 +4,7 @@ import { X, Edit2, Package, Check, ShoppingCart, Home, History } from "lucide-re
 import Link from "next/link";
 import { toNepali } from "@/lib/date-helper";
 import UserName from "@/components/ui/UserName";
+import ProductImageGallery from "@/components/shop/ProductImageGallery";
 
 
 interface ProductDetailsModalProps {
@@ -51,29 +52,13 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Left Column: Images & Description */}
                         <div>
-                            {/* Main Image */}
-                            <div className="bg-gray-50 rounded-xl overflow-hidden border border-gray-100 aspect-square flex items-center justify-center mb-4">
-                                {product.images?.[0] ? (
-                                    <img
-                                        src={product.images[0]}
-                                        alt={product.name}
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <Package className="h-24 w-24 text-gray-300" />
-                                )}
+                            {/* Image Section */}
+                            <div className="bg-gray-50 rounded-xl overflow-hidden border border-gray-100 mb-4 h-[400px]">
+                                <ProductImageGallery
+                                    images={product.images || []}
+                                    productName={product.name}
+                                />
                             </div>
-
-                            {/* Additional Images (if any) */}
-                            {product.images && product.images.length > 1 && (
-                                <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
-                                    {product.images.slice(1).map((img, idx) => (
-                                        <div key={idx} className="h-16 w-16 flex-shrink-0 bg-gray-50 rounded-lg overflow-hidden border border-gray-100">
-                                            <img src={img} alt={`${product.name} ${idx + 2}`} className="w-full h-full object-cover" />
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
 
                             {/* Description */}
                             <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">

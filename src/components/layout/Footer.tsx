@@ -84,7 +84,7 @@ export default function Footer({ minimized = false }: FooterProps) {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                     {/* Brand Section */}
-                    <div>
+                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
                         <div className="bg-white dark:bg-gray-200 p-2 rounded-lg inline-block mb-4">
                             <img
                                 src="/images/logo.png"
@@ -99,7 +99,7 @@ export default function Footer({ minimized = false }: FooterProps) {
                     </div>
 
                     {/* Quick Links */}
-                    <div>
+                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
                         <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
                         <ul className="space-y-2 text-sm text-gray-300">
                             <li><a href="/shop" className="hover:text-white transition-colors">Shop</a></li>
@@ -112,20 +112,20 @@ export default function Footer({ minimized = false }: FooterProps) {
                     </div>
 
                     {/* Contact Info */}
-                    <div>
+                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
                         <h4 className="text-lg font-semibold mb-4">Contact</h4>
                         <ul className="space-y-3 text-sm text-gray-300">
-                            <li className="flex items-start gap-2">
+                            <li className="flex flex-col md:flex-row items-center md:items-start gap-2">
                                 <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
                                 <span>Bastola Chowk, Besi Gaun, Duwakot, Bhaktapur, Nepal</span>
                             </li>
-                            <li className="flex items-center gap-2">
+                            <li className="flex flex-col md:flex-row items-center md:items-start gap-2">
                                 <Mail className="h-4 w-4 flex-shrink-0" />
                                 <a href="mailto:greenbirdhomestead@gmail.com" className="hover:text-white transition-colors">
                                     greenbirdhomestead@gmail.com
                                 </a>
                             </li>
-                            <li className="flex items-center gap-2">
+                            <li className="flex flex-col md:flex-row items-center md:items-start gap-2">
                                 <Phone className="h-4 w-4 flex-shrink-0" />
                                 <a href="tel:+9779849850000" className="hover:text-white transition-colors">
                                     +977 9849850000
@@ -135,9 +135,9 @@ export default function Footer({ minimized = false }: FooterProps) {
                     </div>
 
                     {/* Social Media */}
-                    <div>
+                    <div className="flex flex-col items-center md:items-start text-center md:text-left">
                         <h4 className="text-lg font-semibold mb-4">Connect With Us</h4>
-                        <div className="flex gap-3">
+                        <div className="flex justify-center md:justify-start gap-3">
                             <a
                                 href="https://wa.me/9779849850000"
                                 target="_blank"

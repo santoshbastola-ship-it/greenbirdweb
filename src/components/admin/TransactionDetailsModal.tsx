@@ -77,7 +77,7 @@ export default function TransactionDetailsModal({
     const [isProductsLoading, setIsProductsLoading] = useState(false);
 
     const totalItemsPrice = (isEditing ? editForm.items : transaction.items).reduce((sum, item) => sum + item.totalPrice, 0);
-    const finalTotal = totalItemsPrice - (transaction.discount || 0) + (transaction.deliveryFee || 0);
+    const finalTotal = totalItemsPrice - ((isEditing ? editForm.discount : transaction.discount) || 0) + (transaction.deliveryFee || 0);
     const remainingAmount = finalTotal - (transaction.paidAmount || 0);
 
     // Initialize products when entering edit mode
@@ -269,6 +269,10 @@ export default function TransactionDetailsModal({
                 changes.push("Documents updated");
             }
 
+            if (editForm.discount !== transaction.discount) {
+                changes.push(`Discount changed from Rs ${transaction.discount || 0} to Rs ${editForm.discount || 0}`);
+            }
+
             // Sales specific changes
             if (transaction.type === TransactionType.Sale) {
                 if (editForm.deliveryAddress !== transaction.deliveryAddress) changes.push(`Items updated`); // Simplified message or detailed
@@ -298,6 +302,7 @@ export default function TransactionDetailsModal({
                 items: editForm.items,
                 partyName: editForm.partyName,
                 date: editForm.date,
+                discount: editForm.discount,
                 documentUrls: editForm.documentUrls,
                 // Order specific fields
                 deliveryAddress: editForm.deliveryAddress,
@@ -388,15 +393,13 @@ export default function TransactionDetailsModal({
                         )}
                         <div className="w-px h-6 bg-gray-200 mx-2 hidden sm:block"></div>
                         {!isEditing ? (
-                            !isManager && (
-                                <button
-                                    onClick={() => setIsEditing(true)}
-                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg flex items-center gap-2 transition-colors"
-                                >
-                                    <Edit2 className="h-4 w-4" />
-                                    <span className="text-sm font-medium">Edit</span>
-                                </button>
-                            )
+                            <button
+                                onClick={() => setIsEditing(true)}
+                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg flex items-center gap-2 transition-colors"
+                            >
+                                <Edit2 className="h-4 w-4" />
+                                <span className="text-sm font-medium">Edit</span>
+                            </button>
                         ) : (
                             <div className="flex items-center gap-2">
                                 <button
@@ -765,11 +768,24 @@ export default function TransactionDetailsModal({
                                         <span>Subtotal</span>
                                         <span className="font-medium">Rs. {totalItemsPrice.toLocaleString()}</span>
                                     </div>
-                                    {transaction.discount > 0 && (
-                                        <div className="flex justify-between text-sm text-red-600">
+                                    {isEditing ? (
+                                        <div className="flex justify-between items-center text-sm text-red-600">
                                             <span>Discount</span>
-                                            <span>- Rs. {transaction.discount.toLocaleString()}</span>
+                                            <input
+                                                type="number"
+                                                value={editForm.discount || ""}
+                                                onChange={(e) => setEditForm({ ...editForm, discount: parseFloat(e.target.value) || 0 })}
+                                                onFocus={(e) => e.target.select()}
+                                                className="w-24 px-2 py-1 border border-red-200 rounded text-right font-bold focus:ring-1 focus:ring-red-500 outline-none"
+                                            />
                                         </div>
+                                    ) : (
+                                        transaction.discount > 0 && (
+                                            <div className="flex justify-between text-sm text-red-600">
+                                                <span>Discount</span>
+                                                <span>- Rs. {transaction.discount.toLocaleString()}</span>
+                                            </div>
+                                        )
                                     )}
                                     {transaction.deliveryFee && transaction.deliveryFee > 0 && (
                                         <div className="flex justify-between text-sm text-blue-600">

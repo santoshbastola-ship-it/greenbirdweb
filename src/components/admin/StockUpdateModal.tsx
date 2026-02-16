@@ -137,12 +137,13 @@ export default function StockUpdateModal({ product, onClose, onUpdate }: StockUp
                                 required
                                 min={allowDecimals ? "0.01" : "1"}
                                 step={allowDecimals ? "0.01" : "1"}
-                                value={quantity}
+                                value={quantity || ""}
                                 onChange={(e) => {
                                     const val = e.target.value;
                                     if (!allowDecimals && val.includes('.')) return;
                                     setQuantity(val);
                                 }}
+                                onFocus={(e) => e.target.select()}
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
                                 placeholder="0.00"
                             />

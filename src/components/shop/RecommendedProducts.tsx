@@ -6,6 +6,7 @@ import { Plus, Package, Check } from 'lucide-react';
 import { useCartStore } from '@/store/useCartStore';
 import { useAuth } from '@/context/AuthContext';
 import ShareButton from '@/components/ui/ShareButton';
+import { calculateProductPrice } from '@/lib/product-helper';
 
 import { FRESH_EGGS_PRODUCT_ID } from '@/lib/constants';
 
@@ -65,11 +66,13 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
         setTimeout(() => setIsAdded(false), 2000);
     };
 
+    const { finalPrice } = calculateProductPrice(product);
+
     return (
         <div className="group bg-white rounded-xl border border-gray-100 p-3 md:p-4 hover:shadow-md transition-all duration-300 flex items-center gap-3 md:gap-4">
             {/* Product Image - Responsive sizing */}
             <div className="relative h-16 w-16 sm:h-20 sm:w-20 flex-shrink-0">
-                <Link href={`/shop/${product.id}`} className="block w-full h-full overflow-hidden rounded-lg bg-gray-50 border border-gray-100">
+                <Link href={`/shop?view=${product.id}`} className="block w-full h-full overflow-hidden rounded-lg bg-gray-50 border border-gray-100">
                     {product.images?.[0] ? (
                         <img
                             src={product.images[0]}
@@ -96,7 +99,7 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
 
             {/* Product Details - Flexible layout */}
             <div className="flex-1 min-w-0">
-                <Link href={`/shop/${product.id}`} className="block group/title">
+                <Link href={`/shop?view=${product.id}`} className="block group/title">
                     {/* Product name - no truncation, wraps naturally */}
                     <h3 className="text-sm md:text-base font-bold text-gray-900 dark:text-white line-clamp-2 group-hover/title:text-green-600 dark:group-hover/title:text-green-400 transition-colors leading-tight mb-1">
                         {product.name}
@@ -112,7 +115,7 @@ function ProductCard({ product, onAdd }: { product: Product; onAdd: () => void }
                 {/* Price and unit on same line */}
                 <div className="flex items-baseline gap-1 flex-wrap">
                     <span className="text-sm md:text-base font-black text-green-700 dark:text-green-500 whitespace-nowrap">
-                        Rs. {product.currentPrice.toLocaleString()}
+                        Rs. {finalPrice.toLocaleString()}
                     </span>
                     <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400 font-medium whitespace-nowrap">/ {product.unit}</span>
                 </div>

@@ -73,7 +73,7 @@ export function useRecommendations() {
         };
 
         fetchRecommendations();
-    }, [cartItems]); // Re-run when cart changes
+    }, [JSON.stringify(cartItems.map(item => item.productId))]); // Re-run only when product IDs in cart change, not quantities
 
     return { recommendations, loading };
 }

@@ -13,6 +13,14 @@ export default function ProductImageGallery({ images, productName }: ProductImag
     const [activeIndex, setActiveIndex] = useState(0);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+    // Debug specific product
+    if (productName.includes("Indoor Plants") || images.some(i => i.includes("indoorplants"))) {
+        console.log(`[ProductImageGallery] Rendering for ${productName}`);
+        console.log(`[ProductImageGallery] Images prop:`, images);
+        console.log(`[ProductImageGallery] Images type:`, typeof images);
+        console.log(`[ProductImageGallery] Is Array?`, Array.isArray(images));
+    }
+
     const safeImages = Array.isArray(images) ? images : [];
     const hasMultipleImages = safeImages.length > 1;
     const displayImages = safeImages.length > 0 ? safeImages : ["/placeholder.png"];
@@ -99,12 +107,13 @@ export default function ProductImageGallery({ images, productName }: ProductImag
 
             {/* Indicators */}
             {hasMultipleImages && (
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
                     {displayImages.map((_, index) => (
                         <button
                             key={index}
+                            type="button"
                             onClick={() => scrollToImage(index)}
-                            className={`h-1.5 rounded-full transition-all duration-300 ${index === activeIndex ? "w-6 bg-[#2D5A27]" : "w-1.5 bg-white/60"
+                            className={`h-1 rounded-full transition-all duration-300 ${index === activeIndex ? "w-4 bg-[#2D5A27]" : "w-1 bg-white/60"
                                 }`}
                             aria-label={`Go to image ${index + 1}`}
                         />

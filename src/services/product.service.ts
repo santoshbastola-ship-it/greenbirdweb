@@ -4,6 +4,7 @@ import { Product, StockHistoryEntry, PriceHistoryEntry } from "@/types";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { NotificationService } from "./notification.service";
 import { optimizeImage } from "@/lib/image-optimizer";
+import { calculateProductPrice } from "@/lib/product-helper";
 
 const COLLECTION_NAME = "products";
 
@@ -17,11 +18,23 @@ export const ProductService = {
             const categories = await ProductService.getCategories();
             const categoryMap = new Map(categories.map(cat => [cat.id, cat.name]));
 
-            return products.map(p => ({
-                ...p,
-                images: Array.isArray(p.images) ? p.images : [],
-                categoryName: p.categoryId ? categoryMap.get(p.categoryId) : undefined
-            }));
+            return products.map(p => {
+                const anyP = p as any;
+                let normalizedImages: string[] = [];
+                if (Array.isArray(anyP.images)) {
+                    normalizedImages = anyP.images;
+                } else if (typeof anyP.images === 'string' && anyP.images) {
+                    normalizedImages = [anyP.images];
+                } else if (anyP.imageUrl && typeof anyP.imageUrl === 'string') {
+                    normalizedImages = [anyP.imageUrl];
+                }
+
+                return {
+                    ...p,
+                    images: normalizedImages,
+                    categoryName: p.categoryId ? categoryMap.get(p.categoryId) : undefined
+                };
+            });
         } catch (error) {
             console.error("Error fetching products:", error);
             return [];
@@ -48,7 +61,17 @@ export const ProductService = {
                     }
                 }
                 // Normalize images
-                product.images = Array.isArray(product.images) ? product.images : [];
+                const anyProduct = product as any;
+                if (Array.isArray(anyProduct.images)) {
+                    product.images = anyProduct.images;
+                } else if (typeof anyProduct.images === 'string' && anyProduct.images) {
+                    product.images = [anyProduct.images];
+                } else if (anyProduct.imageUrl && typeof anyProduct.imageUrl === 'string') {
+                    product.images = [anyProduct.imageUrl];
+                } else {
+                    product.images = [];
+                }
+
                 return product;
             } else {
                 return null;
@@ -63,11 +86,23 @@ export const ProductService = {
         try {
             const q = query(collection(db, COLLECTION_NAME), where("businessType", "==", category));
             const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                images: Array.isArray((doc.data() as any).images) ? (doc.data() as any).images : []
-            } as Product));
+            return querySnapshot.docs.map(doc => {
+                const data = doc.data() as any;
+                let normalizedImages: string[] = [];
+                if (Array.isArray(data.images)) {
+                    normalizedImages = data.images;
+                } else if (typeof data.images === 'string' && data.images) {
+                    normalizedImages = [data.images];
+                } else if (data.imageUrl && typeof data.imageUrl === 'string') {
+                    normalizedImages = [data.imageUrl];
+                }
+
+                return {
+                    id: doc.id,
+                    ...data,
+                    images: normalizedImages
+                } as Product;
+            });
         } catch (error) {
             console.error("Error fetching category:", error);
             return [];
@@ -163,13 +198,42 @@ export const ProductService = {
                 }
             }
 
-            // Sanitize updates (remove undefined)
-            const cleanUpdates = JSON.parse(JSON.stringify(updates));
+            // Prepare safe update object
+            const finalUpdates: any = {};
+
+            // Allow-list approach for critical fields
+            const safeFields = [
+                'name', 'businessType', 'unit', 'priceUnit', 'currentPrice',
+                'currentStock', 'description', 'categoryId', 'categoryName',
+                'isAvailableForSale', 'isFeatured', 'showInApp', 'tags', 'relatedProductIds',
+                'discount', 'priceHistory', 'stockHistory', 'createdBy'
+            ];
+
+            // Copy allowed fields if they exist in updates
+            safeFields.forEach(field => {
+                if (field in updates) {
+                    finalUpdates[field] = (updates as any)[field];
+                }
+            });
+
+            // Handle images explicitly and carefully
+            if (updates.images && Array.isArray(updates.images)) {
+                console.log(`[ProductService] Processing images update:`, updates.images);
+                // Ensure it's a clean array of strings
+                finalUpdates.images = updates.images
+                    .filter(img => typeof img === 'string' && img.trim() !== '')
+                    .map(img => String(img));
+            }
+
+            console.log(`[ProductService] Final updates keys:`, Object.keys(finalUpdates));
+            console.log(`[ProductService] Final images array:`, finalUpdates.images);
 
             await updateDoc(docRef, {
-                ...cleanUpdates,
+                ...finalUpdates,
                 updatedAt: new Date().toISOString(),
             });
+
+            console.log(`[ProductService] updateDoc completed for ${id}`);
 
             // Notify Admins
             const timestamp = new Date().toLocaleString();
@@ -325,11 +389,23 @@ export const ProductService = {
         try {
             const q = query(collection(db, COLLECTION_NAME), where("isFeatured", "==", true));
             const querySnapshot = await getDocs(q);
-            let featuredProducts = querySnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data(),
-                images: Array.isArray((doc.data() as any).images) ? (doc.data() as any).images : []
-            } as Product));
+            let featuredProducts = querySnapshot.docs.map(doc => {
+                const data = doc.data() as any;
+                let normalizedImages: string[] = [];
+                if (Array.isArray(data.images)) {
+                    normalizedImages = data.images;
+                } else if (typeof data.images === 'string' && data.images) {
+                    normalizedImages = [data.images];
+                } else if (data.imageUrl && typeof data.imageUrl === 'string') {
+                    normalizedImages = [data.imageUrl];
+                }
+
+                return {
+                    id: doc.id,
+                    ...data,
+                    images: normalizedImages
+                } as Product;
+            });
 
             // Fallback: If no featured products found via query, but there might be some that are not indexed properly
             if (featuredProducts.length === 0) {
@@ -386,15 +462,18 @@ export const ProductService = {
                     return false;
                 })
                 .slice(0, 5) // Limit to 5 results
-                .map((product) => ({
-                    id: product.id,
-                    name: product.name,
-                    category: product.categoryName || product.businessType,
-                    image: product.images?.[0] || '/placeholder.png',
-                    price: product.currentPrice,
-                    unit: product.unit,
-                    slug: product.id
-                }));
+                .map((product) => {
+                    const { finalPrice } = calculateProductPrice(product);
+                    return {
+                        id: product.id,
+                        name: product.name,
+                        category: product.categoryName || product.businessType,
+                        image: product.images?.[0] || '/placeholder.png',
+                        price: finalPrice,
+                        unit: product.unit,
+                        slug: product.id
+                    };
+                });
         } catch (error) {
             console.error("Error searching products:", error);
             return [];

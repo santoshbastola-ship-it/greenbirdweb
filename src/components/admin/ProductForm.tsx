@@ -46,6 +46,7 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
         if (initialData) {
             return {
                 ...initialData,
+                images: initialData.images || [],
                 tags: initialData.tags || ["", ""],
                 discount: initialData.discount,
                 showInApp: initialData.showInApp ?? true,
@@ -101,12 +102,31 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
             const cleanedTags = (formData.tags || []).filter(tag => tag && tag.trim() !== "");
             const dataToSave = { ...formData, tags: cleanedTags };
 
+            // Critical Fix: Recover images from Ref if state is empty but Ref is populated
+            // This handles cases where state might be stale or reset unexpectedly
+            console.log("[ProductForm] SUBMIT START - State Images:", dataToSave.images);
+            console.log("[ProductForm] SUBMIT START - Ref Images:", imagesRef.current);
+
+            if ((!dataToSave.images || dataToSave.images.length === 0) && imagesRef.current.length > 0) {
+                console.warn("[ProductForm] State images empty but Ref has images. Recovering from Ref.", imagesRef.current);
+                dataToSave.images = [...imagesRef.current];
+            } else if (dataToSave.images && dataToSave.images.length > 0 && imagesRef.current.length > dataToSave.images.length) {
+                // Paranoid check: if ref has MORE images than state, maybe we lost some?
+                // But wait, what if user deleted them? We shouldn't auto-restore if user deleted.
+                // We only restore if state is totally empty which implies a reset bug.
+                console.log("[ProductForm] Ref has more images than state, but state is not empty. Assuming user deleted some.");
+            }
+
+            console.log("[ProductForm] Submitting form data. Final Images:", dataToSave.images);
+
             if (isEditMode && initialData) {
+                console.log("[ProductForm] Updating product:", initialData.id, dataToSave);
                 await ProductService.updateProduct(initialData.id, dataToSave, changedBy);
-                showToast("Product updated successfully");
+                showToast(`Product updated successfully. (${dataToSave.images?.length || 0} images saved)`);
             } else {
+                console.log("[ProductForm] Creating product:", dataToSave);
                 await ProductService.createProduct(dataToSave, changedBy);
-                showToast("Product created successfully");
+                showToast(`Product created successfully. (${dataToSave.images?.length || 0} images saved)`);
             }
             setTimeout(() => {
                 router.push("/admin/inventory");
@@ -226,17 +246,29 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
             type: 'image/jpeg'
         });
 
-        // Close cropper
+        // Close cropper modal and start upload
         setCroppingImage(null);
-
-        // Upload this file
         setUploadingImage(true);
+
+        console.log(`[ProductForm] Starting upload for cropped image: ${croppedFile.name}`);
+
         try {
             const downloadURL = await ProductService.uploadProductImage(croppedFile);
-            setFormData(prev => ({
-                ...prev,
-                images: [...(prev.images || []), downloadURL]
-            }));
+            console.log(`[ProductService] Uploaded image URL:`, downloadURL);
+
+            if (!downloadURL || typeof downloadURL !== 'string' || downloadURL.trim() === '') {
+                throw new Error("Invalid download URL received");
+            }
+
+            setFormData(prev => {
+                const currentImages = prev.images || [];
+                console.log(`[ProductForm] Adding image to state. Previous images:`, currentImages);
+                console.log(`[ProductForm] New image URL:`, downloadURL);
+                return {
+                    ...prev,
+                    images: [...currentImages, downloadURL]
+                };
+            });
             showToast("Image uploaded successfully");
         } catch (error: any) {
             console.error("Error uploading cropped image:", error);
@@ -251,10 +283,14 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
     };
 
     const removeImage = (indexToRemove: number) => {
-        setFormData(prev => ({
-            ...prev,
-            images: prev.images?.filter((_, index) => index !== indexToRemove)
-        }));
+        setFormData(prev => {
+            const currentImages = prev.images || [];
+            console.log(`[ProductForm] Removing image at index ${indexToRemove}. Current images:`, currentImages);
+            return {
+                ...prev,
+                images: currentImages.filter((_, index) => index !== indexToRemove)
+            };
+        });
     };
 
     const setAsDefault = (index: number) => {
@@ -266,6 +302,65 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
             return { ...prev, images: newImages };
         });
     };
+
+    // Lifecycle Debugging & State Protection
+    const isMounted = useRef(false);
+    const imagesRef = useRef<string[]>(initialData?.images || []);
+
+    // Sync ref with state whenever state changes (one-way backup)
+    useEffect(() => {
+        if (formData.images) {
+            imagesRef.current = formData.images;
+        }
+    }, [formData.images]);
+
+    // Critical Fix: Sync state with initialData ONLY if it's a new product or different ID
+    // We strictly avoid overwriting the form if we are already editing the SAME product ID
+    useEffect(() => {
+        if (initialData) {
+            // Case 1: Form is empty/uninitialized (no ID)
+            // Case 2: We navigated to a DIFFERENT product (IDs don't match)
+            if (!formData.id || formData.id !== initialData.id) {
+                console.log("[ProductForm] Initializing form with data for:", initialData.id);
+                setFormData(prev => ({
+                    ...prev,
+                    ...initialData,
+                    images: initialData.images || []
+                }));
+                if (initialData.images) {
+                    imagesRef.current = initialData.images;
+                }
+            } else {
+                console.log("[ProductForm] Skipping state sync - Form already has data for this ID:", initialData.id);
+            }
+        }
+    }, [initialData, formData.id]);
+
+    useEffect(() => {
+        console.log("[ProductForm] MOUNTED");
+        isMounted.current = true;
+
+        // Initialize ref
+        if (initialData?.images) {
+            imagesRef.current = initialData.images;
+        }
+
+        return () => {
+            console.log("[ProductForm] UNMOUNTED");
+            isMounted.current = false;
+        };
+    }, []); // Run once on mount
+
+    useEffect(() => {
+        console.log("[ProductForm] RENDER - FormData Images count:", formData.images?.length || 0);
+
+        // Restoration Check: If we have initial images but state is empty, and we haven't actively deleted them? 
+        // This is risky if user legitimately deleted all images. 
+        // So we only restore if we think it's an accident? 
+        // actually, let's rely on the ref for submission integrity.
+    });
+
+    // ... existing logs ...
 
     return (
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-6">
@@ -297,7 +392,7 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                 </div>
                 <button
                     type="submit"
-                    disabled={loading || uploadingImage}
+                    disabled={loading || uploadingImage || !!croppingImage}
                     className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center disabled:opacity-50 gap-2"
                 >
                     {loading ? (
@@ -480,8 +575,9 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                         min="0"
                                         step="0.01"
                                         required
-                                        value={formData.currentPrice}
+                                        value={formData.currentPrice || ""}
                                         onChange={handleChange}
+                                        onFocus={(e) => e.target.select()}
                                         className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
                                     />
                                 </div>
@@ -626,8 +722,9 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                 <input
                                     type="number"
                                     min="0"
-                                    value={formData.discount.value}
-                                    onChange={(e) => handleDiscountChange('value', parseFloat(e.target.value))}
+                                    value={formData.discount.value || ""}
+                                    onChange={(e) => handleDiscountChange('value', parseFloat(e.target.value) || 0)}
+                                    onFocus={(e) => e.target.select()}
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
                                 />
                             </div>
@@ -724,7 +821,7 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
             <div className="flex justify-end pt-6 border-t border-gray-100">
                 <button
                     type="submit"
-                    disabled={loading || uploadingImage}
+                    disabled={loading || uploadingImage || !!croppingImage}
                     className="bg-green-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-green-700 transition-colors flex items-center shadow-lg shadow-green-900/10 disabled:opacity-50 gap-2"
                 >
                     {loading ? (

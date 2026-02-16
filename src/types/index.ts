@@ -200,6 +200,7 @@ export interface Product {
     tags?: string[];
     discount?: ProductDiscount;
     showInApp?: boolean; // If false, hide from customers
+    updatedAt?: string | Date;
 }
 
 export interface User {
@@ -300,6 +301,8 @@ export interface AppSettings {
     firstOrderCountThreshold: number; // Applies to first X orders (e.g. 1 means only 1st order)
     firstOrderDiscountStartDate?: string;
     firstOrderDiscountEndDate?: string;
+    // WhatsApp
+    whatsappBotNumber?: string;
 }
 
 // Notifications

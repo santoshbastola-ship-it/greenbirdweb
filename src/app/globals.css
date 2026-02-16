@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@variant dark (&:where(.dark, .dark *));
 
 /* Greenbird Homestead Color Palette */
 :root {
@@ -41,11 +42,10 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1a1a1a;
-    --foreground: #FCF9F1;
-  }
+.dark {
+  --background: #1a1a1a;
+  --foreground: #FCF9F1;
+
 
   /* Form Input Dark Mode Styles */
   input[type="text"],
@@ -194,6 +194,7 @@ input[type="reset"] {
 
 /* Standalone mode specific styles */
 @media (display-mode: standalone) {
+
   /* Add extra padding at top for status bar in standalone mode */
   body {
     padding-top: env(safe-area-inset-top);
@@ -206,6 +207,7 @@ input[type="reset"] {
     transform: translateY(100%);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -223,6 +225,7 @@ input[type="reset"] {
 
 /* Prevent zoom on input focus (iOS) */
 @media screen and (max-width: 768px) {
+
   input[type="text"],
   input[type="email"],
   input[type="tel"],

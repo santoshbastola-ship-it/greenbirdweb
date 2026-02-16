@@ -1,5 +1,9 @@
 # Release Notes
 
+## [0.2.23] - 2026-02-16
+- Fixed image persistence, added dark mode toggle, and resolved build errors.
+
+
 ## [0.2.21] - 2026-02-13
 - PWA: Added hidden 'Force Refresh' mechanism (5 taps on version) and updated cache-control headers to fix stuck version issue
 

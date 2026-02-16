@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { SettingsService } from "@/services/settings.service";
 import { AppSettings } from "@/types";
-import { Save, Loader2, Truck, Percent, IndianRupee, AlertCircle, Phone, User } from "lucide-react";
+import { Save, Loader2, Truck, Percent, IndianRupee, AlertCircle, Phone, User, MessageCircle } from "lucide-react";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -140,6 +140,21 @@ export default function AdminSettingsPage() {
                             />
                             <p className="mt-1 text-xs text-gray-400">For receiving order notifications (include country code)</p>
                         </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                <MessageCircle className="h-4 w-4 text-green-600" />
+                                WhatsApp Bot Number
+                            </label>
+                            <input
+                                type="tel"
+                                value={settings?.whatsappBotNumber || ""}
+                                onChange={(e) => setSettings(s => s ? { ...s, whatsappBotNumber: e.target.value } : null)}
+                                placeholder="977XXXXXXXXXX"
+                                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
+                            />
+                            <p className="mt-1 text-xs text-gray-400">The number customers message to opt-in (include country code)</p>
+                        </div>
                     </div>
                 </div>
 
@@ -161,11 +176,12 @@ export default function AdminSettingsPage() {
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">Rs.</span>
                                 <input
                                     type="number"
-                                    value={settings?.deliveryFee}
+                                    value={settings?.deliveryFee || ""}
                                     onChange={(e) => setSettings(s => s ? { ...s, deliveryFee: Number(e.target.value) } : null)}
                                     className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
                                     required
                                     min="0"
+                                    onFocus={(e) => e.target.select()}
                                 />
                             </div>
                             <p className="mt-1 text-xs text-gray-400">Standard fee charged for deliveries</p>
@@ -179,11 +195,12 @@ export default function AdminSettingsPage() {
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">Rs.</span>
                                 <input
                                     type="number"
-                                    value={settings?.freeDeliveryThreshold}
+                                    value={settings?.freeDeliveryThreshold || ""}
                                     onChange={(e) => setSettings(s => s ? { ...s, freeDeliveryThreshold: Number(e.target.value) } : null)}
                                     className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
                                     required
                                     min="0"
+                                    onFocus={(e) => e.target.select()}
                                 />
                             </div>
                             <p className="mt-1 text-xs text-gray-400">Orders above this amount get free delivery</p>
@@ -224,12 +241,13 @@ export default function AdminSettingsPage() {
                             <div className="relative">
                                 <input
                                     type="number"
-                                    value={settings?.appDiscountPercentage}
+                                    value={settings?.appDiscountPercentage || ""}
                                     onChange={(e) => setSettings(s => s ? { ...s, appDiscountPercentage: Number(e.target.value) } : null)}
                                     className="w-full pr-10 pl-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
                                     required
                                     min="0"
                                     max="100"
+                                    onFocus={(e) => e.target.select()}
                                 />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">%</span>
                             </div>
@@ -244,11 +262,12 @@ export default function AdminSettingsPage() {
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">Rs.</span>
                                 <input
                                     type="number"
-                                    value={settings?.minAppDiscount}
+                                    value={settings?.minAppDiscount || ""}
                                     onChange={(e) => setSettings(s => s ? { ...s, minAppDiscount: Number(e.target.value) } : null)}
                                     className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
                                     required
                                     min="0"
+                                    onFocus={(e) => e.target.select()}
                                 />
                             </div>
                             <p className="mt-1 text-xs text-gray-400">Minimum flat discount always applied</p>
@@ -316,11 +335,12 @@ export default function AdminSettingsPage() {
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">Rs.</span>
                                 <input
                                     type="number"
-                                    value={settings?.firstOrderDiscountAmount ?? 0}
+                                    value={settings?.firstOrderDiscountAmount || ""}
                                     onChange={(e) => setSettings(s => s ? { ...s, firstOrderDiscountAmount: Number(e.target.value) } : null)}
                                     className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
                                     required
                                     min="0"
+                                    onFocus={(e) => e.target.select()}
                                 />
                             </div>
                             <p className="mt-1 text-xs text-gray-400">Flat discount amount to apply</p>
@@ -332,11 +352,12 @@ export default function AdminSettingsPage() {
                             </label>
                             <input
                                 type="number"
-                                value={settings?.firstOrderCountThreshold ?? 1}
+                                value={settings?.firstOrderCountThreshold || ""}
                                 onChange={(e) => setSettings(s => s ? { ...s, firstOrderCountThreshold: Number(e.target.value) } : null)}
                                 className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
                                 required
                                 min="1"
+                                onFocus={(e) => e.target.select()}
                             />
                             <p className="mt-1 text-xs text-gray-400">e.g., "1" means only the 1st order gets the discount</p>
                         </div>

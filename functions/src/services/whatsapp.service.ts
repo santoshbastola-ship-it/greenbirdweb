@@ -81,7 +81,8 @@ export const WhatsappService = {
     },
 
     sendMessage: async (to: string, content: string, templateName?: string, templateParams?: string[], options?: { forceText?: boolean; skipIfClosed?: boolean }): Promise<any> => {
-        const isWindowOpen = await WhatsappService.checkWindow(to);
+        const cleanTo = to.replace(/\D/g, ""); // Ensure digits only for Meta
+        const isWindowOpen = await WhatsappService.checkWindow(cleanTo);
         const url = `https://graph.facebook.com/${META_API_VERSION}/${process.env.PHONE_NUMBER_ID}/messages`;
 
         const headers = {
@@ -91,7 +92,7 @@ export const WhatsappService = {
 
         let body: any = {
             messaging_product: "whatsapp",
-            to: to
+            to: cleanTo
         };
 
         if (isWindowOpen || options?.forceText) {

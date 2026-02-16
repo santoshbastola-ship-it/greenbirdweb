@@ -75,17 +75,12 @@ export default function SearchInput({ className, onFocus }: SearchInputProps) {
     const handleSuggestionClick = (product: SearchResult) => {
         setSearchTerm(product.name);
         setIsOpen(false);
-        router.push(`/shop?search=${encodeURIComponent(product.name)}`); // Or specific product page: /shop/${product.id}
-        // User requested: "show the likelyhood search results in drop down for user to select from" 
-        // Usually selecting an autocomplete suggestion goes to the product or fills the search. 
-        // Let's navigate to the product page directly for better UX?
-        // "select from" -> likely means choosing a product.
-        // Let's go to product page.
-        router.push(`/shop/${product.id}`);
+        // Use query param to avoid 404 for new products in static export
+        router.push(`/shop?view=${product.id}`);
     };
 
     return (
-        <div ref={wrapperRef} className={clsx("relative w-full max-w-sm", className)}>
+        <div ref={wrapperRef} className={clsx("relative w-full", className)}>
             <form onSubmit={handleSearch} className="relative w-full">
                 <input
                     type="text"
@@ -137,9 +132,14 @@ export default function SearchInput({ className, onFocus }: SearchInputProps) {
                                             />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                                {product.name}
-                                            </p>
+                                            <div className="flex justify-between items-start gap-2">
+                                                <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                                    {product.name}
+                                                </p>
+                                                <p className="text-sm font-bold text-[#2D5A27] dark:text-green-400 whitespace-nowrap">
+                                                    Rs. {product.price}
+                                                </p>
+                                            </div>
                                             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                                                 {product.category}
                                             </p>

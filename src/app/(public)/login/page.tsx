@@ -244,12 +244,16 @@ export default function LoginPage() {
 
                                                     // Force redirect for test admin
                                                     if (user.email === 'test-admin@greenbird.com') {
-                                                        router.push("/admin");
+                                                        const redirectTo = new URLSearchParams(window.location.search).get("redirect");
+                                                        router.push(redirectTo || "/admin");
                                                         return;
                                                     }
 
                                                     const userDoc = await UserService.getUserById(user.uid);
-                                                    if (userDoc && (userDoc.role === 'admin' || userDoc.role === 'manager')) {
+                                                    const redirectTo = new URLSearchParams(window.location.search).get("redirect");
+                                                    if (redirectTo) {
+                                                        router.push(redirectTo);
+                                                    } else if (userDoc && (userDoc.role === 'admin' || userDoc.role === 'manager')) {
                                                         router.push("/admin");
                                                     } else {
                                                         router.push("/shop");
