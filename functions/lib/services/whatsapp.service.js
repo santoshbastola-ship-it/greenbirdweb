@@ -108,7 +108,8 @@ exports.WhatsappService = {
     },
     sendMessage: async (to, content, templateName, templateParams, options) => {
         var _a;
-        const isWindowOpen = await exports.WhatsappService.checkWindow(to);
+        const cleanTo = to.replace(/\D/g, ""); // Ensure digits only for Meta
+        const isWindowOpen = await exports.WhatsappService.checkWindow(cleanTo);
         const url = `https://graph.facebook.com/${META_API_VERSION}/${process.env.PHONE_NUMBER_ID}/messages`;
         const headers = {
             "Authorization": `Bearer ${process.env.META_ACCESS_TOKEN}`,
@@ -116,7 +117,7 @@ exports.WhatsappService = {
         };
         let body = {
             messaging_product: "whatsapp",
-            to: to
+            to: cleanTo
         };
         if (isWindowOpen || (options === null || options === void 0 ? void 0 : options.forceText)) {
             console.log(`Window OPEN (or Forced) for ${to}. Sending free-form message.`);

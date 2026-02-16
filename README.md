@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Greenbird Homestead PWA
 
-## Getting Started
+A modern, full-stack E-commerce Progressive Web Application (PWA) built for localized commerce in Nepal. This project demonstrates high-level expertise in React 19, Next.js, Firebase, and advanced automated testing.
 
-First, run the development server:
+## 🚀 Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Progressive Web App (PWA)**: Fully installable with offline capabilities and push notifications.
+- **Advanced Admin Dashboard**: Comprehensive management of sales, purchases, stock, and bookings.
+- **Nepali Localization**: Support for Nepali dates (`nepali-date-converter`) and custom localized UI elements.
+- **Dynamic Image Management**: Integrated image cropping and compression (`react-image-crop`, `browser-image-compression`).
+- **Real-time Synchronization**: Powered by Firebase Firestore for seamless multi-device updates.
+- **Secure Communication**: Twilio integration for automated notifications.
+- **Rich Text Editing**: Integrated `react-quill-new` for detailed product descriptions.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠 Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Frontend**: [React 19](https://react.dev/), [Next.js 15+](https://nextjs.org/) (App Router & Turbo)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Backend/Database**: [Firebase](https://firebase.google.com/) (Firestore, Auth, Storage, Cloud Functions)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **Testing**: [Playwright](https://playwright.dev/) (End-to-End Testing)
+- **Utilities**: `lucide-react`, `date-fns`, `clsx`, `tailwind-merge`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🤖 Advanced Development Workflow
 
-## Learn More
+This project leverages a **Multi-Agent Developer System** (Antigravity) for rapid feature implementation and bug fixing. 
+- Integrated custom `Workflow.md` for standardized agentic development.
+- Automated release processes (`scripts/full-deploy.js`, `scripts/quick-deploy.js`).
+- Rigorous E2E test suites for image persistence, admin flows, and hydration stability.
 
-To learn more about Next.js, take a look at the following resources:
+## 📥 Getting Started
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. **Environment Setup**:
+   Configure your `.env.local` with Firebase and Twilio credentials.
 
-## Deploy on Vercel
+3. **Run Development Server**:
+   ```bash
+   npm run dev
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. **Testing**:
+   ```bash
+   npm run test
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🏗 Project Structure
+
+- `src/`: Core application logic and UI components.
+- `functions/`: Firebase Cloud Functions for backend logic (Twilio, Order Processing).
+- `tests/`: Comprehensive Playwright E2E test suites.
+- `scripts/`: Deployment and maintenance utilities.
+
+---
+Built with 💚 and AI-assisted workflows.
