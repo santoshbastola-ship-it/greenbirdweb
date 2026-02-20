@@ -133,83 +133,48 @@ export default function Navbar() {
                     </div>
 
                     {/* Right Icons */}
-                    <div className={clsx("flex items-center space-x-2 sm:space-x-3", isSearchOpen && "hidden md:flex")}>
-                        <div className="hidden md:block">
-                            <ThemeToggle />
-                        </div>
-                        {user && (
-                            <div className="flex items-center space-x-1 sm:space-x-2">
-                                {activeOrderCount > 0 && (
-                                    <Link href="/orders" className="relative p-2 text-[#2D5A27] bg-[#2D5A27]/10 hover:bg-[#2D5A27]/20 rounded-full transition-all duration-200" title="View Order Progress">
-                                        <Truck className="h-5 w-5 animate-pulse" />
-                                        <span className="absolute -top-1 -right-1 h-4 w-4 bg-[#2D5A27] text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white">
-                                            {activeOrderCount}
-                                        </span>
-                                    </Link>
-                                )}
-                                <Link href="/notifications" className="relative p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all duration-200 hidden md:block">
-                                    <Bell className="h-5 w-5" />
-                                    {unreadCount > 0 && (
-                                        <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white dark:border-gray-900">
-                                            {unreadCount > 9 ? '9+' : unreadCount}
-                                        </span>
-                                    )}
-                                </Link>
-                                <Link href="/orders" className="relative p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all duration-200 hidden md:block" title="My Orders">
-                                    <Package className="h-5 w-5" />
-                                    {activeOrderCount > 0 && (
-                                        <span className="absolute -top-1 -right-1 h-4 w-4 bg-[#2D5A27] dark:bg-green-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white dark:border-gray-900">
-                                            {activeOrderCount}
-                                        </span>
-                                    )}
-                                </Link>
-                                <Link href="/cart" className="relative p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all duration-200 hidden md:block">
-                                    <ShoppingCart className="h-5 w-5" />
-                                    <CartBadge />
-                                </Link>
-                            </div>
-                        )}
-
+                    <div className={clsx("flex items-center gap-2", isSearchOpen && "hidden md:flex")}>
                         {/* Unified Menu Toggle */}
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center">
                             {user ? (
                                 <button
                                     onClick={() => setIsOpen(!isOpen)}
-                                    className="flex items-center space-x-2 p-1 sm:p-1.5 pr-2 sm:pr-3 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200 border border-gray-100 dark:border-gray-800 shadow-sm shrink-0"
+                                    className="flex items-center p-1 sm:p-1.5 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all shrink-0"
                                     aria-label="Toggle Menu"
                                 >
-                                    {isOpen ? (
-                                        <X className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-                                    ) : (
-                                        <>
-                                            <div className="h-8 w-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center text-green-700 dark:text-green-400 font-bold overflow-hidden relative shadow-inner">
-                                                {user.photoURL ? (
-                                                    <img src={user.photoURL} alt={user.displayName || "User"} className="h-full w-full object-cover" />
-                                                ) : (
-                                                    (user.displayName || "U").charAt(0).toUpperCase()
-                                                )}
-                                                {isProfileIncomplete && (
-                                                    <span className="absolute top-0 right-0 h-2.5 w-2.5 bg-red-500 rounded-full border border-white"></span>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-1.5">
-                                                <span className="hidden lg:block font-semibold text-sm">
-                                                    Hi, {user.displayName?.split(" ")[0] || "User"}
-                                                </span>
-                                                <Menu className="h-5 w-5 text-gray-400" />
-                                            </div>
-                                        </>
-                                    )}
+                                    <div className="flex items-center gap-2 px-1">
+                                        <div className="relative h-7 w-7 sm:h-8 sm:w-8">
+                                            {user.photoURL ? (
+                                                <img src={user.photoURL} alt={user.displayName || "User"} className="h-full w-full rounded-full object-cover" />
+                                            ) : (
+                                                <div className="h-full w-full bg-[#2D5A27]/10 dark:bg-green-900/20 rounded-full flex items-center justify-center text-green-700 dark:text-green-400 font-bold">
+                                                    {(user.displayName || "U").charAt(0).toUpperCase()}
+                                                </div>
+                                            )}
+                                            {(unreadCount > 0 || activeOrderCount > 0) && (
+                                                <span className="absolute top-0 right-0 h-2.5 w-2.5 bg-red-500 rounded-full border border-white"></span>
+                                            )}
+                                        </div>
+                                        <div className="hidden sm:flex items-center gap-1.5">
+                                            <span className="font-semibold text-sm truncate max-w-[100px]">
+                                                Hi, {user.displayName?.split(" ")[0] || "User"}
+                                            </span>
+                                            <Menu className="h-4 w-4 text-gray-400" />
+                                        </div>
+                                        <div className="sm:hidden -ml-0.5">
+                                            <Menu className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                    </div>
                                 </button>
                             ) : (
-                                <>
-                                    <Link href={pathname === "/login" ? "/login" : `/login?redirect=${pathname}`} className="flex items-center space-x-1 px-3 py-1.5 sm:px-4 sm:py-2 bg-green-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-green-700 transition-colors shrink-0">
+                                <div className="flex items-center gap-2">
+                                    <Link href={pathname === "/login" ? "/login" : `/login?redirect=${pathname}`} className="flex items-center space-x-1 px-3 py-2 bg-green-600 text-white rounded-full text-xs sm:text-sm font-bold hover:bg-green-700 transition-colors shrink-0 shadow-sm">
                                         <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                         <span>Login</span>
                                     </Link>
                                     <button
                                         onClick={() => setIsOpen(!isOpen)}
-                                        className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg relative"
+                                        className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm transition-all relative"
                                         aria-label="Toggle Menu"
                                     >
                                         {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -217,7 +182,7 @@ export default function Navbar() {
                                             <span className="absolute top-2 right-2 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white dark:border-gray-900 animate-pulse"></span>
                                         )}
                                     </button>
-                                </>
+                                </div>
                             )}
                         </div>
 
@@ -225,140 +190,136 @@ export default function Navbar() {
                         {isOpen && (
                             <div
                                 ref={mobileMenuRef}
-                                className="absolute top-full right-0 w-screen sm:w-80 lg:w-64 mt-1 lg:mt-2 bg-white dark:bg-gray-900 lg:rounded-2xl shadow-xl lg:shadow-2xl border-t lg:border border-gray-100 dark:border-gray-800 animate-in fade-in slide-in-from-top-2 duration-300 z-50 overflow-hidden"
+                                className="absolute top-full right-0 w-screen sm:w-80 mt-1 lg:mt-2 bg-white dark:bg-gray-900 lg:rounded-2xl shadow-xl lg:shadow-2xl border-t lg:border border-gray-100 dark:border-gray-800 animate-in fade-in slide-in-from-top-2 duration-300 z-50 overflow-hidden"
                             >
-                                <div className="p-4 space-y-4">
-                                    {/* Mobile Quick Links (Hidden on desktop as they are in navbar) */}
-                                    {user && (
-                                        <div className="lg:hidden grid grid-cols-5 gap-2 pb-4 border-b border-gray-50 dark:border-gray-800">
+                                <div className="p-2 space-y-1">
+                                    {/* Unified list for both Mobile and Desktop Dropdown */}
+                                    <div className="flex flex-col">
+                                        {/* Horizontal Icon Grid (Always Visible in Menu) */}
+                                        <div className="grid grid-cols-5 gap-2 p-3 border-b border-gray-100 dark:border-gray-800">
                                             <Link
                                                 href="/shop"
                                                 onClick={() => setIsOpen(false)}
-                                                className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-700 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 transition-colors relative"
+                                                className="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
                                             >
-                                                <Store className="h-6 w-6 mb-1" />
-                                                <span className="text-[10px] font-medium">Shop</span>
+                                                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl group-hover:bg-white dark:group-hover:bg-gray-700 shadow-sm transition-colors">
+                                                    <Store className="h-5 w-5 sm:h-6 sm:w-6 text-gray-700 dark:text-gray-300" />
+                                                </div>
+                                                <span className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-400">Shop</span>
                                             </Link>
                                             <Link
                                                 href="/cart"
                                                 onClick={() => setIsOpen(false)}
-                                                className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-700 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 transition-colors relative"
+                                                className="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
                                             >
-                                                <ShoppingCart className="h-6 w-6 mb-1" />
-                                                <span className="text-[10px] font-medium">Cart</span>
-                                                <CartBadge className="top-2 right-2" />
+                                                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl group-hover:bg-white dark:group-hover:bg-gray-700 shadow-sm transition-colors relative">
+                                                    <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-gray-700 dark:text-gray-300" />
+                                                    <CartBadge className="-top-1 -right-1" />
+                                                </div>
+                                                <span className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-400">Cart</span>
                                             </Link>
                                             <Link
                                                 href="/orders"
                                                 onClick={() => setIsOpen(false)}
-                                                className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-700 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 transition-colors relative"
+                                                className="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
                                             >
-                                                <Package className="h-6 w-6 mb-1" />
-                                                <span className="text-[10px] font-medium">Orders</span>
-                                                {activeOrderCount > 0 && (
-                                                    <span className="absolute top-2 right-2 h-4 w-4 bg-[#2D5A27] dark:bg-green-600 text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white dark:border-gray-900">
-                                                        {activeOrderCount}
-                                                    </span>
-                                                )}
+                                                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl group-hover:bg-white dark:group-hover:bg-gray-700 shadow-sm transition-colors relative">
+                                                    <Package className="h-5 w-5 sm:h-6 sm:w-6 text-gray-700 dark:text-gray-300" />
+                                                    {activeOrderCount > 0 && (
+                                                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-[#2D5A27] text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white dark:border-gray-800">
+                                                            {activeOrderCount}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-400">Orders</span>
                                             </Link>
                                             <Link
                                                 href="/notifications"
                                                 onClick={() => setIsOpen(false)}
-                                                className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-700 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 transition-colors relative"
+                                                className="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
                                             >
-                                                <Bell className="h-6 w-6 mb-1" />
-                                                <span className="text-[10px] font-medium">Alerts</span>
-                                                {unreadCount > 0 && (
-                                                    <span className="absolute top-2 right-2 h-4 w-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border border-white dark:border-gray-900">
-                                                        {unreadCount > 9 ? '9+' : unreadCount}
-                                                    </span>
-                                                )}
+                                                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl group-hover:bg-white dark:group-hover:bg-gray-700 shadow-sm transition-colors relative">
+                                                    <Bell className="h-5 w-5 sm:h-6 sm:w-6 text-gray-700 dark:text-gray-300" />
+                                                    {unreadCount > 0 && (
+                                                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white dark:border-gray-800">
+                                                            {unreadCount > 9 ? '9+' : unreadCount}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-400">Alerts</span>
                                             </Link>
                                             <Link
                                                 href="/profile"
                                                 onClick={() => setIsOpen(false)}
-                                                className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-700 dark:text-gray-300 hover:text-green-700 dark:hover:text-green-400 transition-colors relative"
+                                                className="flex flex-col items-center gap-1.5 p-1.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group"
                                             >
-                                                {user.photoURL ? (
-                                                    <div className="h-6 w-6 mb-1 rounded-full overflow-hidden border border-gray-200 dark:border-gray-700">
-                                                        <img src={user.photoURL} alt="Profile" className="h-full w-full object-cover" />
-                                                    </div>
-                                                ) : (
-                                                    <User className="h-6 w-6 mb-1" />
-                                                )}
-                                                <span className="text-[10px] font-medium">Profile</span>
-                                                {isProfileIncomplete && (
-                                                    <span className="absolute top-2 right-2 h-2.5 w-2.5 bg-red-500 rounded-full border border-white dark:border-gray-900"></span>
-                                                )}
+                                                <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-xl group-hover:bg-white dark:group-hover:bg-gray-700 shadow-sm transition-colors overflow-hidden">
+                                                    {user?.photoURL ? (
+                                                        <img src={user.photoURL} alt="Profile" className="h-5 w-5 sm:h-6 sm:w-6 rounded-full object-cover" />
+                                                    ) : (
+                                                        <User className="h-5 w-5 sm:h-6 sm:w-6 text-gray-700 dark:text-gray-300" />
+                                                    )}
+                                                </div>
+                                                <span className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-400">Profile</span>
                                             </Link>
                                         </div>
-                                    )}
 
-                                    {/* Navigation Links */}
-                                    <div className="space-y-1">
-                                        {/* Desktop Only Links */}
-                                        {user && (
-                                            <Link
-                                                href="/profile"
-                                                onClick={() => setIsOpen(false)}
-                                                className="hidden lg:flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-                                            >
-                                                <User className="h-4 w-4" />
-                                                My Profile
-                                            </Link>
-                                        )}
-
-                                        <div className="lg:hidden px-4 py-2 flex items-center justify-between">
+                                        {/* Theme Toggle */}
+                                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
                                             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Theme</span>
                                             <ThemeToggle />
                                         </div>
 
-                                        {/* Dashboard Link (Always show if admin) */}
-                                        {(dbUser?.role === 'admin' || dbUser?.role === 'manager') && (
-                                            <Link
-                                                href="/admin"
-                                                onClick={() => setIsOpen(false)}
-                                                className="flex items-center gap-3 px-4 py-3 lg:py-2.5 rounded-xl lg:rounded-lg text-base lg:text-sm font-semibold bg-green-600 text-white hover:bg-green-700 transition-colors shadow-sm lg:mb-1"
-                                            >
-                                                <LayoutDashboard className="h-5 w-5 lg:h-4 w-4" />
-                                                Admin Dashboard
-                                            </Link>
-                                        )}
-
-                                        {/* Mobile Only Navigation Links (Hidden on desktop as they are in top navbar) */}
-                                        <div className="lg:hidden space-y-1">
+                                        {/* Vertical Nav Links */}
+                                        <div className="py-2 px-2 space-y-1">
                                             {links.map((link) => (
                                                 <Link
                                                     key={link.href}
                                                     href={link.href}
                                                     onClick={() => setIsOpen(false)}
                                                     className={clsx(
-                                                        "flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium transition-colors",
+                                                        "flex items-center gap-4 px-4 py-3 rounded-xl text-base font-medium transition-all duration-200",
                                                         isActive(link.href)
-                                                            ? "bg-[#2D5A27]/10 dark:bg-green-900/20 text-[#2D5A27] dark:text-green-400 font-semibold"
-                                                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-[#2D5A27] dark:hover:text-green-400"
+                                                            ? "bg-[#2D5A27]/10 text-[#2D5A27] font-semibold dark:bg-green-900/20 dark:text-green-400"
+                                                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                                                     )}
                                                 >
-                                                    <link.icon className="h-5 w-5" />
+                                                    <link.icon className={clsx("h-6 w-6", isActive(link.href) ? "text-[#2D5A27] dark:text-green-400" : "text-gray-400")} />
                                                     {link.label}
                                                 </Link>
                                             ))}
                                         </div>
-                                    </div>
 
-                                    {/* Logout Button (Always available in menu) */}
-                                    {user && (
-                                        <button
-                                            onClick={() => {
-                                                setIsOpen(false);
-                                                logout();
-                                            }}
-                                            className="w-full flex items-center gap-3 px-4 py-3 lg:py-2.5 rounded-xl lg:rounded-lg text-base lg:text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors border-t lg:border-none border-gray-50 dark:border-gray-800 mt-2 lg:mt-1 pt-4 lg:pt-2.5"
-                                        >
-                                            <LogOut className="h-5 w-5 lg:h-4 lg:w-4" />
-                                            Logout
-                                        </button>
-                                    )}
+                                        {/* Admin Dashboard */}
+                                        {user && (dbUser?.role === 'admin' || dbUser?.role === 'manager') && (
+                                            <div className="px-2 pt-2 pb-1">
+                                                <Link
+                                                    href="/admin"
+                                                    onClick={() => setIsOpen(false)}
+                                                    className="flex items-center gap-4 px-4 py-3 rounded-xl text-base font-bold bg-[#2D5A27] text-white hover:bg-[#20411b] transition-all shadow-md group"
+                                                >
+                                                    <LayoutDashboard className="h-6 w-6 text-white/80 group-hover:text-white transition-colors" />
+                                                    Admin Dashboard
+                                                </Link>
+                                            </div>
+                                        )}
+
+                                        {/* Logout Section */}
+                                        {user && (
+                                            <div className="px-2 pb-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setIsOpen(false);
+                                                        logout();
+                                                    }}
+                                                    className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-base font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors text-left group"
+                                                >
+                                                    <LogOut className="h-6 w-6 text-red-500 group-hover:scale-110 transition-transform" />
+                                                    Logout
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )}

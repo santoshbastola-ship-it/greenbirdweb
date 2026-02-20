@@ -23,6 +23,7 @@ This workflow guides the team through the standard Feature Implementation proces
 - [ ] **Backend**: Update `SETUP_FIREBASE.md` if DB schema changes.
 
 ## 4. 🎨 Frontend Implementation (UI/UX Architect)
+- [ ] **Frontend**: Review [UI_GUIDELINES.md](file:///Users/santoshbastola/Desktop/Greenbirdecom/UI_GUIDELINES.md) to ensure brand consistency.
 - [ ] **Frontend**: Create components in `src/components/`.
 - [ ] **Frontend**: Update pages in `src/app/`.
 - [ ] **Frontend**: Ensure responsive design (Mobile/Desktop).

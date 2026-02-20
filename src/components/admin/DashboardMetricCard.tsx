@@ -38,7 +38,7 @@ export default function DashboardMetricCard({
     const trendColor = getTrendColor();
 
     const content = (
-        <div className={`bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-start justify-between h-full transition-all ${href ? 'hover:shadow-md hover:-translate-y-1 cursor-pointer' : ''}`}>
+        <div className={`bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-start justify-between h-full transition-all ${href ? 'hover:shadow-xl hover:-translate-y-1 cursor-pointer' : ''}`}>
             <div className="flex-1">
                 <p className="text-sm font-medium text-gray-500">{title}</p>
                 {loading ? (
@@ -66,7 +66,7 @@ export default function DashboardMetricCard({
                     </>
                 )}
             </div>
-            <div className={`p-3 rounded-lg ${color} text-white flex-shrink-0`}>
+            <div className={`p-3 rounded-xl ${color} text-white flex-shrink-0 shadow-sm`}>
                 <Icon className="h-6 w-6" />
             </div>
         </div>

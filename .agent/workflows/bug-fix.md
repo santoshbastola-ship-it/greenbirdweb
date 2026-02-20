@@ -12,6 +12,7 @@ This workflow guides the team through the standard Bug Fix process.
 - [ ] **QA**: Create a failing test case (if possible).
 
 ## 2. 🛠️ Fix Implementation
+- [ ] **Relevant Agent**: Review [UI_GUIDELINES.md](file:///Users/santoshbastola/Desktop/Greenbirdecom/UI_GUIDELINES.md) if applying UI fixes.
 - [ ] **Relevant Agent**: Apply the fix (Frontend or Backend).
 - [ ] **Relevant Agent**: Verify fix locally.
 

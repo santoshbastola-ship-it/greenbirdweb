@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ProductService } from "@/services/product.service";
 import { Product, BusinessType } from "@/types";
 import {
@@ -49,6 +49,21 @@ export default function InventoryPage() {
     const [isProductViewModalOpen, setIsProductViewModalOpen] = useState(false);
 
     const router = useRouter();
+    const searchParams = useSearchParams();
+
+    // Sync product view modal with URL 'id' parameter
+    useEffect(() => {
+        const id = searchParams.get("id");
+        if (id) {
+            const product = products.find(p => p.id === id);
+            if (product) {
+                setSelectedProduct(product);
+                setIsProductViewModalOpen(true);
+            }
+        } else {
+            setIsProductViewModalOpen(false);
+        }
+    }, [searchParams, products]);
 
     useEffect(() => {
         if (dbUser?.role === "manager") {
@@ -128,8 +143,17 @@ export default function InventoryPage() {
     };
 
     const handleProductView = (product: Product) => {
-        setSelectedProduct(product);
-        setIsProductViewModalOpen(true);
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("id", product.id);
+        router.push(`?${params.toString()}`, { scroll: false });
+    };
+
+    const handleCloseProductView = () => {
+        if (searchParams.get("id")) {
+            router.back();
+        } else {
+            setIsProductViewModalOpen(false);
+        }
     };
 
     const handleProductUpdated = () => {
@@ -154,7 +178,7 @@ export default function InventoryPage() {
                 </div>
                 <Link
                     href="/admin/inventory/add"
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm font-medium whitespace-nowrap"
+                    className="flex items-center gap-2 px-6 py-2.5 bg-[#2D5A27] text-white rounded-xl hover:bg-[#1f3e1b] transition-all shadow-md font-bold whitespace-nowrap active:scale-95 hover:-translate-y-0.5"
                 >
                     <Plus className="h-5 w-5" />
                     Add Product
@@ -232,7 +256,7 @@ export default function InventoryPage() {
             {isProductViewModalOpen && selectedProduct && (
                 <ProductDetailsModal
                     product={selectedProduct}
-                    onClose={() => setIsProductViewModalOpen(false)}
+                    onClose={handleCloseProductView}
                 />
             )}
         </div>

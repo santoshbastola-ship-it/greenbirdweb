@@ -25,6 +25,7 @@ export const UserService = {
                 } as User;
             });
 
+            console.log(`[UserService] getAllCustomers found ${results.length} results`);
             // De-duplicate if same ID exists in both (though shouldn't happen)
             return results.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
         } catch (error) {
@@ -101,12 +102,15 @@ export const UserService = {
 
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                return {
+                const user = {
                     id: docSnap.id,
                     ...data,
                     createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt)
                 } as User;
+                console.log(`[UserService] getUserById(${id}) success:`, user.name);
+                return user;
             }
+            console.log(`[UserService] getUserById(${id}) NOT FOUND`);
             return null;
         } catch (error) {
             console.error("Error fetching user:", error);
@@ -183,7 +187,9 @@ export const UserService = {
                 totalTransactionAmount: 0,
             };
 
+            console.log(`[UserService] Creating ${data.partnerType || 'customer'}:`, newCustomer);
             const docRef = await addDoc(collection(db, PARTNERS_COLLECTION), newCustomer);
+            console.log(`[UserService] Created customer with ID: ${docRef.id}`);
 
             // Notify Admins
             await NotificationService.notifyAdmins(

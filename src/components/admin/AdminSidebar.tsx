@@ -152,7 +152,7 @@ export default function AdminSidebar() {
             {/* Mobile Trigger */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="md:hidden fixed top-4 right-4 z-50 p-2 bg-white rounded-lg shadow-md text-gray-700"
+                className="md:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-xl shadow-lg border border-gray-100 text-[#2D5A27] hover:bg-green-50 transition-all active:scale-90"
             >
                 {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>

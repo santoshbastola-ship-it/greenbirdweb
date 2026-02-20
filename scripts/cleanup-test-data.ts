@@ -75,29 +75,33 @@ async function getTestUserIds(): Promise<TestUserIds> {
 }
 
 /**
- * Delete all categories with name "Test Category"
+ * Delete all categories with names containing "Test"
  */
 async function cleanupTestCategories(): Promise<number> {
     try {
         const categoriesRef = collection(db, 'categories');
-        const q = query(categoriesRef, where('name', '==', 'Test Category'));
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await getDocs(categoriesRef);
 
-        if (querySnapshot.size === 0) {
+        const testCategories = querySnapshot.docs.filter(doc => {
+            const name = (doc.data().name || '').toLowerCase();
+            return name.includes('test');
+        });
+
+        if (testCategories.length === 0) {
             console.log('  No test categories found');
             return 0;
         }
 
-        console.log(`  Found ${querySnapshot.size} test categories`);
+        console.log(`  Found ${testCategories.length} test categories`);
 
-        const deletePromises = querySnapshot.docs.map(docSnapshot => {
-            console.log(`  - Deleting category: ${docSnapshot.id}`);
+        const deletePromises = testCategories.map(docSnapshot => {
+            console.log(`  - Deleting category: ${docSnapshot.id} (${docSnapshot.data().name})`);
             return deleteDoc(doc(db, 'categories', docSnapshot.id));
         });
 
         await Promise.all(deletePromises);
-        console.log(`  ✓ Deleted ${querySnapshot.size} test categories\n`);
-        return querySnapshot.size;
+        console.log(`  ✓ Deleted ${testCategories.length} test categories\n`);
+        return testCategories.length;
     } catch (error) {
         console.error('  ❌ Error cleaning up test categories:', error);
         return 0;
@@ -105,29 +109,33 @@ async function cleanupTestCategories(): Promise<number> {
 }
 
 /**
- * Delete all products with name "Test Product"
+ * Delete all products with names containing "Test", "Auto", or "Debug"
  */
 async function cleanupTestProducts(): Promise<number> {
     try {
         const productsRef = collection(db, 'products');
-        const q = query(productsRef, where('name', '==', 'Test Product'));
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await getDocs(productsRef);
 
-        if (querySnapshot.size === 0) {
+        const testProducts = querySnapshot.docs.filter(doc => {
+            const name = (doc.data().name || '').toLowerCase();
+            return name.includes('test') || name.includes('auto') || name.includes('debug');
+        });
+
+        if (testProducts.length === 0) {
             console.log('  No test products found');
             return 0;
         }
 
-        console.log(`  Found ${querySnapshot.size} test products`);
+        console.log(`  Found ${testProducts.length} test products`);
 
-        const deletePromises = querySnapshot.docs.map(docSnapshot => {
+        const deletePromises = testProducts.map(docSnapshot => {
             console.log(`  - Deleting product: ${docSnapshot.id} (${docSnapshot.data().name})`);
             return deleteDoc(doc(db, 'products', docSnapshot.id));
         });
 
         await Promise.all(deletePromises);
-        console.log(`  ✓ Deleted ${querySnapshot.size} test products (including stock history)\n`);
-        return querySnapshot.size;
+        console.log(`  ✓ Deleted ${testProducts.length} test products (including stock history)\n`);
+        return testProducts.length;
     } catch (error) {
         console.error('  ❌ Error cleaning up test products:', error);
         return 0;

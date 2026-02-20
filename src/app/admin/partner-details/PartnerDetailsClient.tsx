@@ -37,7 +37,7 @@ export default function PartnerDetailsClient() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
     useEffect(() => {
-        if (loading) return;
+        if (authLoading) return;
 
         // Restrict access for managers
         if (dbUser?.role === 'manager') {
@@ -52,13 +52,15 @@ export default function PartnerDetailsClient() {
             // router.push("/admin/partners");
             setLoading(false);
         }
-    }, [id, dbUser, loading]);
+    }, [id, dbUser, authLoading]);
 
     const loadPartnerData = async () => {
         if (!id) return;
+        console.log(`[PartnerDetailsClient] Loading data for ID: ${id}`);
         setLoading(true);
         try {
             const user = await UserService.getUserById(id);
+            console.log(`[PartnerDetailsClient] User fetch result:`, user?.name || "NULL");
             if (!user) {
                 alert("Partner not found");
                 router.push("/admin/partners");

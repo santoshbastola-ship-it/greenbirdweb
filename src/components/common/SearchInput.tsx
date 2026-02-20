@@ -113,7 +113,7 @@ export default function SearchInput({ className, onFocus }: SearchInputProps) {
 
             {/* Suggestions Dropdown */}
             {isOpen && (suggestions.length > 0 || isLoading) && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden z-50">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-200">
                     {isLoading ? (
                         <div className="p-4 text-center text-gray-500 text-sm">Loading...</div>
                     ) : (

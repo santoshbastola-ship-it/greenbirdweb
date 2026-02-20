@@ -7,6 +7,7 @@ import { Plus, Check, X, Calendar, Clock, MapPin, User, Search, Filter, Download
 import { toNepali, formatTime } from "@/lib/date-helper";
 import NepaliDate from "nepali-date-converter";
 import dynamic from 'next/dynamic';
+import { useSearchParams, useRouter } from "next/navigation";
 
 const NepaliDatePicker = dynamic(() => import("nepali-datepicker-reactjs").then(mod => mod.NepaliDatePicker), {
     ssr: false,
@@ -30,6 +31,8 @@ type TabStatus = OrderStatus;
 
 export default function AdminOrdersPage() {
     const { dbUser } = useAuth();
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const [activeTab, setActiveTab] = useState<TabStatus>(OrderStatus.Open);
     const [orders, setOrders] = useState<TransactionRecord[]>([]);
     const [loading, setLoading] = useState(true);
@@ -37,6 +40,28 @@ export default function AdminOrdersPage() {
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+
+    // Sync selectedOrderId with URL 'id' parameter
+    useEffect(() => {
+        const id = searchParams.get("id");
+        if (id !== selectedOrderId) {
+            setSelectedOrderId(id);
+        }
+    }, [searchParams, selectedOrderId]);
+
+    const handleSelect = (id: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("id", id);
+        router.push(`?${params.toString()}`, { scroll: false });
+    };
+
+    const handleClose = () => {
+        if (searchParams.get("id")) {
+            router.back();
+        } else {
+            setSelectedOrderId(null);
+        }
+    };
 
     // Confirmation Modal State
     const [confirmModal, setConfirmModal] = useState<{
@@ -206,7 +231,7 @@ export default function AdminOrdersPage() {
                             <OrderCard
                                 key={order.id}
                                 order={order}
-                                onSelect={(order) => setSelectedOrderId(order.id)}
+                                onSelect={(order) => handleSelect(order.id)}
                                 onDelete={dbUser?.role === 'admin' ? () => handleDelete(order.id) : undefined}
                             />
                         ))}
@@ -218,7 +243,7 @@ export default function AdminOrdersPage() {
             {selectedOrder && (
                 <TransactionDetailsModal
                     transaction={selectedOrder}
-                    onClose={() => setSelectedOrderId(null)}
+                    onClose={handleClose}
                     onUpdate={loadOrders}
                     onDelete={handleDelete}
                     setConfirmModal={setConfirmModal}

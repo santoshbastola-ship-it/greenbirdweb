@@ -5,6 +5,7 @@ import { User, LogOut, ChevronDown, UserCircle, Key, Bell } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import AdminProfileModal from "./ProfileModal";
 import { NotificationService } from "@/services/notification.service";
+import Link from "next/link";
 
 export default function AdminHeader() {
     const { user, dbUser, logout } = useAuth();
@@ -29,10 +30,10 @@ export default function AdminHeader() {
                 <a href="/shop" className="text-sm font-medium text-gray-600 hover:text-green-700 transition-colors">Shop</a>
                 <a href="/blog" className="text-sm font-medium text-gray-600 hover:text-green-700 transition-colors">Blog</a>
                 <a href="/contact" className="text-sm font-medium text-gray-600 hover:text-green-700 transition-colors">Contact</a>
-                <a href="/admin" className="text-sm font-medium text-green-700 bg-green-50 px-3 py-1.5 rounded-full">Dashboard</a>
+                <Link href="/admin" className="text-sm font-bold text-[#2D5A27] bg-[#2D5A27]/10 px-4 py-1.5 rounded-xl border border-[#2D5A27]/20 transition-all hover:bg-[#2D5A27]/20">Dashboard</Link>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 ml-auto">
                 {/* Notification Bell */}
                 <a
                     href="/admin/notifications"
@@ -77,10 +78,10 @@ export default function AdminHeader() {
                                 className="fixed inset-0 z-10"
                                 onClick={() => setIsMenuOpen(false)}
                             />
-                            <div className="absolute left-0 md:left-auto md:right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div className="px-4 py-2 border-b border-gray-50 mb-1">
-                                    <p className="text-xs text-gray-400 font-medium">Signed in as</p>
-                                    <p className="text-sm font-bold text-gray-900 truncate">{user?.email}</p>
+                            <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="px-5 py-3 border-b border-gray-50 mb-1">
+                                    <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Signed in as</p>
+                                    <p className="text-sm font-bold text-gray-900 truncate mt-0.5">{user?.email}</p>
                                 </div>
 
                                 <button

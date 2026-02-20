@@ -1,5 +1,9 @@
 # Release Notes
 
+## [0.2.24] - 2026-02-20
+- Implemented navigation fixes for Sales, Orders, and Inventory modals using URL query parameters. Added debugging logs to UserService and PartnerDetailsClient to investigate data persistence and loading issues.
+
+
 ## [0.2.23] - 2026-02-16
 - Fixed image persistence, added dark mode toggle, and resolved build errors.
 

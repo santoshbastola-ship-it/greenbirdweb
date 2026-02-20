@@ -37,7 +37,7 @@ export default function AddToCartButton({
     };
 
     const baseClasses = "flex items-center justify-center space-x-2 font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed";
-    const defaultClasses = "bg-[#5C4033] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#2D5A27] shadow-sm active:scale-95 transition-all";
+    const defaultClasses = "bg-[#5C4033] text-white px-4 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#2D5A27] shadow-sm hover:scale-[1.02] active:scale-95 transition-all";
 
     if (className) {
         // If custom class provided, use it. This is a simplification. 
@@ -46,7 +46,7 @@ export default function AddToCartButton({
             <button
                 onClick={handleAdd}
                 disabled={!product.isAvailableForSale}
-                className={`${className} ${isAdded ? "!bg-[#2D5A27] cursor-default" : "bg-[#5C4033]"} text-white transition-colors duration-300`}
+                className={`rounded-xl ${className} ${isAdded ? "!bg-[#2D5A27] cursor-default" : "bg-[#5C4033]"} text-white transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-sm`}
             >
                 {showIcon && <ShoppingBag className="h-4 w-4 mr-2" />}
                 <span>{isAdded ? "Added!" : "Add to Cart"}</span>

@@ -8,6 +8,7 @@ import { toNepali, formatDateTime } from "@/lib/date-helper";
 import NepaliDate from "nepali-date-converter";
 import dynamic from 'next/dynamic';
 import Link from "next/link";
+import { useSearchParams, useRouter } from "next/navigation";
 import { toPng } from 'html-to-image';
 import ShareableBill from "@/components/admin/ShareableBill";
 import PaymentReceiptModal from "@/components/admin/PaymentReceiptModal";
@@ -34,6 +35,8 @@ type TabType = "All" | "Pending" | TransactionType.Sale | TransactionType.Purcha
 
 export default function SalesListPage() {
     const { dbUser } = useAuth();
+    const router = useRouter();
+    const searchParams = useSearchParams();
     const [activeTab, setActiveTab] = useState<TabType>("Pending");
     const [transactions, setTransactions] = useState<TransactionRecord[]>([]);
     const [loading, setLoading] = useState(true);
@@ -41,6 +44,28 @@ export default function SalesListPage() {
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [selectedId, setSelectedId] = useState<string | null>(null);
+
+    // Sync selectedId with URL 'id' parameter
+    useEffect(() => {
+        const id = searchParams.get("id");
+        if (id !== selectedId) {
+            setSelectedId(id);
+        }
+    }, [searchParams, selectedId]);
+
+    const handleSelect = (id: string) => {
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("id", id);
+        router.push(`?${params.toString()}`, { scroll: false });
+    };
+
+    const handleClose = () => {
+        if (searchParams.get("id")) {
+            router.back();
+        } else {
+            setSelectedId(null);
+        }
+    };
 
     // Confirmation Modal State
     const [confirmModal, setConfirmModal] = useState<{
@@ -160,14 +185,14 @@ export default function SalesListPage() {
                     <div className="flex flex-row gap-3 w-full sm:w-auto">
                         <Link
                             href="/admin/sales/new-purchase"
-                            className="flex-1 sm:flex-none bg-gradient-to-r from-red-600 to-red-500 text-white px-6 py-2.5 rounded-xl font-bold hover:from-red-700 hover:to-red-600 transition-all flex items-center justify-center shadow-lg shadow-red-900/20 active:scale-95 hover:-translate-y-0.5"
+                            className="flex-1 sm:flex-none bg-[#5C4033] text-white px-6 py-2.5 rounded-xl font-bold hover:bg-[#3d2a22] transition-all flex items-center justify-center shadow-md active:scale-95 hover:-translate-y-0.5"
                         >
                             <Plus className="h-5 w-5 mr-2" />
                             New Purchase
                         </Link>
                         <Link
                             href="/admin/sales/new"
-                            className="flex-1 sm:flex-none bg-gradient-to-r from-green-600 to-green-500 text-white px-6 py-2.5 rounded-xl font-bold hover:from-green-700 hover:to-green-600 transition-all flex items-center justify-center shadow-lg shadow-green-900/20 active:scale-95 hover:-translate-y-0.5"
+                            className="flex-1 sm:flex-none bg-[#2D5A27] text-white px-6 py-2.5 rounded-xl font-bold hover:bg-[#1f3e1b] transition-all flex items-center justify-center shadow-md active:scale-95 hover:-translate-y-0.5"
                         >
                             <Plus className="h-5 w-5 mr-2" />
                             New Sale
@@ -219,7 +244,7 @@ export default function SalesListPage() {
                             <TransactionCard
                                 key={t.id}
                                 transaction={t}
-                                onSelect={(tx) => setSelectedId(tx.id)}
+                                onSelect={(tx) => handleSelect(tx.id)}
                                 onUpdate={loadTransactions}
                                 onDelete={dbUser?.role === 'admin' ? () => handleDelete(t.id) : undefined}
                             />
@@ -232,7 +257,7 @@ export default function SalesListPage() {
             {selectedTransaction && (
                 <TransactionDetailsModal
                     transaction={selectedTransaction}
-                    onClose={() => setSelectedId(null)}
+                    onClose={handleClose}
                     onUpdate={loadTransactions}
                     onDelete={handleDelete}
                     setConfirmModal={setConfirmModal}

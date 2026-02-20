@@ -2,7 +2,9 @@ import { Product } from "@/types";
 import { formatProductDescription } from "@/lib/text-helper";
 import { X, Edit2, Package, Check, ShoppingCart, Home, History } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { toNepali } from "@/lib/date-helper";
+import { ProductService } from "@/services/product.service";
 import UserName from "@/components/ui/UserName";
 import ProductImageGallery from "@/components/shop/ProductImageGallery";
 
@@ -12,7 +14,36 @@ interface ProductDetailsModalProps {
     onClose: () => void;
 }
 
-export default function ProductDetailsModal({ product, onClose }: ProductDetailsModalProps) {
+export default function ProductDetailsModal({ product: initialProduct, onClose }: ProductDetailsModalProps) {
+    const [product, setProduct] = useState<Product>(initialProduct);
+    const [loading, setLoading] = useState(false);
+
+    // Fetch fresh data on mount to handle state staleness if the inventory list hasn't refreshed
+    useEffect(() => {
+        let isMounted = true;
+        const fetchFreshData = async () => {
+            if (initialProduct.id) {
+                setLoading(true);
+                try {
+                    const freshData = await ProductService.getProductById(initialProduct.id);
+                    if (isMounted && freshData) {
+                        console.log("[ProductDetailsModal] Fetched fresh data for modal", freshData.id);
+                        setProduct(freshData);
+                    }
+                } catch (error) {
+                    console.error("Failed to refresh product data in modal", error);
+                } finally {
+                    if (isMounted) setLoading(false);
+                }
+            }
+        };
+        fetchFreshData();
+        return () => { isMounted = false; };
+    }, [initialProduct.id]);
+
+    // Check if description already has a "Description:" header to avoid duplication
+    const hasDescriptionHeader = product.description?.toLowerCase().trim().startsWith("description:");
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto flex flex-col">
@@ -23,6 +54,7 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
                             <span className="px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] font-bold rounded-full uppercase">
                                 {product.businessType}
                             </span>
+                            {loading && <span className="text-[10px] text-green-600 animate-pulse font-bold tracking-tighter">REFRESHING...</span>}
                         </div>
                         <div className="flex flex-col gap-0.5">
                             <p className="text-xs text-gray-500">
@@ -36,7 +68,7 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
                     <div className="flex items-center gap-2">
                         <Link
                             href={`/admin/inventory/edit?id=${product.id}`}
-                            className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-center transition-colors"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-center transition-colors shadow-sm"
                         >
                             <Edit2 className="h-4 w-4" />
                             <span className="text-sm font-medium">Edit Product</span>
@@ -62,7 +94,9 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
 
                             {/* Description */}
                             <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
-                                <h4 className="text-sm font-bold text-gray-900 mb-2">Description</h4>
+                                {!hasDescriptionHeader && (
+                                    <h4 className="text-sm font-bold text-gray-900 mb-2">Description</h4>
+                                )}
                                 <div className="text-gray-600 text-sm leading-relaxed">
                                     {formatProductDescription(product.description || "No description available.")}
                                 </div>
