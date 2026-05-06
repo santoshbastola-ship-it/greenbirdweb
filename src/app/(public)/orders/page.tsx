@@ -428,64 +428,33 @@ function PaymentModal({ order, onClose }: { order: TransactionRecord; onClose: (
 
                     <p className="text-xs text-gray-500 text-center mb-4 font-medium">Scan QR to pay with any supported app</p>
 
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                        {/* eSewa QR */}
-                        <div className="flex flex-col items-center">
-                            <div className="p-1.5 bg-white border border-gray-200 rounded-xl shadow-sm w-full relative group">
-                                <img
-                                    src="/images/esewa_qr.jpg"
-                                    alt="eSewa QR Code"
-                                    className="w-full h-auto object-contain rounded-lg aspect-square"
-                                    onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        target.src = "https://placehold.co/400x400/f0fdf4/166534?text=eSewa+QR";
-                                    }}
-                                />
-                                <button
-                                    onClick={() => handleDownload("/images/esewa_qr.jpg", "esewa_qr.jpg")}
-                                    className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white text-gray-600 hover:text-green-600 transition-all opacity-0 group-hover:opacity-100"
-                                    title="Download QR"
-                                >
-                                    <Download className="h-3.5 w-3.5" />
-                                </button>
-                            </div>
+                    <div className="flex flex-col items-center mb-6">
+                        {/* Fonepay QR */}
+                        <div className="p-1.5 bg-white border border-gray-200 rounded-xl shadow-sm w-48 relative group">
+                            <img
+                                src="/images/fonepay_qr.jpg"
+                                alt="Fonepay QR Code"
+                                className="w-full h-auto object-contain rounded-lg aspect-square"
+                                onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.src = "https://placehold.co/400x400/fef2f2/991b1b?text=Fonepay+QR";
+                                }}
+                            />
                             <button
-                                onClick={() => handleDownload("/images/esewa_qr.jpg", "esewa_qr.jpg")}
-                                className="flex items-center gap-1.5 mt-2 px-3 py-1 bg-green-50 text-green-700 hover:bg-green-100 rounded-full text-[10px] font-bold transition-colors"
+                                onClick={() => handleDownload("/images/fonepay_qr.jpg", "fonepay_qr.jpg")}
+                                className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white text-gray-600 hover:text-red-600 transition-all opacity-0 group-hover:opacity-100"
+                                title="Download QR"
                             >
-                                <Download className="h-3 w-3" />
-                                <span>Download</span>
+                                <Download className="h-3.5 w-3.5" />
                             </button>
                         </div>
-
-                        {/* Khalti QR */}
-                        <div className="flex flex-col items-center">
-                            <div className="p-1.5 bg-white border border-gray-200 rounded-xl shadow-sm w-full relative group">
-                                <img
-                                    src="/images/khalti_qr.jpg"
-                                    alt="Khalti QR Code"
-                                    className="w-full h-auto object-contain rounded-lg aspect-square"
-                                    onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        target.src = "https://placehold.co/400x400/fbf0ff/6b21a8?text=Khalti+QR";
-                                    }}
-                                />
-                                <button
-                                    onClick={() => handleDownload("/images/khalti_qr.jpg", "khalti_qr.jpg")}
-                                    className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white text-gray-600 hover:text-purple-600 transition-all opacity-0 group-hover:opacity-100"
-                                    title="Download QR"
-                                >
-                                    <Download className="h-3.5 w-3.5" />
-                                </button>
-                            </div>
-                            <button
-                                onClick={() => handleDownload("/images/khalti_qr.jpg", "khalti_qr.jpg")}
-                                className="flex items-center gap-1.5 mt-2 px-3 py-1 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-full text-[10px] font-bold transition-colors"
-                            >
-                                <Download className="h-3 w-3" />
-                                <span>Download</span>
-                            </button>
-                        </div>
+                        <button
+                            onClick={() => handleDownload("/images/fonepay_qr.jpg", "fonepay_qr.jpg")}
+                            className="flex items-center gap-1.5 mt-3 px-4 py-1.5 bg-red-50 text-red-700 hover:bg-red-100 rounded-full text-[11px] font-bold transition-colors shadow-sm"
+                        >
+                            <Download className="h-3.5 w-3.5" />
+                            <span>Download QR Code</span>
+                        </button>
                     </div>
 
                     <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-4 text-center">

@@ -139,40 +139,21 @@ const ShareableBill = forwardRef<HTMLDivElement, ShareableBillProps>(({ transact
             <div className="mb-6">
                 <p className="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider text-center">Scan to Pay</p>
 
-                <div className="flex justify-center items-start gap-4">
-                    {/* eSewa */}
+                <div className="flex justify-center items-start">
+                    {/* Fonepay */}
                     <div className="flex flex-col items-center">
-                        <div className="border border-green-100 rounded-lg p-1.5 bg-white shadow-sm mb-1">
+                        <div className="border border-red-100 rounded-lg p-1.5 bg-white shadow-sm mb-1">
                             <img
-                                src="/images/esewa_qr.jpg"
-                                alt="eSewa QR"
-                                className="w-24 h-24 object-contain"
+                                src="/images/fonepay_qr.jpg"
+                                alt="Fonepay QR"
+                                className="w-40 h-40 object-contain"
                                 onError={(e) => {
-                                    // If image fails, try to load placeholder or just hide
-                                    // check if we want to hide or show placeholder
                                     const target = e.target as HTMLImageElement;
-                                    target.src = "https://placehold.co/200x200/f0fdf4/166534?text=eSewa";
-                                    // validation that both failed can be done but for now fallback to placeholder
+                                    target.src = "https://placehold.co/200x200/fef2f2/991b1b?text=Fonepay";
                                 }}
                             />
                         </div>
-                        <span className="text-[10px] font-bold text-green-800 uppercase">eSewa</span>
-                    </div>
-
-                    {/* Khalti */}
-                    <div className="flex flex-col items-center">
-                        <div className="border border-purple-100 rounded-lg p-1.5 bg-white shadow-sm mb-1">
-                            <img
-                                src="/images/khalti_qr.jpg"
-                                alt="Khalti QR"
-                                className="w-24 h-24 object-contain"
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = "https://placehold.co/200x200/fbf0ff/6b21a8?text=Khalti";
-                                }}
-                            />
-                        </div>
-                        <span className="text-[10px] font-bold text-purple-800 uppercase">Khalti</span>
+                        <span className="text-[10px] font-bold text-red-800 uppercase">Fonepay</span>
                     </div>
                 </div>
             </div>
