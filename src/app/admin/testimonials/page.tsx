@@ -143,7 +143,7 @@ export default function TestimonialsAdminPage() {
                                     )}
                                 </button>
 
-                                {dbUser?.email === "greenbirdhomestead@gmail.com" && (
+                                {dbUser?.email === "santoshbastola@gmail.com" && (
                                     <button
                                         onClick={() => handleDelete(testimonial.id)}
                                         className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"

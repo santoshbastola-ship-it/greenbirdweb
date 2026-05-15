@@ -246,7 +246,7 @@ export default function TasksPage() {
                                 onClick={() => setSelectedTaskId(task.id)}
                                 onToggleStatus={(e) => handleToggleStatus(task, e)}
                                 isCompleting={completingTaskIds.has(task.id)}
-                                onDelete={dbUser?.email === "greenbirdhomestead@gmail.com" ? handleDelete : undefined}
+                                onDelete={dbUser?.email === "santoshbastola@gmail.com" ? handleDelete : undefined}
                             />
                         ))}
                     </div>

@@ -211,7 +211,7 @@ export default function EnergyBillsPage() {
                                 bill={bill}
                                 onSelect={() => setSelectedBill(bill)}
                                 onEdit={() => setBillToEdit(bill)}
-                                onDelete={dbUser?.email === "greenbirdhomestead@gmail.com" ? (e) => handleDelete(e, bill.id) : undefined}
+                                onDelete={dbUser?.email === "santoshbastola@gmail.com" ? (e) => handleDelete(e, bill.id) : undefined}
                             />
                         ))}
                     </div>

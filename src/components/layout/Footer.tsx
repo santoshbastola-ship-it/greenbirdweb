@@ -121,8 +121,8 @@ export default function Footer({ minimized = false }: FooterProps) {
                             </li>
                             <li className="flex flex-col md:flex-row items-center md:items-start gap-2">
                                 <Mail className="h-4 w-4 flex-shrink-0" />
-                                <a href="mailto:greenbirdhomestead@gmail.com" className="hover:text-white transition-colors">
-                                    greenbirdhomestead@gmail.com
+                                <a href="mailto:santoshbastola@gmail.com" className="hover:text-white transition-colors">
+                                    santoshbastola@gmail.com
                                 </a>
                             </li>
                             <li className="flex flex-col md:flex-row items-center md:items-start gap-2">

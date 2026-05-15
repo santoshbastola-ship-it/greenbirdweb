@@ -402,7 +402,7 @@ export const UserService = {
 
     ensureUserExists: async (userId: string, userData: Partial<User>): Promise<void> => {
         try {
-            const adminEmails = ['greenbirdhomestead@gmail.com'];
+            const adminEmails = ['santoshbastola@gmail.com'];
             const isHardcodedAdmin = userData.email && adminEmails.includes(userData.email);
 
             // 1. Check if user already exists in USERS collection

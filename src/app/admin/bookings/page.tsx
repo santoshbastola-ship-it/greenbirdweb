@@ -191,7 +191,7 @@ export default function BookingManagementPage() {
                                 setSelectedBooking(b);
                                 setIsBookingModalOpen(true);
                             }}
-                            onDelete={dbUser?.email === "greenbirdhomestead@gmail.com" ? () => handleDelete(booking.id) : undefined}
+                            onDelete={dbUser?.email === "santoshbastola@gmail.com" ? () => handleDelete(booking.id) : undefined}
                         />
                     ))}
                 </div>

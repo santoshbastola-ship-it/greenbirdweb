@@ -110,7 +110,7 @@ export default function UserManagementPage() {
     };
 
     const handleDeleteUser = async (userId: string) => {
-        if (dbUser?.email !== "greenbirdhomestead@gmail.com") {
+        if (dbUser?.email !== "santoshbastola@gmail.com") {
             alert("Only the Super Admin can delete users.");
             return;
         }
@@ -288,7 +288,7 @@ export default function UserManagementPage() {
                     setSelectedUser(null);
                 }}
                 onSubmit={handleUpdateUser}
-                onDelete={dbUser?.email === "greenbirdhomestead@gmail.com" ? handleDeleteUser : undefined}
+                onDelete={dbUser?.email === "santoshbastola@gmail.com" ? handleDeleteUser : undefined}
                 onResendInvite={handleResendInvite}
                 onToggleStatus={handleToggleStatus}
             />
