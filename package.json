@@ -1,6 +1,6 @@
 {
   "name": "greenbird-pwa",
-  "version": "0.2.24",
+  "version": "0.2.25",
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
@@ -47,6 +47,7 @@
     "dotenv": "^17.2.4",
     "eslint": "^9",
     "eslint-config-next": "16.1.4",
+    "lightningcss": "^1.32.0",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5"

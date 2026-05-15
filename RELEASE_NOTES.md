@@ -1,5 +1,9 @@
 # Release Notes
 
+## [0.2.25] - 2026-05-15
+- Fix transaction date corruption: sanitizeFirestoreData now preserves Date objects; parseDate handles corrupted dates; updateTransaction serializes Date to ISO string before saving. Added admin migration page at /admin/migrate-dates.
+
+
 ## [0.2.24] - 2026-02-20
 - Implemented navigation fixes for Sales, Orders, and Inventory modals using URL query parameters. Added debugging logs to UserService and PartnerDetailsClient to investigate data persistence and loading issues.
 

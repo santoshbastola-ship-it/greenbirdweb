@@ -10,6 +10,10 @@ export const sanitizeFirestoreData = (data: any): any => {
         return data; // Return primitives as is
     }
 
+    if (data instanceof Date) {
+        return data; // Preserve Date objects for Firestore
+    }
+
     if (data === undefined) {
         return null; // Or undefined if we want to filter it out in parent, but usually we just want to avoid undefined in values. 
         // Actually, if we return undefined here, the parent assignment might keep it as undefined.

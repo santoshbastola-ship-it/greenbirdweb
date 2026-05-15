@@ -14,6 +14,14 @@ const parseDate = (d: any): Date => {
     }
     // Handle string or number or Date
     try {
+        // If it's already a Date object, return it
+        if (d instanceof Date) return d;
+        
+        // If it's an object but NOT a Date or Timestamp, it's likely corrupted data ({})
+        if (typeof d === 'object' && d !== null && !(d instanceof Date)) {
+            return new Date(); // Or could return null, but for now we keep the "now" fallback but at least we're explicit
+        }
+
         const parsed = new Date(d);
         return isNaN(parsed.getTime()) ? new Date() : parsed;
     } catch (e) {
@@ -540,8 +548,13 @@ export const TransactionService = {
             const docRef = doc(db, COLLECTION_NAME, id);
 
             // Prepare update data
+            const updatesCopy = { ...updates };
+            if (updatesCopy.date instanceof Date) {
+                updatesCopy.date = updatesCopy.date.toISOString();
+            }
+
             const updateData: any = sanitizeFirestoreData({
-                ...updates,
+                ...updatesCopy,
                 updatedAt: new Date().toISOString()
             });
 
