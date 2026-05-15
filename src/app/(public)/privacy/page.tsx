@@ -60,7 +60,7 @@ export default function PrivacyPolicy() {
                         If you have any questions about this Privacy Policy, please contact us:
                     </p>
                     <p className="mt-2">
-                        <strong>Email:</strong> santoshbastola@gmail.com<br />
+                        <strong>Email:</strong> greenbirdhomestead1@gmail.com<br />
                         <strong>Address:</strong> Nepal
                     </p>
                 </section>
