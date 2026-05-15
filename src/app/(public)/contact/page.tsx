@@ -25,10 +25,10 @@ export default function ContactPage() {
                         />
                         <ContactCard
                             title="Email Us"
-                            content="santoshbastola@gmail.com"
+                            content="greenbirdhomestead1@gmail.com"
                             description="We'll get back to you within 24 hours."
                             icon={<Mail className="h-8 w-8 text-[#2D5A27]" />}
-                            href="mailto:santoshbastola@gmail.com"
+                            href="mailto:greenbirdhomestead1@gmail.com"
                         />
                         <ContactCard
                             title="Call Us"
