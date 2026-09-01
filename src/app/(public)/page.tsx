@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Leaf, Utensils, Bird, Trees, Calendar } from "lucide-react";
+import { ArrowRight, Leaf, Utensils, Bird, Trees, Calendar, Sprout, ShoppingBag, Home as HomeIcon, Clock } from "lucide-react";
 import ProductCard from "@/components/ui/ProductCard";
 import { Product } from "@/types";
 import { FarmActivity, Testimonial } from "@/types/extra";
@@ -96,10 +96,10 @@ export default function Home() {
         </div>
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 md:py-56 text-center animate-fadeIn">
           <h1 className="text-4xl md:text-7xl font-bold tracking-tight mb-8 leading-tight">
-            Farm Fresh, <span className="text-[#FCF9F1]">Straight to You</span>
+            Farm Fresh Living, <span className="text-[#FCF9F1]">Delivered & Experienced</span>
           </h1>
           <p className="text-xl md:text-2xl text-gray-100 mb-12 max-w-3xl mx-auto leading-relaxed">
-            Experience the taste of nature with our organically raised livestock and extensive crop selection.
+            Subscribe to pasture-raised local country chicken and fresh farm eggs, shop sustainable agri-tools, or escape to our traditional Nepali village retreat.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-6">
             <Link
@@ -126,45 +126,123 @@ export default function Home() {
               Our <span className="text-[#2D5A27]">Core Offerings</span>
             </h2>
             <p className="text-gray-600 mt-4 text-lg">
-              Experience the best of what Greenbird Homestead has to offer, from fresh produce to nature retreats.
+              Explore our four core business pillars—from vermiculture and fresh organic subscriptions to eco-marketplace goods and traditional village stays.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Farm-to-Table Dining */}
-            <div className="p-8 bg-white border border-gray-100 rounded-3xl text-center hover:shadow-2xl hover:border-green-100 transition-all duration-300 group">
-              <div className="bg-[#2D5A27]/5 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-[#2D5A27] transition-all duration-300 group-hover:rotate-6">
-                <Utensils className="h-10 w-10 text-[#2D5A27] group-hover:text-white transition-colors" />
+            {/* Vertical 1: Vermicompost & Live Eisenia fetida Worms */}
+            <div className="relative p-8 bg-white border border-gray-100 rounded-3xl text-center hover:shadow-2xl hover:border-green-100 transition-all duration-300 group flex flex-col justify-between overflow-hidden">
+              {/* Coming Soon Badge Overlay */}
+              <div className="absolute top-4 right-4 bg-[#5C4033] text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm z-10 flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" /> Coming Soon
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Farm-to-Table</h3>
-              <p className="text-gray-600 leading-relaxed">Meals prepared using fresh ingredients harvested directly from our fields.</p>
+
+              <div>
+                <div className="bg-[#2D5A27]/5 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-[#2D5A27] transition-all duration-300 group-hover:rotate-6">
+                  <Sprout className="h-10 w-10 text-[#2D5A27] group-hover:text-white transition-colors" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Vermicompost & Worms</h3>
+                <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                  Pure organic vermicompost & live <em>Eisenia fetida</em> breeding worms with precise sizing & bulk matrices.
+                </p>
+                <div className="bg-[#FCF9F1] rounded-2xl p-3.5 mb-6 border border-[#2D5A27]/10 text-xs text-left space-y-1.5">
+                  <div className="font-bold text-[#2D5A27] text-center mb-1 uppercase tracking-wider text-[10px]">Sizing & Bulk Matrix</div>
+                  <div className="flex justify-between text-gray-700"><span>Retail Pouches:</span><span className="font-semibold text-gray-900">1kg & 2kg</span></div>
+                  <div className="flex justify-between text-gray-700"><span>Garden Packs:</span><span className="font-semibold text-gray-900">5kg & 10kg</span></div>
+                  <div className="flex justify-between text-gray-700"><span>Bulk HDPE Sacks:</span><span className="font-semibold text-[#5C4033]">25kg Sacks</span></div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <span className="inline-block w-full bg-gray-100 text-gray-500 font-semibold py-3 px-6 rounded-xl text-sm border border-gray-200 cursor-not-allowed">
+                  Coming Soon
+                </span>
+              </div>
             </div>
 
-            {/* Organic Produce */}
-            <div className="p-8 bg-white border border-gray-100 rounded-3xl text-center hover:shadow-2xl hover:border-green-100 transition-all duration-300 group">
-              <div className="bg-[#2D5A27]/5 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-[#2D5A27] transition-all duration-300 group-hover:rotate-6">
-                <Leaf className="h-10 w-10 text-[#2D5A27] group-hover:text-white transition-colors" />
+            {/* Vertical 2: Subscription Country Chicken & Eggs */}
+            <div className="p-8 bg-white border border-gray-100 rounded-3xl text-center hover:shadow-2xl hover:border-green-100 transition-all duration-300 group flex flex-col justify-between">
+              <div>
+                <div className="bg-[#2D5A27]/5 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-[#2D5A27] transition-all duration-300 group-hover:rotate-6">
+                  <Bird className="h-10 w-10 text-[#2D5A27] group-hover:text-white transition-colors" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Country Chicken & Eggs</h3>
+                <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                  Subscription-focused 180-day pasture-raised local country chicken (Bhale) & fresh farm eggs.
+                </p>
+                <div className="bg-[#FCF9F1] rounded-2xl p-3.5 mb-6 border border-[#2D5A27]/10 text-xs text-left space-y-2 text-gray-700">
+                  <div className="font-bold text-[#2D5A27] text-center mb-1 uppercase tracking-wider text-[10px]">Subscription Benefits</div>
+                  <div className="flex items-center gap-2"><span>🥚</span><span>Weekly & Monthly Egg Delivery</span></div>
+                  <div className="flex items-center gap-2"><span>🐓</span><span>180-Day Free-Range Bhale</span></div>
+                  <div className="flex items-center gap-2"><span>🚚</span><span>Scheduled Doorstep Service</span></div>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Organic Produce</h3>
-              <p className="text-gray-600 leading-relaxed">Pure, chemical-free vegetables grown with care and respect for the land.</p>
+
+              <div className="pt-2">
+                <Link
+                  href="/shop"
+                  className="w-full bg-[#2D5A27] hover:bg-[#23471f] text-white font-bold py-3 px-6 rounded-xl text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  Subscribe <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
 
-            {/* Free-Range Livestock */}
-            <div className="p-8 bg-white border border-gray-100 rounded-3xl text-center hover:shadow-2xl hover:border-green-100 transition-all duration-300 group">
-              <div className="bg-[#2D5A27]/5 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-[#2D5A27] transition-all duration-300 group-hover:rotate-6">
-                <Bird className="h-10 w-10 text-[#2D5A27] group-hover:text-white transition-colors" />
+            {/* Vertical 3: Eco-Marketplace */}
+            <div className="p-8 bg-white border border-gray-100 rounded-3xl text-center hover:shadow-2xl hover:border-green-100 transition-all duration-300 group flex flex-col justify-between">
+              <div>
+                <div className="bg-[#2D5A27]/5 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-[#2D5A27] transition-all duration-300 group-hover:rotate-6">
+                  <ShoppingBag className="h-10 w-10 text-[#2D5A27] group-hover:text-white transition-colors" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Eco-Marketplace</h3>
+                <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                  Partnered marketplace for eco-friendly green goods, durable agri-tools, & thriving indoor plants.
+                </p>
+                <div className="bg-[#FCF9F1] rounded-2xl p-3.5 mb-6 border border-[#2D5A27]/10 text-xs text-left space-y-1.5 text-gray-700">
+                  <div className="font-bold text-[#2D5A27] text-center mb-1 uppercase tracking-wider text-[10px]">Marketplace Categories</div>
+                  <div className="flex justify-between"><span>Agri-Tools:</span><span className="font-semibold text-gray-900">Handcraft Implements</span></div>
+                  <div className="flex justify-between"><span>Indoor Plants:</span><span className="font-semibold text-gray-900">Air Purifying Plants</span></div>
+                  <div className="flex justify-between"><span>Green Goods:</span><span className="font-semibold text-gray-900">Bio Enhancers</span></div>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Free-Range</h3>
-              <p className="text-gray-600 leading-relaxed">Specializing in local free-range chicken and fresh farm-fresh eggs.</p>
+
+              <div className="pt-2">
+                <Link
+                  href="/shop"
+                  className="w-full bg-[#2D5A27] hover:bg-[#23471f] text-white font-bold py-3 px-6 rounded-xl text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  Buy Now <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
 
-            {/* Nature Experience */}
-            <div className="p-8 bg-white border border-gray-100 rounded-3xl text-center hover:shadow-2xl hover:border-green-100 transition-all duration-300 group">
-              <div className="bg-[#2D5A27]/5 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-[#2D5A27] transition-all duration-300 group-hover:rotate-6">
-                <Trees className="h-10 w-10 text-[#2D5A27] group-hover:text-white transition-colors" />
+            {/* Vertical 4: Agritourism & Airbnb Stay */}
+            <div className="p-8 bg-white border border-gray-100 rounded-3xl text-center hover:shadow-2xl hover:border-green-100 transition-all duration-300 group flex flex-col justify-between">
+              <div>
+                <div className="bg-[#2D5A27]/5 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-[#2D5A27] transition-all duration-300 group-hover:rotate-6">
+                  <HomeIcon className="h-10 w-10 text-[#2D5A27] group-hover:text-white transition-colors" />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-3">Agritourism & Stay</h3>
+                <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                  Traditional Nepali village-style Airbnb accommodations in Duwakot with organic farm dining & tours.
+                </p>
+                <div className="bg-[#FCF9F1] rounded-2xl p-3.5 mb-6 border border-[#2D5A27]/10 text-xs text-left space-y-2 text-gray-700">
+                  <div className="font-bold text-[#2D5A27] text-center mb-1 uppercase tracking-wider text-[10px]">Village Experience</div>
+                  <div className="flex items-center gap-2"><span>🏡</span><span>Mud-Brick Village Cottage</span></div>
+                  <div className="flex items-center gap-2"><span>🍲</span><span>Wood-Fired Organic Meals</span></div>
+                  <div className="flex items-center gap-2"><span>🧑‍🌾</span><span>Hands-on Farm Tours</span></div>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">Nature Retreat</h3>
-              <p className="text-gray-600 leading-relaxed">A sanctuary to reconnect with nature and escape the city bustle.</p>
+
+              <div className="pt-2">
+                <Link
+                  href="/booking"
+                  className="w-full bg-[#5C4033] hover:bg-[#432e25] text-white font-bold py-3 px-6 rounded-xl text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  Book Now <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
