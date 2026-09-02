@@ -103,6 +103,12 @@ export default function InventoryPage() {
 
         return matchesType && matchesSearch && matchesStartDate && matchesEndDate;
     }).sort((a, b) => {
+        const aActive = a.isActive !== false;
+        const bActive = b.isActive !== false;
+        
+        if (aActive && !bActive) return -1;
+        if (!aActive && bActive) return 1;
+
         const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
         const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         return dateB - dateA;
@@ -158,6 +164,19 @@ export default function InventoryPage() {
 
     const handleProductUpdated = () => {
         loadProducts(); // Reload to get fresh data
+    };
+
+    const handleToggleActive = async (product: Product) => {
+        if (confirm(`Are you sure you want to mark this product as ${product.isActive === false ? 'active' : 'inactive'}?`)) {
+            try {
+                const newStatus = product.isActive === false ? true : false;
+                await ProductService.updateProduct(product.id, { isActive: newStatus }, dbUser?.name || "admin");
+                setProducts(products.map(p => p.id === product.id ? { ...p, isActive: newStatus } : p));
+            } catch (error) {
+                alert("Failed to update status");
+                console.error(error);
+            }
+        }
     };
 
     const getBusinessIcon = (type: BusinessType) => {
@@ -232,6 +251,7 @@ export default function InventoryPage() {
                             onStockUpdate={() => handleStockUpdate(product)}
                             onStockHistory={() => handleStockHistory(product)}
                             onDelete={dbUser?.role === "admin" ? () => handleDelete(product.id) : undefined}
+                            onToggleActive={() => handleToggleActive(product)}
                             icon={getBusinessIcon(product.businessType)}
                         />
                     ))}
@@ -269,6 +289,7 @@ function ProductCard({
     onStockUpdate,
     onStockHistory,
     onDelete,
+    onToggleActive,
     icon
 }: {
     product: Product;
@@ -276,6 +297,7 @@ function ProductCard({
     onStockUpdate: () => void;
     onStockHistory: () => void;
     onDelete?: () => void;
+    onToggleActive: () => void;
     icon: React.ReactNode;
 }) {
     // Determine stock status color
@@ -332,8 +354,19 @@ function ProductCard({
 
                     <div className="flex items-center gap-3">
                         {/* Status Icons */}
-                        <div className="flex items-center gap-1">
-                            <div title={product.isAvailableForSale ? "Available for Sale" : "Not for Sale"}>
+                        <div className="flex items-center gap-1 mr-2">
+                            <button 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    onToggleActive();
+                                }}
+                                title={product.isActive !== false ? "Mark Inactive" : "Mark Active"}
+                                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ${product.isActive !== false ? "text-green-700 border-green-200 bg-green-50 hover:bg-green-100" : "text-gray-500 border-gray-200 bg-gray-50 hover:bg-gray-100"}`}
+                            >
+                                {product.isActive !== false ? "ACTIVE" : "INACTIVE"}
+                            </button>
+                            <div title={product.isAvailableForSale ? "Available for Sale" : "Not for Sale"} className="ml-1">
                                 <ShoppingCart className={`h-4 w-4 ${product.isAvailableForSale ? "text-green-600" : "text-gray-300"}`} />
                             </div>
                             <div title={product.isFeatured ? "Featured on Home" : "Not Featured"}>

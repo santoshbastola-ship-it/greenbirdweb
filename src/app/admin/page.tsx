@@ -371,13 +371,27 @@ export default function AdminDashboard() {
 }
 
 function QuickLink({ href, label, icon: Icon, color }: any) {
+    const getThemeColors = () => {
+        if (color.includes("orange")) return "bg-orange-50/30 dark:bg-orange-950/10 text-orange-800 dark:text-orange-300 hover:bg-orange-500/10 hover:border-orange-500/20 border-orange-100/20";
+        if (color.includes("purple")) return "bg-purple-50/30 dark:bg-purple-950/10 text-purple-800 dark:text-purple-300 hover:bg-purple-500/10 hover:border-purple-500/20 border-purple-100/20";
+        if (color.includes("teal")) return "bg-teal-50/30 dark:bg-teal-950/10 text-teal-800 dark:text-teal-300 hover:bg-teal-500/10 hover:border-teal-500/20 border-teal-100/20";
+        if (color.includes("blue")) return "bg-blue-50/30 dark:bg-blue-950/10 text-blue-800 dark:text-blue-300 hover:bg-blue-500/10 hover:border-blue-500/20 border-blue-100/20";
+        if (color.includes("green")) return "bg-green-50/30 dark:bg-green-950/10 text-green-800 dark:text-green-300 hover:bg-green-500/10 hover:border-green-500/20 border-green-100/20";
+        if (color.includes("yellow")) return "bg-yellow-50/30 dark:bg-yellow-950/10 text-yellow-800 dark:text-yellow-300 hover:bg-yellow-500/10 hover:border-yellow-500/20 border-yellow-100/20";
+        if (color.includes("indigo")) return "bg-indigo-50/30 dark:bg-indigo-950/10 text-indigo-800 dark:text-indigo-300 hover:bg-indigo-500/10 hover:border-indigo-500/20 border-indigo-100/20";
+        if (color.includes("pink")) return "bg-pink-50/30 dark:bg-pink-950/10 text-pink-800 dark:text-pink-300 hover:bg-pink-500/10 hover:border-pink-500/20 border-pink-100/20";
+        return "bg-gray-50/30 dark:bg-gray-800/10 text-[#2D5A27] dark:text-green-300 hover:bg-[#2D5A27]/10 hover:border-[#2D5A27]/20 border-gray-100/20";
+    };
+
+    const colorClasses = getThemeColors();
+
     return (
         <Link
             href={href}
-            className={`flex flex-col items-center justify-center p-6 rounded-xl transition-transform hover:-translate-y-1 hover:shadow-md ${color.split(' ')[0]}`}
+            className={`flex flex-col items-center justify-center p-6 rounded-2xl border transition-all hover:-translate-y-0.5 hover:shadow-md ${colorClasses}`}
         >
-            <Icon className={`h-8 w-8 mb-3 ${color.split(' ')[1]}`} />
-            <span className={`font-medium ${color.split(' ')[1]}`}>{label}</span>
+            <Icon className="h-7 w-7 mb-3 opacity-95" />
+            <span className="text-sm font-semibold tracking-tight">{label}</span>
         </Link>
     );
 }

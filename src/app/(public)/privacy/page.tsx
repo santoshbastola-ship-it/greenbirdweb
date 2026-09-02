@@ -24,7 +24,7 @@ export default function PrivacyPolicy() {
                         <li>Subscribe to our newsletter</li>
                         <li>Contact us for support</li>
                     </ul>
-                    <p className="mt-2">This information may include your name, email address, phone number (specifically for WhatsApp notifications), and delivery address.</p>
+                    <p className="mt-2">This information may include your name, email address, phone number, and delivery address.</p>
                 </section>
 
                 <section>
@@ -32,22 +32,14 @@ export default function PrivacyPolicy() {
                     <p className="mb-2">We use your information for the following purposes:</p>
                     <ul className="list-disc pl-6 space-y-1">
                         <li>Processing and delivering your orders.</li>
-                        <li>Sending you order updates and notifications via WhatsApp (with your consent).</li>
+                        <li>Sending you order updates and notifications.</li>
                         <li>Improving our website and product offerings.</li>
                         <li> complying with legal obligations.</li>
                     </ul>
                 </section>
 
                 <section>
-                    <h2 className="text-xl font-semibold mb-3 text-green-700">4. WhatsApp Notifications</h2>
-                    <p>
-                        By providing your phone number, you consent to receive order status updates (e.g., "Order Confirmed", "Shipped") via WhatsApp.
-                        We use the official WhatsApp Business API to send these notifications. You can opt-out at any time by replying "STOP" or contacting us.
-                    </p>
-                </section>
-
-                <section>
-                    <h2 className="text-xl font-semibold mb-3 text-green-700">5. Data Deletion</h2>
+                    <h2 className="text-xl font-semibold mb-3 text-green-700">4. Data Deletion</h2>
                     <p>
                         You have the right to request deletion of your personal data. To do so, please contact us at our support email or via our Contact page.
                         We will process your request within 30 days.
@@ -55,7 +47,7 @@ export default function PrivacyPolicy() {
                 </section>
 
                 <section>
-                    <h2 className="text-xl font-semibold mb-3 text-green-700">6. Contact Us</h2>
+                    <h2 className="text-xl font-semibold mb-3 text-green-700">5. Contact Us</h2>
                     <p>
                         If you have any questions about this Privacy Policy, please contact us:
                     </p>

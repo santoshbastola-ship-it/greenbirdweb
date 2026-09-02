@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { SettingsService } from "@/services/settings.service";
 import { AppSettings } from "@/types";
-import { Save, Loader2, Truck, Percent, IndianRupee, AlertCircle, Phone, User, MessageCircle } from "lucide-react";
+import { Save, Loader2, Truck, Percent, IndianRupee, AlertCircle, Phone, User } from "lucide-react";
 import LogoLoader from "@/components/ui/LogoLoader";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -129,7 +129,7 @@ export default function AdminSettingsPage() {
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                                 <Phone className="h-4 w-4 text-purple-600" />
-                                WhatsApp Phone Number
+                                Admin Phone Number
                             </label>
                             <input
                                 type="tel"
@@ -138,22 +138,7 @@ export default function AdminSettingsPage() {
                                 placeholder="977XXXXXXXXXX"
                                 className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none"
                             />
-                            <p className="mt-1 text-xs text-gray-400">For receiving order notifications (include country code)</p>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                                <MessageCircle className="h-4 w-4 text-green-600" />
-                                WhatsApp Bot Number
-                            </label>
-                            <input
-                                type="tel"
-                                value={settings?.whatsappBotNumber || ""}
-                                onChange={(e) => setSettings(s => s ? { ...s, whatsappBotNumber: e.target.value } : null)}
-                                placeholder="977XXXXXXXXXX"
-                                className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 outline-none"
-                            />
-                            <p className="mt-1 text-xs text-gray-400">The number customers message to opt-in (include country code)</p>
+                            <p className="mt-1 text-xs text-gray-400">For profile contact and alerts (include country code)</p>
                         </div>
                     </div>
                 </div>

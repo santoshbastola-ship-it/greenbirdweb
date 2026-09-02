@@ -200,6 +200,7 @@ export interface Product {
     tags?: string[];
     discount?: ProductDiscount;
     showInApp?: boolean; // If false, hide from customers
+    isActive?: boolean; // If false, mark the product as inactive (hidden)
     updatedAt?: string | Date;
 }
 

@@ -1,15 +1,39 @@
-import { Mail, MapPin, Phone } from "lucide-react";
+import Image from "next/image";
+import { Mail, MapPin, Phone, MessageSquare } from "lucide-react";
 
 export default function ContactPage() {
     return (
-        <div className="flex flex-col min-h-screen bg-[#FCF9F1]">
-            {/* Header Section */}
-            <div className="bg-[#2D5A27] text-white py-16 px-4">
-                <div className="max-w-7xl mx-auto text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold mb-4">Contact Us</h1>
-                    <p className="text-xl text-gray-100 max-w-2xl mx-auto">
-                        Have questions? We'd love to hear from you.
-                    </p>
+        <div className="flex flex-col min-h-screen bg-[#FCF9F1] dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans">
+            {/* Top Visual Hero Banner */}
+            <div className="py-6 sm:py-10 px-4">
+                <div className="max-w-7xl mx-auto">
+                    <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-800">
+                        <div className="relative h-72 sm:h-96 w-full">
+                            <Image
+                                src="/images/contact-banner.jpg"
+                                alt="Contact Greenbird Homestead in Duwakot, Bhaktapur"
+                                fill
+                                className="object-cover"
+                                priority
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/30" />
+                            <div className="absolute inset-0 p-6 sm:p-12 flex flex-col justify-center max-w-2xl text-white">
+                                <span className="inline-flex items-center gap-1.5 bg-[#2D5A27] text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4 w-fit shadow-md">
+                                    <MessageSquare className="w-3.5 h-3.5" /> Get In Touch
+                                </span>
+                                <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3">
+                                    Contact Greenbird Homestead
+                                </h1>
+                                <p className="text-base sm:text-lg text-gray-200 leading-relaxed">
+                                    Have questions about vermicompost, bulk orders, organic produce, or farm visits? We&apos;d love to connect.
+                                </p>
+                                <div className="mt-4 flex items-center gap-2 text-xs font-medium text-amber-300">
+                                    <MapPin className="w-4 h-4 text-emerald-400" />
+                                    <span>Bastola Chowk, Besi Gaun, Duwakot, Bhaktapur, Nepal</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -65,25 +89,7 @@ export default function ContactPage() {
                 </div>
             </section>
 
-            {/* Simple Message Section */}
-            <section className="py-20 bg-white px-4">
-                <div className="max-w-3xl mx-auto text-center">
-                    <h2 className="text-2xl font-bold text-[#2D5A27] mb-6">Send us a message</h2>
-                    <p className="text-gray-600 mb-8">
-                        You can also reach out to us on our social media channels or via WhatsApp for quicker responses.
-                    </p>
-                    <div className="flex justify-center gap-4">
-                        <a
-                            href="https://wa.me/9779849850000"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-[#2D5A27] text-white px-8 py-3 rounded-full font-bold hover:bg-[#1f3e1b] transition-colors"
-                        >
-                            WhatsApp Us
-                        </a>
-                    </div>
-                </div>
-            </section>
+
         </div>
     );
 }

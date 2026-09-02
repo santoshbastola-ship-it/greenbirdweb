@@ -81,21 +81,11 @@ Greenbird Homestead`;
                     text: `Payment Receipt from Greenbird Homestead for ${order.partyName}`
                 });
             } else {
-                // Fallback to WhatsApp link with text if native sharing shouldn't download (but user asked to share)
-
-                // Trigger download
+                // Trigger download if native share is not supported
                 const link = document.createElement('a');
                 link.download = `Receipt-${order.billNo}.png`;
                 link.href = dataUrl;
                 link.click();
-
-                // Open WhatsApp with text
-                const mobileNumber = order.customerPhone;
-                const encodedMessage = encodeURIComponent(message);
-                const url = mobileNumber
-                    ? `https://wa.me/${mobileNumber}?text=${encodedMessage}`
-                    : `https://wa.me/?text=${encodedMessage}`;
-                window.open(url, '_blank');
             }
         } catch (err) {
             console.error("Share failed:", err);

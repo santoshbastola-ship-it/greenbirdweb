@@ -1,5 +1,9 @@
 # Release Notes
 
+## [0.2.26] - 2026-09-02
+- Homepage UI redesign, multi-vertical hero balance, shop layout reordering, and admin inactive product filter fix
+
+
 ## [0.2.25] - 2026-05-15
 - Fix transaction date corruption: sanitizeFirestoreData now preserves Date objects; parseDate handles corrupted dates; updateTransaction serializes Date to ISO string before saving. Added admin migration page at /admin/migrate-dates.
 

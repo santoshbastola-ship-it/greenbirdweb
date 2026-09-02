@@ -13,6 +13,11 @@ test.describe('Dark Mode Toggle', () => {
         // Let's assume desktop view for this test.
         await page.setViewportSize({ width: 1280, height: 720 });
 
+        // Open menu first to make theme toggle visible
+        const menuBtn = page.locator('button[aria-label="Toggle Menu"]').first();
+        await expect(menuBtn).toBeVisible();
+        await menuBtn.click();
+
         const toggleBtn = page.locator('button[aria-label="Toggle theme"]').first();
         await expect(toggleBtn).toBeVisible();
 
@@ -48,6 +53,11 @@ test.describe('Dark Mode Toggle', () => {
 
     test('should persist theme preference', async ({ page }) => {
         await page.goto('/');
+
+        // Open menu first to make theme toggle visible
+        const menuBtn = page.locator('button[aria-label="Toggle Menu"]').first();
+        await expect(menuBtn).toBeVisible();
+        await menuBtn.click();
 
         // Force dark mode
         const toggleBtn = page.locator('button[aria-label="Toggle theme"]').first();

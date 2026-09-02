@@ -24,17 +24,7 @@ test.describe('Broken Link Checker', () => {
             const response = await page.goto(url);
             expect(response?.status()).toBeLessThan(400);
 
-            // Collect links on the page to verify them too (one level deep)
-            const links = await page.locator('a[href^="/"]').all();
-            for (const link of links) {
-                const href = await link.getAttribute('href');
-                if (href && !visited.has(href) && !href.includes('#') && !href.includes('mailto')) {
-                    visited.add(href);
-                    // We don't visit, but we can check response
-                    // Actually, visiting all might be too much. 
-                    // Let's just verify they are valid URLs.
-                }
-            }
+
         }
     });
 

@@ -31,9 +31,9 @@ export default function Navbar() {
 
     const links = [
         { href: "/", label: "Home", icon: Home },
-        { href: "/shop", label: "Shop", icon: Store },
+        { href: "/shop", label: "Vermicompost & Shop", icon: Store },
+        { href: "/shop?category=produce", label: "Farm Produce", icon: Sprout },
         { href: "/about", label: "Our Story", icon: BookOpen },
-        { href: "/blog", label: "Blog", icon: FileText },
         { href: "/contact", label: "Contact Us", icon: Phone },
     ];
 
@@ -81,11 +81,11 @@ export default function Navbar() {
     }, [user, isOpen]);
 
     return (
-        <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50">
+        <nav className="bg-white/85 dark:bg-gray-900/85 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 sticky top-0 z-50 transition-all duration-300">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-20 items-center relative">
                     {/* Logo */}
-                    <Link href="/" className={clsx("flex items-center shrink-0", isSearchOpen && "hidden md:flex")}>
+                    <Link href="/" className={clsx("flex items-center shrink-0 hover:opacity-90 transition-opacity", isSearchOpen && "hidden md:flex")}>
                         <img
                             src="/images/logo.png"
                             alt="Greenbird Homestead"
@@ -114,17 +114,17 @@ export default function Navbar() {
                         )}
                     </div>
 
-                    {/* Desktop Links - Hidden on small screens, shown on large */}
-                    <div className="hidden lg:flex items-center justify-center space-x-8 mx-6">
+                    {/* Desktop Links with hover underline animations */}
+                    <div className="hidden lg:flex items-center justify-center space-x-6 mx-4">
                         {links.map((link) => (
                             <Link
-                                key={link.href}
+                                key={link.label}
                                 href={link.href}
                                 className={clsx(
-                                    "text-sm font-semibold transition-all duration-200 whitespace-nowrap py-2 border-b-2",
+                                    "text-sm font-semibold transition-all duration-200 whitespace-nowrap py-2 nav-link-animated relative",
                                     isActive(link.href)
-                                        ? "text-[#2D5A27] dark:text-green-400 border-[#2D5A27] dark:border-green-400"
-                                        : "text-gray-600 dark:text-gray-400 border-transparent hover:text-[#2D5A27] dark:hover:text-green-400 hover:border-[#2D5A27]/30 dark:hover:border-green-400/30"
+                                        ? "text-[#2D5A27] dark:text-green-400 active"
+                                        : "text-gray-600 dark:text-gray-300 hover:text-[#2D5A27] dark:hover:text-green-400"
                                 )}
                             >
                                 {link.label}
@@ -132,8 +132,8 @@ export default function Navbar() {
                         ))}
                     </div>
 
-                    {/* Right Icons */}
-                    <div className={clsx("flex items-center gap-2", isSearchOpen && "hidden md:flex")}>
+                    {/* Right Action Icons */}
+                    <div className={clsx("flex items-center gap-3", isSearchOpen && "hidden md:flex")}>
                         {/* Unified Menu Toggle */}
                         <div className="flex items-center">
                             {user ? (

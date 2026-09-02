@@ -40,7 +40,7 @@ test.describe('Product Image Persistence', () => {
 
         // 2. Go to New Product
         console.log("Navigating to new product page...");
-        await page.goto('/admin/inventory/new');
+        await page.goto('/admin/inventory/add');
 
         // 3. Fill Form
         const timestamp = Date.now();
@@ -54,9 +54,12 @@ test.describe('Product Image Persistence', () => {
         await page.fill('input[name="currentPrice"]', '500');
 
         // 4. Upload Image
-        const imagePath = path.join(process.cwd(), 'public', 'next.svg');
+        const imagePath = path.join(process.cwd(), 'public', 'images', 'esewa_qr.jpg');
         console.log("Uploading image:", imagePath);
         await page.setInputFiles('input[type="file"]', imagePath);
+
+        // Wait for Cropper and click Done
+        await page.click('button:has-text("Done")');
 
         // Wait for Preview
         await page.waitForSelector('img[alt="Product 1"]', { timeout: 20000 });
@@ -64,7 +67,7 @@ test.describe('Product Image Persistence', () => {
 
         // 5. Save
         console.log("Saving product...");
-        await page.click('button[type="submit"]');
+        await page.locator('button[type="submit"]').first().click();
 
         // Wait for List
         await page.waitForURL('**/admin/inventory', { timeout: 30000 });
@@ -82,10 +85,10 @@ test.describe('Product Image Persistence', () => {
             await page.waitForTimeout(2000);
         }
 
-        const productRow = page.locator('tr', { hasText: productName }).first();
-        const editLink = productRow.locator('a[href*="/edit"]');
-        await expect(editLink).toBeVisible();
-        await editLink.click();
+        // Click the product card button to open the details modal
+        await page.locator('button', { hasText: productName }).first().click();
+        // Click the Edit Product link in the modal
+        await page.click('a:has-text("Edit Product")');
 
         // 8. Verify Image in Edit Mode
         console.log("Checking image in Edit Mode...");
@@ -101,8 +104,8 @@ test.describe('Product Image Persistence', () => {
         const id = new URL(url).searchParams.get('id');
         console.log("Checking public page for ID:", id);
 
-        await page.goto(`/shop/${id}`);
-        await expect(page.locator(`img[alt="${productName}"]`)).toBeVisible({ timeout: 20000 });
+        await page.goto(`/shop?view=${id}`);
+        await expect(page.locator(`img[alt="${productName} - Image 1"]`).first()).toBeVisible({ timeout: 20000 });
         console.log("SUCCESS: Image visible on public page.");
     });
 });

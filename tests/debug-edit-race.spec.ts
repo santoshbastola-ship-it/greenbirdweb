@@ -18,22 +18,24 @@ test.describe('Debug Edit Upload Race', () => {
         // 2. Go to Edit Page (Pick a product that exists)
         // We'll use the one we looked at before, or just the first one in the list
         await page.goto('/admin/inventory');
-        await page.click('a[href^="/admin/inventory/edit"]:first-child');
+        // Click the first product card button to open details modal
+        await page.locator('button.flex.items-center.gap-3').first().click();
+        // Click Edit inside the modal
+        await page.click('a:has-text("Edit Product")');
 
         // Wait for form to load
         await expect(page.locator('form')).toBeVisible();
 
         // 3. Upload a NEW image
         const fileInput = page.locator('input[type="file"]');
-        const buffer = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
-        await fileInput.setInputFiles({
-            name: 'test-edit-image.jpg',
-            mimeType: 'image/jpeg',
-            buffer: buffer
-        });
+        // Upload a valid image file for test
+        await fileInput.setInputFiles('public/images/esewa_qr.jpg');
+
+        // Wait for Cropper and click Done
+        await page.click('button:has-text("Done")');
 
         // 4. Wait for upload to trigger/complete
-        const saveBtn = page.locator('button:has-text("Save Product")');
+        const saveBtn = page.locator('button:has-text("Save Product")').first();
         await expect(saveBtn).toBeDisabled();
         await expect(saveBtn).toBeEnabled({ timeout: 15000 });
 

@@ -32,47 +32,53 @@ function CategoryFilterContent({ categories }: CategoryFilterProps) {
     };
 
     return (
-        <div className="w-full mb-8">
-            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+        <div className="w-full mb-8 relative group">
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-100/50 dark:border-gray-700/50 shadow-sm">
                 <div className="flex items-center mb-4">
                     <Filter className="h-5 w-5 mr-2 text-[#2D5A27]" />
-                    <h2 className="font-extrabold text-[#5C4033] tracking-tight">Categories</h2>
+                    <h2 className="font-extrabold text-[#5C4033] dark:text-[#FCF9F1] tracking-tight">Categories</h2>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                    <button
-                        onClick={() => handleCategoryClick("all")}
-                        className={`
-                            px-4 py-2 rounded-lg text-sm font-semibold transition-all
-                            ${currentCategory === "all"
-                                ? "bg-[#2D5A27] text-white shadow-md"
-                                : "bg-gray-50 text-gray-700 hover:bg-[#2D5A27]/10 hover:text-[#2D5A27]"
-                            }
-                        `}
-                    >
-                        All
-                    </button>
+                <div className="relative">
+                    {/* Horizontal scroll track with no-scrollbar */}
+                    <div className="flex overflow-x-auto no-scrollbar pb-1 md:flex-wrap gap-2 snap-x snap-mandatory relative scroll-smooth">
+                        <button
+                            onClick={() => handleCategoryClick("all")}
+                            className={`
+                                px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap snap-start
+                                ${currentCategory === "all"
+                                    ? "bg-[#2D5A27] text-white shadow-md shadow-green-200 dark:shadow-green-900/30"
+                                    : "bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-[#2D5A27]/10 hover:text-[#2D5A27] border border-gray-200 dark:border-gray-700"
+                                }
+                            `}
+                        >
+                            All
+                        </button>
 
-                    {categories
-                        .filter(cat => isAdminOrManager || cat.businessType !== 'asset')
-                        .map((cat) => {
-                            const isActive = currentCategory === cat.id;
-                            return (
-                                <button
-                                    key={cat.id}
-                                    onClick={() => handleCategoryClick(cat.id)}
-                                    className={`
-                                        px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap
-                                        ${isActive
-                                            ? 'bg-green-600 text-white shadow-md shadow-green-200 dark:shadow-green-900/30 transform scale-105'
-                                            : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
-                                        }
-                                    `}
-                                >
-                                    {cat.name}
-                                </button>
-                            );
-                        })}
+                        {categories
+                            .filter(cat => isAdminOrManager || cat.businessType !== 'asset')
+                            .map((cat) => {
+                                const isActive = currentCategory === cat.id;
+                                return (
+                                    <button
+                                        key={cat.id}
+                                        onClick={() => handleCategoryClick(cat.id)}
+                                        className={`
+                                            px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap snap-start
+                                            ${isActive
+                                                ? 'bg-[#2D5A27] text-white shadow-md shadow-green-200 dark:shadow-green-900/30 transform scale-105'
+                                                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+                                            }
+                                        `}
+                                    >
+                                        {cat.name}
+                                    </button>
+                                );
+                            })}
+                    </div>
+
+                    {/* Gradient Fade Overlay for Mobile horizontal scroll */}
+                    <div className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-gray-800 to-transparent pointer-events-none md:hidden" />
                 </div>
             </div>
         </div>

@@ -1,8 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import { BookingService } from "@/services/booking.service";
-import { Calendar, Users, Phone, Mail, User, Info, Loader2, CheckCircle2 } from "lucide-react";
+import { Calendar, Users, Phone, Mail, User, Info, Loader2, CheckCircle2, Home as HomeIcon, MapPin } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { getTodayNepali } from "@/lib/date-helper";
 import dynamic from 'next/dynamic';
@@ -85,8 +86,37 @@ export default function BookingPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#FCF9F1] py-16 px-4">
+        <div className="min-h-screen bg-[#FCF9F1] py-10 px-4">
             <div className="max-w-7xl mx-auto">
+                {/* Hero Banner for Farm Stay */}
+                <div className="relative rounded-3xl overflow-hidden mb-12 shadow-2xl border border-gray-200">
+                    <div className="relative h-72 sm:h-96 w-full">
+                        <Image
+                            src="/images/farm-stay-banner.jpg"
+                            alt="Traditional Nepali Village Farm Stay in Duwakot"
+                            fill
+                            className="object-cover"
+                            priority
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/30" />
+                        <div className="absolute inset-0 p-6 sm:p-12 flex flex-col justify-center max-w-2xl text-white">
+                            <span className="inline-flex items-center gap-1.5 bg-[#2D5A27] text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4 w-fit shadow-md">
+                                <HomeIcon className="w-3.5 h-3.5" /> Traditional Village Stay &amp; Tours
+                            </span>
+                            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3">
+                                Agritourism &amp; Village Retreat
+                            </h1>
+                            <p className="text-base sm:text-lg text-gray-200 leading-relaxed">
+                                Mud-brick architecture, wood-fired organic dining, guided vermiculture tours, and peaceful day retreats in Duwakot, Bhaktapur.
+                            </p>
+                            <div className="mt-4 flex items-center gap-2 text-xs font-medium text-amber-300">
+                                <MapPin className="w-4 h-4 text-emerald-400" />
+                                <span>Duwakot, Bhaktapur • Day Visits &amp; Organic Farm Dining</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
 
                     {/* Info Side */}

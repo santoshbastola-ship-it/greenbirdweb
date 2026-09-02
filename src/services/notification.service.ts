@@ -3,7 +3,7 @@ import { db } from "@/lib/firebase";
 import { Notification, NotificationType, NotificationChannel } from "@/types";
 import { sanitizeFirestoreData } from "@/lib/firestore-utils";
 import { RESTRICTED_ROUTES_FOR_MANAGER } from "@/config/permissions";
-import { WHATSAPP_API, PUSH_API } from "@/config/api";
+import { PUSH_API } from "@/config/api";
 
 const COLLECTION_NAME = "notifications";
 const WHATSAPP_LOGS_COLLECTION = "whatsapp_logs";
@@ -23,16 +23,7 @@ export const NotificationService = {
 
             const docRef = await addDoc(collection(db, COLLECTION_NAME), newNotification);
 
-            // If channel includes WhatsApp, try to send it
-            if (notification.channels?.includes('whatsapp')) {
-                await NotificationService.sendWhatsappNotification(
-                    notification.targetUserId,
-                    notification.title,
-                    notification.message,
-                    notification.whatsappTemplate,
-                    notification.whatsappTemplateParams
-                );
-            }
+
 
             // If channel includes Push, try to send it
             if (notification.channels?.includes('push')) {
@@ -188,22 +179,7 @@ export const NotificationService = {
         }
     },
 
-    // STUB: Send WhatsApp Notification
-    // Send WhatsApp Notification (Zero-Cost Optimization)
-    sendWhatsappNotification: async (toUserId: string, title: string, body: string, templateName?: string, templateParams?: string[]): Promise<void> => {
-        try {
-            // Call API route to handle secure server-side sending
-            // This prevents "process.env" issues on the client-side
-            await fetch(WHATSAPP_API.NOTIFICATION, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ toUserId, title, body, templateName, templateParams })
-            });
 
-        } catch (error) {
-            console.error("Error sending WhatsApp notification:", error);
-        }
-    },
 
     // Send Push Notification
     sendPushNotification: async (toUserId: string, title: string, body: string, imageUrl?: string, data?: any): Promise<void> => {
@@ -229,12 +205,7 @@ export const NotificationService = {
         }
     },
 
-    // Helper to generate a WhatsApp Link for manual sending (e.g., in UI)
-    getWhatsappLink: (phoneNumber: string, text: string): string => {
-        const cleanNumber = phoneNumber.replace(/\D/g, '');
-        const encodedText = encodeURIComponent(text);
-        return `https://wa.me/${cleanNumber}?text=${encodedText}`;
-    },
+
 
     // Subscribe to unread count
     subscribeToUnreadCount: (userId: string, callback: (count: number) => void): () => void => {
@@ -330,37 +301,7 @@ export const NotificationService = {
             console.log(`[NotificationService] In-app notifications sent to ${recipientIds.length} users.`);
 
 
-            // 3. Send WhatsApp to UNIQUE phone numbers
-            const uniquePhoneRecipients = new Map<string, string>();
-            filteredRecipients.forEach(doc => {
-                const data = doc.data();
-                // Check both phoneNumber and phone fields
-                const phone = data.phoneNumber || data.phone;
-                if (phone && !uniquePhoneRecipients.has(phone)) {
-                    uniquePhoneRecipients.set(phone, doc.id);
-                }
-            });
 
-            console.log(`[NotificationService] Found ${uniquePhoneRecipients.size} unique phone numbers for WhatsApp.`);
-
-            const whatsappPromises = Array.from(uniquePhoneRecipients.values()).map(async (userId) => {
-                try {
-                    await NotificationService.createNotification({
-                        targetUserId: userId,
-                        title,
-                        message,
-                        type: 'info',
-                        channels: ['whatsapp'],
-                        relatedEntityId,
-                        relatedEntityType,
-                        route
-                    });
-                } catch (e) {
-                    console.error(`[NotificationService] Failed to create WhatsApp notification for user ${userId}:`, e);
-                }
-            });
-            await Promise.all(whatsappPromises);
-            console.log(`[NotificationService] WhatsApp notifications processing initiated.`);
 
         } catch (error) {
             console.error("[NotificationService] Error notifying admins/managers:", error);

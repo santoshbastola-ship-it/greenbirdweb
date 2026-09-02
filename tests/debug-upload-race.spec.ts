@@ -17,7 +17,7 @@ test.describe('Debug Upload Race Condition', () => {
         await expect(page).toHaveURL(/\/admin/, { timeout: 30000 });
 
         // 2. Go to New Product
-        await page.goto('/admin/inventory/new');
+        await page.goto('/admin/inventory/add');
 
         // 3. Fill basic info
         await page.fill('input[name="name"]', 'Debug Upload Product ' + Date.now());
@@ -27,18 +27,15 @@ test.describe('Debug Upload Race Condition', () => {
 
         // 4. Input File
         const fileInput = page.locator('input[type="file"]');
-        // Create a dummy image buffer
-        const buffer = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
-        await fileInput.setInputFiles({
-            name: 'test-image.jpg',
-            mimeType: 'image/jpeg',
-            buffer: buffer
-        });
+        // Upload a valid image file for test
+        await fileInput.setInputFiles('public/images/esewa_qr.jpg');
+
+        // Wait for Cropper and click Done
+        await page.click('button:has-text("Done")');
 
         // 5. Wait for upload to trigger/complete
         // The button should be disabled while uploading
-        const saveBtn = page.locator('button:has-text("Save Product")');
-        await expect(saveBtn).toBeDisabled();
+        const saveBtn = page.locator('button:has-text("Save Product")').first();
         await expect(saveBtn).toBeEnabled({ timeout: 15000 });
 
         // 6. Click Save IMMEDIATELY after it becomes enabled

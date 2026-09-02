@@ -17,7 +17,7 @@ test('Debug Product Rendering', async ({ page }) => {
     await page.goto(targetUrl);
 
     // Wait for product name to appear (ensures render)
-    await expect(page.locator('h1')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('h1').first()).toBeVisible({ timeout: 15000 });
 
     // Wait a bit for async fetch/image load
     await page.waitForTimeout(5000);

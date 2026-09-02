@@ -149,7 +149,7 @@ export default function EditUserModal({
 
                     <div>
                         <label htmlFor="edit-phone" className="block text-sm font-medium text-gray-700 mb-1">
-                            Phone Number (WhatsApp)
+                            Phone Number
                         </label>
                         <input
                             type="text"
@@ -160,7 +160,7 @@ export default function EditUserModal({
                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent disabled:bg-gray-100"
                             placeholder="e.g. 9779841..."
                         />
-                        <p className="text-xs text-gray-500 mt-1">Include country code (e.g. 977) for WhatsApp notifications.</p>
+                        <p className="text-xs text-gray-500 mt-1">Include country code (e.g. 977) for notification alerts.</p>
                     </div>
 
                     <div className="flex gap-3 pt-2">

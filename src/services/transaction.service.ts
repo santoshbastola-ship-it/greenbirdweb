@@ -47,7 +47,7 @@ const safeLogs = (logs: any) => {
 
 
 const COLLECTION_NAME = "transactions";
-const WHATSAPP_SUPPORT_FOOTER = "\n\nFor support, chat with us at https://wa.me/9779765142494";
+const WHATSAPP_SUPPORT_FOOTER = "\n\nFor support, chat with us at https://wa.me/9779849850000";
 
 // Helper to format item list for messages
 const formatItemsList = (items: SalesItem[]): string => {

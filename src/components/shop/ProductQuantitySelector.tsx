@@ -68,10 +68,10 @@ export default function ProductQuantitySelector({ product }: ProductQuantitySele
         <div className="flex flex-col gap-4">
             <div className="flex items-center gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-sm transition-all hover:border-[#2D5A27]/30 dark:hover:border-green-500/30">
+                    <div className="flex items-center border border-gray-200 dark:border-gray-700 rounded-full overflow-hidden bg-white dark:bg-gray-800 shadow-sm transition-all hover:border-[#2D5A27]/30 dark:hover:border-green-500/30">
                         <button
                             onClick={handleDecrement}
-                            className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+                            className="p-3 pl-4 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
                             aria-label="Decrease quantity"
                         >
                             <Minus className="h-4 w-4" />
@@ -82,12 +82,12 @@ export default function ProductQuantitySelector({ product }: ProductQuantitySele
                             min="0"
                             value={quantity}
                             onChange={handleInputChange}
-                            className="w-16 text-center font-bold text-gray-900 dark:text-white bg-transparent border-0 focus:outline-none focus:ring-0 appearance-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 h-10"
+                            className="w-14 text-center font-bold text-gray-900 dark:text-white bg-transparent border-0 focus:outline-none focus:ring-0 appearance-none [-moz-appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none p-0 h-10"
                             aria-label="Quantity"
                         />
                         <button
                             onClick={handleIncrement}
-                            className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
+                            className="p-3 pr-4 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 transition-colors"
                             aria-label="Increase quantity"
                         >
                             <Plus className="h-4 w-4" />

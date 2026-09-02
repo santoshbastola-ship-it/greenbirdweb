@@ -30,14 +30,7 @@ export default function TermsOfService() {
                 </section>
 
                 <section>
-                    <h2 className="text-xl font-semibold mb-3 text-green-700">4. WhatsApp Communication</h2>
-                    <p>
-                        By providing your phone number, you agree to receive transactional messages related to your orders. Standard messaging rates may apply.
-                    </p>
-                </section>
-
-                <section>
-                    <h2 className="text-xl font-semibold mb-3 text-green-700">5. Contact Us</h2>
+                    <h2 className="text-xl font-semibold mb-3 text-green-700">4. Contact Us</h2>
                     <p>
                         In order to resolve a complaint regarding the Site or to receive further information regarding use of the Site, please contact us at: greenbirdhomestead1@gmail.com
                     </p>

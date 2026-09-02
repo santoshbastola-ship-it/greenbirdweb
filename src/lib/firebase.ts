@@ -1,7 +1,7 @@
 import { initializeApp, getApps } from "firebase/app";
-import { getFirestore, initializeFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { getStorage } from "firebase/storage";
+import { getFirestore, initializeFirestore, connectFirestoreEmulator } from "firebase/firestore";
+import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { getStorage, connectStorageEmulator } from "firebase/storage";
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -26,6 +26,13 @@ const db = initializeFirestore(app, {
 });
 const auth = getAuth(app);
 const storage = getStorage(app);
+
+if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true" && typeof window !== "undefined") {
+    console.log("Connecting to local Firebase Emulators...");
+    connectFirestoreEmulator(db, "127.0.0.1", 8080);
+    connectAuthEmulator(auth, "http://127.0.0.1:9099");
+    connectStorageEmulator(storage, "127.0.0.1", 9199);
+}
 
 // Initialize Messaging (only on client side)
 let messaging: any = null;

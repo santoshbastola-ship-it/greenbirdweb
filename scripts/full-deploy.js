@@ -117,7 +117,7 @@ const main = () => {
 
     // 9. Deploy
     console.log('\n🚀 Step 8: Deploying to Firebase...');
-    runCommand('npx firebase deploy', 'Firebase Deploy');
+    runCommand('npx firebase deploy --only hosting,firestore,storage', 'Firebase Deploy');
 
     // Success
     console.log('\n╔════════════════════════════════════════════════════════════╗');

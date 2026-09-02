@@ -50,6 +50,7 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                 tags: initialData.tags || ["", ""],
                 discount: initialData.discount,
                 showInApp: initialData.showInApp ?? true,
+                isActive: initialData.isActive ?? true,
             };
         }
         return {
@@ -66,6 +67,7 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
             tags: ["", ""],
             discount: undefined,
             showInApp: true,
+            isActive: true,
         };
     });
 
@@ -512,6 +514,20 @@ export default function ProductForm({ initialData, isEditMode = false }: Product
                                         className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                                     />
                                     <span className="ml-2 text-sm text-gray-600">Visible to Customers</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Active Status</label>
+                                <div className="flex items-center h-[42px]">
+                                    <input
+                                        type="checkbox"
+                                        name="isActive"
+                                        checked={formData.isActive ?? true}
+                                        onChange={handleCheckboxChange}
+                                        className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                                    />
+                                    <span className="ml-2 text-sm text-gray-600">Mark as Active</span>
                                 </div>
                             </div>
                         </div>

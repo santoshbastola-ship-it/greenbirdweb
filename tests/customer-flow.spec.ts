@@ -52,12 +52,16 @@ test.describe('Full Customer Journey', () => {
             // Add stock
             await page.click('button:has-text("Products")');
             const productCard = page.locator('div', { hasText: 'Customer Test Product' }).first();
-            const stockBtn = productCard.locator('button', { hasText: /0\s/ });
+            await expect(productCard).toBeVisible();
+            const stockBtn = productCard.locator('button', { hasText: /0\s/ }).first();
+            await stockBtn.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
             if (await stockBtn.isVisible()) {
                 await stockBtn.click();
                 await page.fill('input[type="number"]', '100');
                 await page.fill('textarea', 'Initial Stock');
                 await page.click('button:has-text("Update Stock")');
+                // Wait for modal to close / update to complete
+                await page.waitForTimeout(2000);
             }
         }
 

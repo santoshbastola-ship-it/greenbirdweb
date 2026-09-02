@@ -102,7 +102,7 @@ export const ProductService = {
                     ...data,
                     images: normalizedImages
                 } as Product;
-            });
+            }).filter(p => p.isActive !== false && p.showInApp !== false);
         } catch (error) {
             console.error("Error fetching category:", error);
             return [];
@@ -205,7 +205,7 @@ export const ProductService = {
             const safeFields = [
                 'name', 'businessType', 'unit', 'priceUnit', 'currentPrice',
                 'currentStock', 'description', 'categoryId', 'categoryName',
-                'isAvailableForSale', 'isFeatured', 'showInApp', 'tags', 'relatedProductIds',
+                'isAvailableForSale', 'isFeatured', 'showInApp', 'isActive', 'tags', 'relatedProductIds',
                 'discount', 'priceHistory', 'stockHistory', 'createdBy'
             ];
 
@@ -424,7 +424,7 @@ export const ProductService = {
                 }));
             }
 
-            return featuredProducts;
+            return featuredProducts.filter(p => p.isActive !== false && p.showInApp !== false);
         } catch (error) {
             console.error("Error fetching featured products:", error);
             // Final fallback to all products filter
@@ -452,6 +452,8 @@ export const ProductService = {
             return allProducts
                 .filter((product) => {
                     if (!product.isAvailableForSale) return false;
+                    if (product.isActive === false) return false;
+                    if (product.showInApp === false) return false;
 
                     // Match name
                     if (product.name.toLowerCase().includes(searchTerm)) return true;

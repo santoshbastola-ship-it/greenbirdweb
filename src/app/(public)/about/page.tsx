@@ -1,16 +1,39 @@
 import Image from "next/image";
+import { BookOpen, MapPin } from "lucide-react";
 
 export default function AboutPage() {
     return (
-        <div className="flex flex-col min-h-screen bg-[#FCF9F1]">
-            {/* Header Section */}
-            <div className="bg-[#2D5A27] text-white py-20 px-4">
-                <div className="max-w-7xl mx-auto text-center">
-                    <h1 className="text-4xl md:text-6xl font-bold mb-6">Our Roots & Our Vision</h1>
-                    <div className="w-24 h-1 bg-[#F5E6D3] mx-auto mb-6"></div>
-                    <p className="text-xl text-gray-100 max-w-2xl mx-auto font-light">
-                        Engineering a better way to eat, from our soil to your soul.
-                    </p>
+        <div className="flex flex-col min-h-screen bg-[#FCF9F1] dark:bg-gray-950 text-gray-900 dark:text-gray-100 font-sans">
+            {/* Top Visual Hero Banner */}
+            <div className="py-6 sm:py-10 px-4">
+                <div className="max-w-7xl mx-auto">
+                    <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-800">
+                        <div className="relative h-72 sm:h-96 w-full">
+                            <Image
+                                src="/images/about-banner.jpg"
+                                alt="Greenbird Homestead Roots and Heritage in Duwakot"
+                                fill
+                                className="object-cover"
+                                priority
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-black/30" />
+                            <div className="absolute inset-0 p-6 sm:p-12 flex flex-col justify-center max-w-2xl text-white">
+                                <span className="inline-flex items-center gap-1.5 bg-[#2D5A27] text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4 w-fit shadow-md">
+                                    <BookOpen className="w-3.5 h-3.5" /> Our Roots &amp; Vision
+                                </span>
+                                <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-3">
+                                    Our Story &amp; Philosophy
+                                </h1>
+                                <p className="text-base sm:text-lg text-gray-200 leading-relaxed">
+                                    Engineering a better way to eat, from our living soil in Duwakot, Bhaktapur to your home.
+                                </p>
+                                <div className="mt-4 flex items-center gap-2 text-xs font-medium text-amber-300">
+                                    <MapPin className="w-4 h-4 text-emerald-400" />
+                                    <span>Duwakot, Bhaktapur • Sustainable Organic Agriculture</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

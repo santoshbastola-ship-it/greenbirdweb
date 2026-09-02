@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const withPWA = require("next-pwa")({
   dest: "public",
-  disable: process.env.NODE_ENV === "development", // Enable in production
+  disable: process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true", // Enable in production
   register: true,
   skipWaiting: true,
   clientsClaim: true,

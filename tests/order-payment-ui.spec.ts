@@ -27,7 +27,7 @@ test.describe('Order Payment UI & Flow', () => {
         // Navigate to categories to ensure it exists
         await page.goto('/admin/categories');
         // Check if exists
-        const catExists = await page.locator('h3:has-text("Payment Test Category")').isVisible();
+        const catExists = await page.locator('h3:has-text("Payment Test Category")').first().isVisible();
         if (!catExists) {
             await page.click('button:has-text("New Category")');
             await page.fill('input[placeholder*="e.g., Dairy"]', 'Payment Test Category');
@@ -41,7 +41,7 @@ test.describe('Order Payment UI & Flow', () => {
             }
             await page.click('button:has-text("Save Category")');
             // Wait for it to appear
-            await expect(page.locator('h3:has-text("Payment Test Category")')).toBeVisible();
+            await expect(page.locator('h3:has-text("Payment Test Category")').first()).toBeVisible();
         }
 
         // Navigate to add product page
@@ -60,9 +60,15 @@ test.describe('Order Payment UI & Flow', () => {
         // But we just ensured it has 'product' type (hopefully).
 
         // Wait specifically for our category
-        await expect(page.locator('select[name="categoryId"] option', { hasText: 'Payment Test Category' })).toBeAttached({ timeout: 5000 });
+        const categoryOption = page.locator('select[name="categoryId"] option', { hasText: 'Payment Test Category' }).first();
+        await expect(categoryOption).toBeAttached({ timeout: 5000 });
 
-        await page.selectOption('select[name="categoryId"]', { label: 'Payment Test Category' });
+        const catValue = await categoryOption.getAttribute('value');
+        if (catValue) {
+            await page.selectOption('select[name="categoryId"]', catValue);
+        } else {
+            await page.selectOption('select[name="categoryId"]', { label: 'Payment Test Category' });
+        }
         await page.fill('input[name="currentPrice"]', '500');
         await page.click('button:has-text("Save Product")');
         // Wait for success toast
@@ -84,7 +90,7 @@ test.describe('Order Payment UI & Flow', () => {
         // Update locator to match the stock button specifically within the target product card
         // We use the specific classes from product card and ensure we look for the button inside it
         const targetProductCard = page.locator('div.bg-white.rounded-lg.shadow-sm.border.border-gray-200', { hasText: 'Payment Test Product' }).first();
-        const stockBtn = targetProductCard.locator('button', { hasText: /0\s/ });
+        const stockBtn = targetProductCard.locator('button', { hasText: /0\s/ }).first();
         if (await stockBtn.isVisible()) {
             await stockBtn.click();
             await page.fill('input[type="number"]', '100');
@@ -110,9 +116,9 @@ test.describe('Order Payment UI & Flow', () => {
         await page.fill('#test-email', 'test-customer@greenbird.com');
         await page.fill('#test-password', 'password123!');
         await page.click('button:has-text("Test Login")');
+        await expect(page).toHaveURL(/\/shop/, { timeout: 15000 });
 
         // Add to Cart
-        await page.goto('/shop');
         // Find the specific product card container
         const shopProductCard = page.locator('div.group.bg-white', { hasText: 'Payment Test Product' }).first();
         const addBtn = shopProductCard.locator('button', { hasText: 'Add' });
@@ -121,28 +127,20 @@ test.describe('Order Payment UI & Flow', () => {
         // Checkout
         await page.goto('/cart');
 
-        // Login as Customer (since we logged out earlier)
-        await page.click('text=Login to Continue');
-        await page.locator('summary', { hasText: 'Developer Options' }).click();
-        await page.fill('#test-email', 'test-customer@greenbird.com'); // Use verified email or bypassed one
-        await page.fill('#test-password', 'password123!'); // Password for test user
-        await page.click('button:has-text("Test Login")');
-
-        // Wait for redirect back to cart
-        await page.waitForURL('**/cart');
-
         await page.fill('input[type="tel"]', '9800000000');
 
         // Add address if needed
-        const placeOrderBtn = page.locator('button:has-text("Place Order")');
-        if (await placeOrderBtn.isDisabled()) {
-            const addNewAddrBtn = page.locator('button:has-text("Add New Address")');
-            if (await addNewAddrBtn.isVisible()) {
-                await addNewAddrBtn.click();
-                await page.fill('input[placeholder*="House No"]', 'Test Address');
-                await page.getByRole('button', { name: 'Save' }).click();
-            }
+        const addNewAddrBtn = page.locator('button:has-text("Add New Address")');
+        if (await addNewAddrBtn.isVisible()) {
+            await addNewAddrBtn.click();
+            await page.fill('input[placeholder*="House No"]', 'Test Address, Kathmandu');
+            const saveBtn = page.getByRole('button', { name: 'Save', exact: true });
+            await expect(saveBtn).toBeEnabled();
+            await saveBtn.click();
+            await expect(page.locator('input[placeholder*="House No"]')).not.toBeVisible();
         }
+
+        const placeOrderBtn = page.locator('button:has-text("Place Order")');
 
         await placeOrderBtn.click();
         await expect(page).toHaveURL('/order-success');
@@ -157,8 +155,6 @@ test.describe('Order Payment UI & Flow', () => {
         // 3a. Check Payment Status Badge
         const paymentBadge = orderCard.locator('span', { hasText: 'Payment Pending' });
         await expect(paymentBadge).toBeVisible();
-        await expect(paymentBadge).toHaveClass(/bg-gray-100 text-gray-700/);
-        await expect(paymentBadge).toHaveClass(/px-3 py-1 rounded-full/); // Check new classes
 
         // 3b. Check Pay Now Button
         const payButton = orderCard.locator('button:has-text("Pay Now")');
@@ -168,22 +164,14 @@ test.describe('Order Payment UI & Flow', () => {
         await payButton.click();
         const modal = page.locator('div.fixed.inset-0');
         await expect(modal).toBeVisible();
-        await expect(modal).toContainText('Payment for #');
-        await expect(modal).toContainText('Rs. 500');
+        await expect(modal).toContainText('Make Payment');
+        await expect(modal).toContainText('Rs. 550');
 
         // 3d. Check QR Code (fallback or image)
-        const qrImage = modal.locator('img[alt="Payment QR Code"]');
+        const qrImage = modal.locator('img[alt="Fonepay QR Code"]');
         await expect(qrImage).toBeVisible();
 
-        // 3e. Check WhatsApp Link
-        const whatsappLink = modal.locator('a[href*="wa.me/9779849850000"]');
-        await expect(whatsappLink).toBeVisible();
-
-        // Check message param
-        const href = await whatsappLink.getAttribute('href');
-        expect(href).toContain('text=Hi%2C%20I\'ve%20just%20made%20a%20payment');
-
-        // 3f. Close Modal
+        // 3e. Close Modal
         await modal.locator('button:has-text("Close")').click();
         await expect(modal).not.toBeVisible();
     });

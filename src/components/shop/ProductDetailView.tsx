@@ -66,8 +66,8 @@ export default function ProductDetailView({ product: initialProduct, onBack }: P
                 </Link>
             )}
 
-            <div className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-sm border border-gray-100 dark:border-gray-700">
-                <div className="grid grid-cols-1 md:grid-cols-2">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-sm border border-gray-100/50 dark:border-gray-700/50">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16">
 
                     {/* Image Section */}
                     <div className="relative group overflow-hidden bg-gray-100 dark:bg-gray-700">

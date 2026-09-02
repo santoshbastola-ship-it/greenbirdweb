@@ -23,7 +23,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     const { finalPrice, originalPrice, hasDiscount, discountBadge } = calculateProductPrice(product);
 
     return (
-        <div className="group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-xl dark:hover:shadow-green-900/10 transition-all duration-300 relative">
+        <div className="group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden border border-gray-100/50 dark:border-gray-700/50 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:hover:shadow-green-900/5 transition-all duration-300 relative">
             <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
                 <Link href={`/shop?view=${product.id}`} className="block w-full h-full">
                     <Image
@@ -53,21 +53,20 @@ export default function ProductCard({ product }: ProductCardProps) {
                     </div>
                 )}
 
+                {/* Best Value Badge for 25kg / Bulk items */}
+                {(product.name.toLowerCase().includes("25kg") || product.name.toLowerCase().includes("sack") || product.tags?.some(t => t.toLowerCase().includes("best value") || t.toLowerCase().includes("bulk"))) && (
+                    <div className="absolute top-2 left-2 z-20 pointer-events-none">
+                        <span className="bg-[#2D5A27] text-white px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-md border border-green-300/30 flex items-center gap-1">
+                            ★ Best Value
+                        </span>
+                    </div>
+                )}
+
                 {hasDiscount && (
                     <div className="absolute bottom-2 right-2 z-20 pointer-events-none">
                         <span className="bg-red-500 text-white px-2 py-1 rounded-lg text-xs font-bold uppercase tracking-wider shadow-sm">
                             {discountBadge}
                         </span>
-                    </div>
-                )}
-
-                {product.tags && product.tags.length > 0 && (
-                    <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-20 pointer-events-none">
-                        {product.tags.map((tag, index) => (
-                            <span key={index} className="bg-white/90 dark:bg-gray-900/90 text-[#2D5A27] dark:text-green-400 px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm border border-[#2D5A27]/20 dark:border-green-500/20">
-                                {tag}
-                            </span>
-                        ))}
                     </div>
                 )}
             </div>
@@ -83,14 +82,23 @@ export default function ProductCard({ product }: ProductCardProps) {
                                 {product.name}
                             </h3>
                         </Link>
+                        {product.tags && product.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                                {product.tags.map((tag, index) => (
+                                    <span key={index} className="bg-[#2D5A27]/5 dark:bg-green-950/20 text-[#2D5A27] dark:text-green-400 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex flex-col items-end">
-                        <div className="flex items-center bg-[#2D5A27]/10 dark:bg-green-900/20 px-3 py-1.5 rounded-xl border border-[#2D5A27]/10 dark:border-[#2D5A27]/20 shadow-sm">
-                            <span className="text-sm font-bold text-[#2D5A27] dark:text-green-400">
+                        <div className="flex items-baseline gap-0.5">
+                            <span className="text-sm md:text-base font-bold text-gray-900 dark:text-white">
                                 Rs. {finalPrice}
                             </span>
-                            <span className="text-xs text-[#2D5A27]/70 dark:text-green-400/70 ml-1">/{product.priceUnit}</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">/{product.priceUnit || product.unit}</span>
                         </div>
                         {hasDiscount && (
                             <span className="text-xs text-gray-400 dark:text-gray-500 line-through mt-1">

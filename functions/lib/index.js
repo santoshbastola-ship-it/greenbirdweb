@@ -40,7 +40,6 @@ exports.api = void 0;
 const functions = __importStar(require("firebase-functions"));
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
-const whatsappController = __importStar(require("./controllers/whatsapp.controller"));
 const notificationController = __importStar(require("./controllers/notification.controller"));
 // Initialize Express App
 const app = (0, express_1.default)();
@@ -59,11 +58,6 @@ app.get("/", (req, res) => {
         version: "1.0.0"
     });
 });
-// WhatsApp
-app.get("/whatsapp/webhook", whatsappController.verifyWebhook);
-app.post("/whatsapp/webhook", whatsappController.handleWebhookEvent);
-app.post("/whatsapp/notification", whatsappController.sendNotification);
-app.post("/whatsapp/order-update", whatsappController.updateOrder);
 // Notifications
 app.post("/notifications/push", notificationController.sendPush);
 // Debug

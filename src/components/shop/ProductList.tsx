@@ -4,12 +4,16 @@ import { useSearchParams } from "next/navigation";
 import ProductCard from "@/components/ui/ProductCard";
 import OrderSuccessMessage from "@/components/ui/OrderSuccessMessage";
 import Link from "next/link";
+import Image from "next/image";
 import { Product, Category } from "@/types";
 import { Suspense, useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { ProductService } from "@/services/product.service";
 import ProductDetailView from "./ProductDetailView";
 import { useRouter } from "next/navigation";
+import { Sprout, ShoppingBag, Bird } from "lucide-react";
+
+import CategoryFilter from "./CategoryFilter";
 
 interface ProductListContentProps {
     initialProducts: Product[];
@@ -26,6 +30,14 @@ function ProductListContent({ initialProducts, categories }: ProductListContentP
     const isAdminOrManager = dbUser?.role === 'admin' || dbUser?.role === 'manager';
     const search = searchParams.get('search')?.toLowerCase() || "";
 
+    // Helper to check if a product is inactive or hidden
+    const isProductInactiveOrHidden = (p: Product) => {
+        const isInactive = p.isActive === false || (p as any).isActive === 'false' || (p as any).status === 'inactive';
+        const isHidden = p.showInApp === false || (p as any).showInApp === 'false';
+        const isAsset = p.businessType === 'asset';
+        return isInactive || isHidden || isAsset;
+    };
+
     // Fetch fresh products on mount to ensure prices are up to date in static export
     useEffect(() => {
         const fetchFreshProducts = async () => {
@@ -41,18 +53,24 @@ function ProductListContent({ initialProducts, categories }: ProductListContentP
         fetchFreshProducts();
     }, []);
 
+    const isProduceCategory = categoryId === 'produce' || categoryId === 'crop' || categoryId === 'livestock' || categoryId === 'farm-produce';
+
     const products = allProducts.filter(p => {
         // If we want to view a specific product via query param
         if (viewId) {
             return p.id === viewId;
         }
 
-        // Filter by category if present
-        // Filter by category if present
+        // Filter by category or businessType if present
         if (categoryId) {
+            const catLower = categoryId.toLowerCase();
             const matchesCategory = p.categoryId === categoryId;
-            const matchesBusinessType = p.businessType === categoryId;
-            if (!matchesCategory && !matchesBusinessType) return false;
+            const matchesBusinessType = p.businessType?.toLowerCase() === catLower;
+            const matchesCategoryAlias = 
+                (catLower === 'produce' || catLower === 'farm-produce') && 
+                (p.businessType === 'crop' || p.businessType === 'livestock' || p.categoryName?.toLowerCase().includes('produce') || p.categoryName?.toLowerCase().includes('chicken') || p.categoryName?.toLowerCase().includes('egg'));
+
+            if (!matchesCategory && !matchesBusinessType && !matchesCategoryAlias) return false;
         }
 
         // Filter by search term if present
@@ -64,19 +82,20 @@ function ProductListContent({ initialProducts, categories }: ProductListContentP
             if (!matchesSearch) return false;
         }
 
-        // Hide assets from customers
-        if (p.businessType === 'asset' && !isAdminOrManager) return false;
-
-        // Hide hidden products from customers
-        if (p.showInApp === false && !isAdminOrManager) return false;
+        // Strictly hide inactive, hidden, and asset products from public shop for ALL users (including admins)
+        if (isProductInactiveOrHidden(p)) {
+            return false;
+        }
 
         return true;
     });
 
     const categoryDisplayName = categoryId
-        ? categories.find(c => c.id === categoryId)?.name ||
-        products.find(p => p.categoryId === categoryId || p.businessType === categoryId)?.categoryName ||
-        categoryId.charAt(0).toUpperCase() + categoryId.slice(1)
+        ? (isProduceCategory 
+            ? 'Farm Produce & Free-Range Poultry' 
+            : categories.find(c => c.id === categoryId)?.name ||
+              products.find(p => p.categoryId === categoryId || p.businessType === categoryId)?.categoryName ||
+              categoryId.charAt(0).toUpperCase() + categoryId.slice(1))
         : 'All Products';
 
     const headerTitle = viewId
@@ -104,6 +123,39 @@ function ProductListContent({ initialProducts, categories }: ProductListContentP
     return (
         <div className="flex-1">
             <OrderSuccessMessage />
+
+            {/* Shop Top Hero Banner Image - Rendered FIRST at the top of the shop */}
+            <div className="relative rounded-3xl overflow-hidden mb-8 shadow-xl border border-gray-100 dark:border-gray-800">
+                <div className="relative h-64 sm:h-72 w-full">
+                    <Image
+                        src={isProduceCategory ? "/images/farm-produce-banner.jpg" : "/images/vermicompost-banner.jpg"}
+                        alt={isProduceCategory ? "Farm Produce & Free-Range Poultry" : "Vermicompost & Garden Marketplace"}
+                        fill
+                        className="object-cover"
+                        priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/60 to-transparent" />
+                    <div className="absolute inset-0 p-6 sm:p-10 flex flex-col justify-center max-w-xl text-white">
+                        <span className="inline-flex items-center gap-1.5 bg-[#2D5A27] text-white px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3 w-fit shadow-md">
+                            {isProduceCategory ? <Bird className="w-3.5 h-3.5" /> : <Sprout className="w-3.5 h-3.5" />}
+                            {isProduceCategory ? "100% Organic & Free-Range" : "Certified Organic Soil & Inputs"}
+                        </span>
+                        <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight mb-2">
+                            {isProduceCategory ? "Farm Produce & Pasture Poultry" : "Vermicompost & Garden Marketplace"}
+                        </h2>
+                        <p className="text-sm sm:text-base text-gray-200 leading-relaxed font-normal">
+                            {isProduceCategory 
+                                ? "Fresh seasonal vegetables harvested daily, 180-day pasture-raised local country chicken (Bhale), and fresh nutrient-rich farm eggs."
+                                : "Proprietary 90-day cured organic castings, live Eisenia fetida breeding wrigglers, breathable grow bags, handcraft tools, and natural biopesticides."}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Category Filter Selection - Rendered SECOND (After Banner Image) */}
+            <div className="mb-8">
+                <CategoryFilter categories={categories} />
+            </div>
 
             <div className="flex flex-col gap-2 mb-6">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline gap-4">

@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { getAuth, signInWithEmailAndPassword, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, collection, query, where, getDocs, deleteDoc, doc, connectFirestoreEmulator } from 'firebase/firestore';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 
@@ -20,6 +20,11 @@ const firebaseConfig = {
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === 'true') {
+    connectFirestoreEmulator(db, '127.0.0.1', 8080);
+    connectAuthEmulator(auth, 'http://127.0.0.1:9099');
+}
 
 /**
  * Get Firebase UIDs for test users

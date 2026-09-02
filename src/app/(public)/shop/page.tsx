@@ -12,22 +12,27 @@ import WhatsAppOptInModal from "@/components/shop/WhatsAppOptInModal";
 
 export default async function ShopPage() {
     // Fetch all products and categories at build time/request time
-    const [products, categories] = await Promise.all([
+    const [allProducts, categories] = await Promise.all([
         ProductService.getAllProducts(),
         CategoryService.getActiveCategories()
     ]);
 
-    return (
-        <div className="min-h-screen bg-[#FCF9F1] dark:bg-gray-900 py-8 md:py-12">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex flex-col gap-8">
-                    <Suspense fallback={<div className="w-full bg-white dark:bg-gray-800 rounded-xl h-20 animate-pulse" />}>
-                        <CategoryFilter categories={categories} />
-                    </Suspense>
+    // Filter out inactive products, assets, and products hidden from app
+    const products = allProducts.filter(p => 
+        p.isActive !== false && 
+        (p as any).isActive !== 'false' && 
+        (p as any).status !== 'inactive' && 
+        p.showInApp !== false && 
+        p.businessType !== 'asset'
+    );
 
-                    {/* Product Grid - Handles filtering client-side */}
+    return (
+        <div className="min-h-screen bg-[#FCF9F1] dark:bg-gray-900 py-6 md:py-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <Suspense fallback={<div className="w-full bg-white dark:bg-gray-800 rounded-2xl h-64 animate-pulse" />}>
+                    {/* Product List renders Shop Hero Banner FIRST, CategoryFilter SECOND, and Product Grid THIRD */}
                     <ProductList initialProducts={products} categories={categories} />
-                </div>
+                </Suspense>
             </div>
 
             <WhatsAppOptInModal />
