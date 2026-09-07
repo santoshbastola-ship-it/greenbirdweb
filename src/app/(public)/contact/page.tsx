@@ -10,7 +10,7 @@ export default function ContactPage() {
                     <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-800">
                         <div className="relative h-72 sm:h-96 w-full">
                             <Image
-                                src="/images/contact-banner.jpg"
+                                src="/images/farm-stay-banner.jpg"
                                 alt="Contact Greenbird Homestead in Duwakot, Bhaktapur"
                                 fill
                                 className="object-cover"

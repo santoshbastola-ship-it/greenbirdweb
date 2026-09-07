@@ -25,7 +25,7 @@ export default function AboutPage() {
                                     Our Story &amp; Philosophy
                                 </h1>
                                 <p className="text-base sm:text-lg text-gray-200 leading-relaxed">
-                                    Engineering a better way to eat, from our living soil in Duwakot, Bhaktapur to your home.
+                                    Engineering a holistic ecosystem for healthy, happy, and sustainable living—from the soil in Duwakot to your home.
                                 </p>
                                 <div className="mt-4 flex items-center gap-2 text-xs font-medium text-amber-300">
                                     <MapPin className="w-4 h-4 text-emerald-400" />
@@ -44,14 +44,14 @@ export default function AboutPage() {
                         <div className="order-2 md:order-1">
                             <h2 className="text-3xl md:text-4xl font-bold text-[#2D5A27] mb-8">The Founder’s Story: From Code to Compost</h2>
                             <div className="space-y-6 text-gray-700 leading-relaxed text-lg">
-                                <blockquote className="border-l-4 border-[#5C4033] pl-6 italic text-[#2D5A27] py-2">
-                                    "Most people ask why an IT professional would spend his weekends in a chicken coop. The answer is simple: Integrity."
+                                <blockquote className="border-l-4 border-[#FFBF00] pl-6 italic text-[#2E8B57] py-2">
+                                    "Most people ask why a tech professional would spend his weekends analyzing soil health and building chicken coops. The answer is simple: Integrity and Holistic Living."
                                 </blockquote>
                                 <p>
-                                    I spent years building digital systems where logic and quality mattered. When I looked at the food system in our cities, I saw a lack of that same logic. We were eating "fast" food that took shortcuts.
+                                    I spent years building digital systems where logic, quality, and architecture mattered. When I looked at our modern lifestyle—the food system, our living spaces, and our connection to nature—I saw a lack of that same logic. We were eating "fast" food, living in concrete boxes, and disconnecting from the earth.
                                 </p>
                                 <p>
-                                    Greenbird Homestead was born from a desire to apply that same professional precision to the soil. We aren&apos;t just farming; we are engineering a better way to eat.
+                                    Greenbird Homestead was born from a desire to apply professional precision to our well-being. We aren&apos;t just farming; we are engineering an interconnected ecosystem designed for a healthier and happier life.
                                 </p>
                             </div>
                         </div>
@@ -73,30 +73,30 @@ export default function AboutPage() {
             <section className="py-20 bg-white px-4">
                 <div className="max-w-7xl mx-auto">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-5xl font-bold text-[#2D5A27] mb-6">The Greenbird Philosophy: Why We Do &quot;Slow Food&quot;</h2>
+                        <h2 className="text-3xl md:text-5xl font-bold text-[#2E8B57] mb-6">Our Ecosystem: Healthy &amp; Happy Living</h2>
                         <p className="text-gray-600 max-w-3xl mx-auto text-lg italic">
-                            At Greenbird, we believe that nature cannot be &quot;overclocked.&quot; While commercial farms use chemicals to speed up growth, we embrace the Slow-Growth Cycle.
+                            At Greenbird, we believe true wellness comes from an interconnected life. Our business verticals are not separate entities; they are branches of the same tree, working together to nourish you, your environment, and your soul.
                         </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <PhilosophyCard
-                            title="180-Day Bhale"
-                            description="Our roosters aren't raised in 40 days. They live for 6 months under the sun, developing natural immunity and a rich, deep flavor."
-                            icon="🐓"
-                            tagline="Quality over speed"
+                            title="Nourish the Body"
+                            description="Our Farm Produce and slow-grown poultry provide nutrient-dense, chemical-free food. Quality over speed ensures every bite is pure and natural."
+                            icon="🌾"
+                            tagline="Farm-to-Table Food"
                         />
                         <PhilosophyCard
-                            title="Chemical-Free Soil"
-                            description="We use vermicompost and traditional Nepali farming wisdom to ensure every vegetable is as clean as the air in Duwakot."
+                            title="Nurture the Earth"
+                            description="Through our Eco-Marketplace, vermicompost, and bio-tonics, we equip you to grow your own green spaces sustainably, restoring the soil we rely on."
                             icon="🌱"
-                            tagline="Pure by design"
+                            tagline="Agri-Inputs & Sustainability"
                         />
                         <PhilosophyCard
-                            title="The Happy Bird Rule"
-                            description="Our chickens have 2,000 sq. ft. of outdoor ground to roam. Happy birds produce the most nutrient-dense eggs."
-                            icon="🥚"
-                            tagline="Welfare equals nutrition"
+                            title="Restore the Soul"
+                            description="Our upcoming traditional Nepali Farm Stays offer a sanctuary from city life. Experience peace, practice yoga, and reconnect with authentic village life."
+                            icon="🏡"
+                            tagline="Agritourism & Retreats"
                         />
                     </div>
                 </div>
@@ -119,13 +119,13 @@ export default function AboutPage() {
                             <h2 className="text-3xl md:text-4xl font-bold mb-8">A Bridge Between Tech and Tradition</h2>
                             <div className="space-y-6 text-gray-100/90 leading-relaxed text-lg">
                                 <p>
-                                    We use modern tools—like our <span className="text-[#F5E6D3] font-semibold">Farm Management App</span>—to track every bird&apos;s health and every harvest&apos;s yield.
+                                    We leverage <span className="text-[#F5E6D3] font-semibold">AI-enabled technology</span> to meticulously track every bird&apos;s health and every harvest&apos;s yield, blending modern innovation with traditional care.
                                 </p>
                                 <p>
-                                    This <span className="text-[#F5E6D3] font-semibold">&quot;Data-Driven Farming&quot;</span> allows us to be efficient with our small team while ensuring 100% transparency for you.
+                                    As <span className="text-[#F5E6D3] font-semibold">responsible stewards</span> of the land, our small team is deeply committed to ethical farming practices and ensuring 100% transparency for you.
                                 </p>
                                 <p className="bg-white/10 p-6 rounded-xl border border-white/20">
-                                    When you buy from us, you aren&apos;t just a customer; you&apos;re part of a <span className="text-[#F5E6D3] font-bold">transparent food ecosystem</span>.
+                                    When you buy from us, you aren&apos;t just a customer; you&apos;re partnering with people who genuinely <span className="text-[#F5E6D3] font-bold">care about our ecosystem</span> and the food on your table.
                                 </p>
                             </div>
                         </div>
@@ -138,10 +138,10 @@ export default function AboutPage() {
 
 function PhilosophyCard({ title, description, icon, tagline }: { title: string, description: string, icon: string, tagline: string }) {
     return (
-        <div className="bg-[#FCF9F1] p-10 rounded-3xl border border-[#2D5A27]/5 hover:shadow-2xl transition-all duration-300 group">
+        <div className="bg-[#FCF9F1] p-10 rounded-3xl border border-[#2E8B57]/10 hover:shadow-2xl transition-all duration-300 group">
             <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">{icon}</div>
-            <h3 className="text-2xl font-bold text-[#2D5A27] mb-2">{title}</h3>
-            <span className="text-[#5C4033] text-xs font-bold uppercase tracking-widest mb-4 block">{tagline}</span>
+            <h3 className="text-2xl font-bold text-[#2E8B57] mb-2">{title}</h3>
+            <span className="text-[#FF8F00] text-xs font-bold uppercase tracking-widest mb-4 block">{tagline}</span>
             <p className="text-gray-600 leading-relaxed">{description}</p>
         </div>
     );

@@ -18,7 +18,9 @@ import {
   ChevronRight,
   Star,
   Clock,
-  Heart
+  Heart,
+  Recycle,
+  Leaf
 } from "lucide-react";
 import ProductCard from "@/components/ui/ProductCard";
 import { Product } from "@/types";
@@ -104,8 +106,8 @@ export default function Home() {
             className="object-cover object-center scale-105 animate-pulse-subtle"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/65 to-black/35 z-10" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1f3e1b]/80 via-transparent to-black/30 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1f3e1b]/50 via-transparent to-transparent z-10" />
         </div>
 
         <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-36 flex flex-col justify-center">
@@ -132,7 +134,7 @@ export default function Home() {
                 href="/shop"
                 className="bg-[#2D5A27] hover:bg-[#23471f] text-white font-bold py-4 px-8 rounded-full transition-all duration-300 flex items-center justify-center gap-3 shadow-xl hover:shadow-2xl hover:-translate-y-0.5 active:translate-y-0 text-base"
               >
-                <span>Shop Organic Inputs &amp; Produce</span>
+                <span>Visit our Eco Marketplace</span>
                 <ArrowRight className="h-5 w-5" />
               </Link>
               <Link
@@ -144,75 +146,12 @@ export default function Home() {
               </Link>
             </div>
 
-            {/* Location Tag */}
-            <div className="mt-8 flex items-center gap-2 text-xs font-medium text-gray-300">
-              <MapPin className="w-4 h-4 text-emerald-400" />
-              <span>Duwakot, Bhaktapur, Nepal • Farm Direct Delivery Across Kathmandu Valley &amp; Freight</span>
-            </div>
+            {/* Location Tag Removed as requested */}
           </div>
         </div>
       </section>
 
-      {/* 3. Trust & Scale Impact Bar */}
-      <section className="relative z-30 -mt-8 sm:-mt-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 p-6 sm:p-8 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-100 dark:divide-gray-800">
-          
-          {/* Metric 1 */}
-          <div className="flex items-center gap-5 pt-4 md:pt-0 md:px-4 first:pt-0">
-            <div className="w-14 h-14 rounded-2xl bg-[#2D5A27]/10 dark:bg-green-950/40 flex items-center justify-center text-[#2D5A27] dark:text-green-400 shrink-0">
-              <Sprout className="w-7 h-7" />
-            </div>
-            <div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                10,000 kg/mo
-              </div>
-              <div className="text-sm font-semibold text-[#2D5A27] dark:text-green-400">
-                Certified Vermicompost Output
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                90-day organic cured castings
-              </div>
-            </div>
-          </div>
 
-          {/* Metric 2 */}
-          <div className="flex items-center gap-5 pt-6 md:pt-0 md:px-4">
-            <div className="w-14 h-14 rounded-2xl bg-[#5C4033]/10 dark:bg-amber-950/40 flex items-center justify-center text-[#5C4033] dark:text-amber-400 shrink-0">
-              <ShieldCheck className="w-7 h-7" />
-            </div>
-            <div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                100% Pure
-              </div>
-              <div className="text-sm font-semibold text-[#5C4033] dark:text-amber-400">
-                <em>Eisenia fetida</em> Live Cultures
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                High-reproduction red wrigglers
-              </div>
-            </div>
-          </div>
-
-          {/* Metric 3 */}
-          <div className="flex items-center gap-5 pt-6 md:pt-0 md:px-4">
-            <div className="w-14 h-14 rounded-2xl bg-[#2D5A27]/10 dark:bg-green-950/40 flex items-center justify-center text-[#2D5A27] dark:text-green-400 shrink-0">
-              <Truck className="w-7 h-7" />
-            </div>
-            <div>
-              <div className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                Nationwide
-              </div>
-              <div className="text-sm font-semibold text-[#2D5A27] dark:text-green-400">
-                Delivery via Cargo &amp; Freight
-              </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Valley doorstep &amp; bulk shipping
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
 
       {/* 4. The Three Business Verticals Section (Redesigned & Expanded Cards) */}
       <section className="py-20 md:py-28 bg-[#FCF9F1] dark:bg-gray-950">
@@ -220,19 +159,19 @@ export default function Home() {
           
           <div className="text-center mb-16 max-w-3xl mx-auto">
             <span className="text-[#2D5A27] dark:text-green-400 font-bold uppercase tracking-widest text-xs">
-              Explore Our Core Pillars
+              What We Offer
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mt-2">
-              Three Verticals, One <span className="text-[#2D5A27] dark:text-green-400">Pristine Quality</span>
+              Our Core <span className="text-[#2D5A27] dark:text-green-400">Services</span>
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mt-4 text-base sm:text-lg leading-relaxed">
-              From commercial organic soil enrichers and farm-fresh produce to an authentic rural retreat in Duwakot, Bhaktapur.
+              Discover organic soil enrichers, fresh farm produce, and an authentic rural retreat in Duwakot.
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
             
-            {/* Card 1: Vermicompost & Garden Marketplace */}
+            {/* Card 1: Organic Soil & Inputs */}
             <div className="group bg-white dark:bg-gray-900 rounded-3xl border border-gray-200/80 dark:border-gray-800 shadow-md hover:shadow-2xl transition-all duration-500 flex flex-col overflow-hidden transform hover:-translate-y-1">
               <div className="relative h-64 w-full overflow-hidden bg-gray-100">
                 <Image
@@ -241,43 +180,49 @@ export default function Home() {
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute top-4 left-4 bg-[#2D5A27] text-white text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-md">
-                  Organic Soil &amp; Inputs
-                </div>
-                <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md text-white text-xs px-3.5 py-2 rounded-xl flex justify-between items-center">
-                  <span>Castings @ Rs 25/kg</span>
-                  <span className="font-bold text-emerald-300">Bulk 25kg HDPE @ Rs 750</span>
-                </div>
               </div>
 
               <div className="p-7 flex-1 flex flex-col justify-between">
                 <div>
+                  <div className="inline-block bg-[#2D5A27]/10 text-[#2D5A27] dark:text-green-400 text-xs font-bold px-3 py-1 rounded-full mb-3">Eco Marketplace</div>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-[#2D5A27] dark:group-hover:text-green-400 transition-colors">
-                    Vermicompost &amp; Garden Marketplace
+                    Organic Soil &amp; Inputs
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-5">
-                    Proprietary organic castings, live <em>Eisenia fetida</em> wrigglers, breathable grow bags, handcraft tools, and natural biopesticides.
+                    Revitalize your terrace garden with our premium vermicompost and sustainable gardening essentials.
                   </p>
-
-                  <div className="bg-[#FCF9F1] dark:bg-gray-800/60 rounded-2xl p-4 border border-[#2D5A27]/10 dark:border-gray-700 text-xs space-y-2 mb-6">
-                    <div className="font-bold text-[#2D5A27] dark:text-green-400 uppercase tracking-wider text-[11px] text-center">Packaging &amp; Sizing Matrix</div>
-                    <div className="flex justify-between text-gray-700 dark:text-gray-300"><span>Retail Pouches:</span><span className="font-semibold text-gray-900 dark:text-white">1kg &amp; 2kg</span></div>
-                    <div className="flex justify-between text-gray-700 dark:text-gray-300"><span>Terrace Garden Packs:</span><span className="font-semibold text-gray-900 dark:text-white">5kg &amp; 10kg</span></div>
-                    <div className="flex justify-between text-gray-700 dark:text-gray-300 font-bold border-t border-gray-200 dark:border-gray-700 pt-1.5"><span className="text-[#5C4033] dark:text-amber-400">Bulk Professional Sack:</span><span className="text-[#2D5A27] dark:text-green-400">25kg HDPE @ Rs. 750</span></div>
-                  </div>
+                  
+                  <ul className="space-y-3 text-sm text-gray-700 dark:text-gray-300 mb-6">
+                    <li className="flex items-center gap-3">
+                      <Sprout className="w-5 h-5 text-[#2D5A27] dark:text-green-400" />
+                      <span className="font-medium">Premium Vermicompost</span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <Bird className="w-5 h-5 text-[#2D5A27] dark:text-green-400" />
+                      <span className="font-medium">Live Earthworm Cultures</span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <ShieldCheck className="w-5 h-5 text-[#2D5A27] dark:text-green-400" />
+                      <span className="font-medium">Natural Biopesticides</span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <Sprout className="w-5 h-5 text-[#2D5A27] dark:text-green-400" />
+                      <span className="font-medium">Agricultural Tools &amp; Essentials</span>
+                    </li>
+                  </ul>
                 </div>
 
                 <Link
                   href="/shop"
                   className="w-full bg-[#2D5A27] hover:bg-[#23471f] text-white font-bold py-3.5 px-6 rounded-xl text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-md group-hover:shadow-lg"
                 >
-                  <span>Explore Garden Inputs</span>
+                  <span>Shop Gardening Needs</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>
 
-            {/* Card 2: Farm Produce & Free-Range Poultry */}
+            {/* Card 2: Fresh Farm Produce */}
             <div className="group bg-white dark:bg-gray-900 rounded-3xl border border-gray-200/80 dark:border-gray-800 shadow-md hover:shadow-2xl transition-all duration-500 flex flex-col overflow-hidden transform hover:-translate-y-1">
               <div className="relative h-64 w-full overflow-hidden bg-gray-100">
                 <Image
@@ -286,43 +231,45 @@ export default function Home() {
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute top-4 left-4 bg-[#5C4033] text-white text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-md">
-                  Fresh &amp; Pasture Raised
-                </div>
-                <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md text-white text-xs px-3.5 py-2 rounded-xl flex justify-between items-center">
-                  <span>Weekly Subscription</span>
-                  <span className="font-bold text-amber-300">180-Day Free Range</span>
-                </div>
               </div>
 
               <div className="p-7 flex-1 flex flex-col justify-between">
                 <div>
+                  <div className="inline-block bg-[#5C4033]/10 text-[#5C4033] dark:text-amber-400 text-xs font-bold px-3 py-1 rounded-full mb-3">Farm Produce</div>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-[#5C4033] dark:group-hover:text-amber-400 transition-colors">
-                    Farm Produce &amp; Free-Range Poultry
+                    Fresh Farm Produce
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-5">
-                    Fresh seasonal vegetables harvested daily, 180-day pasture-raised local country chicken (Bhale), and nutrient-rich farm eggs.
+                    Nourish your family with fresh, chemical-free vegetables and pasture-raised local poultry.
                   </p>
 
-                  <div className="bg-[#FCF9F1] dark:bg-gray-800/60 rounded-2xl p-4 border border-[#5C4033]/10 dark:border-gray-700 text-xs space-y-2 mb-6">
-                    <div className="font-bold text-[#5C4033] dark:text-amber-400 uppercase tracking-wider text-[11px] text-center">Subscription Benefits</div>
-                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300"><span>🥚</span><span className="font-semibold">Weekly &amp; Monthly Egg Crate Delivery</span></div>
-                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300"><span>🐓</span><span className="font-semibold">Authentic Local Country Bhale</span></div>
-                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300"><span>🚚</span><span className="font-semibold">Scheduled Doorstep Valley Delivery</span></div>
-                  </div>
+                  <ul className="space-y-3 text-sm text-gray-700 dark:text-gray-300 mb-6">
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-[#5C4033] dark:text-amber-400" />
+                      <span className="font-medium">Seasonal Vegetables</span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-[#5C4033] dark:text-amber-400" />
+                      <span className="font-medium">Free-Range Country Chicken</span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-[#5C4033] dark:text-amber-400" />
+                      <span className="font-medium">Farm-Fresh Eggs</span>
+                    </li>
+                  </ul>
                 </div>
 
                 <Link
                   href="/shop?category=produce"
                   className="w-full bg-[#5C4033] hover:bg-[#432e25] text-white font-bold py-3.5 px-6 rounded-xl text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-md group-hover:shadow-lg"
                 >
-                  <span>Shop Farm Produce</span>
+                  <span>Shop Fresh Produce</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>
 
-            {/* Card 3: Agritourism & Traditional Village Stay */}
+            {/* Card 3: Authentic Village Stay */}
             <div className="group bg-white dark:bg-gray-900 rounded-3xl border border-gray-200/80 dark:border-gray-800 shadow-md hover:shadow-2xl transition-all duration-500 flex flex-col overflow-hidden transform hover:-translate-y-1">
               <div className="relative h-64 w-full overflow-hidden bg-gray-100">
                 <Image
@@ -331,37 +278,43 @@ export default function Home() {
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute top-4 left-4 bg-[#2D5A27] text-white text-xs font-bold px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-md">
-                  Rural Retreat &amp; Tours
-                </div>
-                <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md text-white text-xs px-3.5 py-2 rounded-xl flex justify-between items-center">
-                  <span>Duwakot, Bhaktapur</span>
-                  <span className="font-bold text-emerald-300">Organic Farm Dining</span>
-                </div>
               </div>
 
               <div className="p-7 flex-1 flex flex-col justify-between">
                 <div>
+                  <div className="inline-block bg-[#2D5A27]/10 text-[#2D5A27] dark:text-green-400 text-xs font-bold px-3 py-1 rounded-full mb-3">Farm Stay</div>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-[#2D5A27] dark:group-hover:text-green-400 transition-colors">
-                    Agritourism &amp; Traditional Village Stay
+                    Authentic Village Stay
                   </h3>
                   <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-5">
-                    Authentic mud-brick Nepali architecture, wood-fired organic dining, hands-on vermiculture tours, and peaceful weekend getaways.
+                    Escape the city and experience traditional Nepali farm life with organic dining and peaceful surroundings.
                   </p>
 
-                  <div className="bg-[#FCF9F1] dark:bg-gray-800/60 rounded-2xl p-4 border border-[#2D5A27]/10 dark:border-gray-700 text-xs space-y-2 mb-6">
-                    <div className="font-bold text-[#2D5A27] dark:text-green-400 uppercase tracking-wider text-[11px] text-center">Village Experience</div>
-                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300"><span>🏡</span><span className="font-semibold">Traditional Mud-Brick Cottage</span></div>
-                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300"><span>🍲</span><span className="font-semibold">Wood-Fired Organic Meals</span></div>
-                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300"><span>🧑‍🌾</span><span className="font-semibold">Guided Vermiculture &amp; Farm Tours</span></div>
-                  </div>
+                  <ul className="space-y-3 text-sm text-gray-700 dark:text-gray-300 mb-6">
+                    <li className="flex items-center gap-3">
+                      <HomeIcon className="w-5 h-5 text-[#2D5A27] dark:text-green-400" />
+                      <span className="font-medium">Mud-Brick Cottages</span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <Heart className="w-5 h-5 text-[#2D5A27] dark:text-green-400" />
+                      <span className="font-medium">Organic Farm Dining</span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <MapPin className="w-5 h-5 text-[#2D5A27] dark:text-green-400" />
+                      <span className="font-medium">Guided Farm Tours</span>
+                    </li>
+                    <li className="flex items-center gap-3">
+                      <MapPin className="w-5 h-5 text-[#2D5A27] dark:text-green-400" />
+                      <span className="font-medium">Changu Narayan &amp; City Tours (Vehicle Provided)</span>
+                    </li>
+                  </ul>
                 </div>
 
                 <Link
                   href="/booking"
                   className="w-full bg-[#2D5A27] hover:bg-[#23471f] text-white font-bold py-3.5 px-6 rounded-xl text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-md group-hover:shadow-lg"
                 >
-                  <span>Book Village Stay</span>
+                  <span>Book Your Stay</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
@@ -422,92 +375,41 @@ export default function Home() {
               Rooted in Duwakot, Bhaktapur
             </span>
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight mt-2">
-              Our Vertical <span className="text-[#2D5A27] dark:text-green-400">Transformation Stories</span>
+              Nurturing You, <span className="text-[#2D5A27] dark:text-green-400">Your Garden, and Your Soul</span>
             </h2>
             <p className="text-gray-600 dark:text-gray-300 mt-3 text-base sm:text-lg">
-              Explore how each of our three core business verticals delivers chemical-free purity, quality, and traditional village charm.
+              Discover how our holistic approach to organic farming and traditional living can bring natural purity to your daily life, enrich your soil, and provide a peaceful sanctuary away from the city.
             </p>
           </div>
 
           {/* 3 Story Feature Grid */}
           <div className="space-y-16">
 
-            {/* Vertical Story 1: Vermicompost 90-Day Cycle */}
+            {/* Story 1: Nourish the Body */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center bg-white dark:bg-gray-900 p-8 sm:p-12 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800">
               <div>
-                <div className="inline-flex items-center gap-2 bg-[#2D5A27]/10 text-[#2D5A27] dark:text-green-400 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
-                  <Sprout className="w-4 h-4" />
-                  <span>Vertical 1: Vermiculture &amp; Soil</span>
-                </div>
-                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                  90 Days of Biological Vermicomposting
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed mb-6">
-                  Produced on our terrace land in Duwakot, Bhaktapur, our organic castings undergo a complete 90-day biological digestion process powered by 100% pure <em>Eisenia fetida</em> red wrigglers for peak microbial richness.
-                </p>
-                <div className="space-y-3 mb-8">
-                  <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-200">
-                    <CheckCircle2 className="w-5 h-5 text-[#2D5A27] dark:text-green-400 shrink-0" />
-                    <span><strong>100% Chemical-Free Guarantee:</strong> Zero synthetic additives.</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-200">
-                    <CheckCircle2 className="w-5 h-5 text-[#2D5A27] dark:text-green-400 shrink-0" />
-                    <span><strong>90-Day Cured Castings:</strong> Aged to provide immediate nutrient availability.</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-200">
-                    <CheckCircle2 className="w-5 h-5 text-[#2D5A27] dark:text-green-400 shrink-0" />
-                    <span><strong>Bulk HDPE 25kg Sacks:</strong> Professional bags @ Rs 750 for commercial growers.</span>
-                  </div>
-                </div>
-                <Link
-                  href="/shop"
-                  className="inline-flex items-center gap-2 bg-[#2D5A27] hover:bg-[#23471f] text-white font-bold py-3.5 px-6 rounded-xl text-sm transition-all shadow-md"
-                >
-                  <span>Explore Soil Inputs &amp; Worms</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-
-              <div className="relative h-80 sm:h-96 rounded-2xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700">
-                <Image
-                  src="/images/duwakot-heritage.jpg"
-                  alt="Vermiculture Beds in Duwakot"
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md p-4 rounded-xl text-xs">
-                  <span className="font-bold text-[#2D5A27] dark:text-green-400 block">Duwakot Homestead Beds</span>
-                  <span className="text-gray-600 dark:text-gray-300">100% Pure Eisenia fetida breeding cultures</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Vertical Story 2: Farm Produce & Poultry */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center bg-white dark:bg-gray-900 p-8 sm:p-12 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 lg:flex-row-reverse">
-              <div className="lg:order-2">
                 <div className="inline-flex items-center gap-2 bg-[#5C4033]/10 text-[#5C4033] dark:text-amber-400 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
                   <Bird className="w-4 h-4" />
-                  <span>Vertical 2: Farm Produce &amp; Poultry</span>
+                  <span>Nourish the Body</span>
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                  180-Day Free-Range Country Poultry &amp; Fresh Harvest
+                  Farm Produce &amp; Free-Range Country Poultry
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed mb-6">
-                  Our local country chickens (Bhale) are pasture-raised for 180 full days across open fields in Duwakot, alongside chemical-free seasonal organic vegetables and nutrient-dense farm eggs.
+                  Our farm produce and slow-grown poultry provide nutrient-dense, chemical-free food. Quality over speed ensures every bite is pure, natural, and directly nourishes your body with the best of nature. We pasture-raise our local country chickens (Bhale) for 180 full days across open fields in Duwakot, alongside chemical-free seasonal organic vegetables.
                 </p>
                 <div className="space-y-3 mb-8">
                   <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-200">
                     <CheckCircle2 className="w-5 h-5 text-[#5C4033] dark:text-amber-400 shrink-0" />
-                    <span><strong>180-Day Pasture-Raised Bhale:</strong> Authentic local country chicken flavor.</span>
+                    <span><strong>180-Day Pasture-Raised Bhale:</strong> Authentic local country chicken flavor, grown slowly for maximum nutrition.</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-200">
                     <CheckCircle2 className="w-5 h-5 text-[#5C4033] dark:text-amber-400 shrink-0" />
-                    <span><strong>Chemical-Free Daily Harvest:</strong> Fresh vegetables delivered straight from Duwakot.</span>
+                    <span><strong>Chemical-Free Daily Harvest:</strong> Fresh vegetables delivered straight from Duwakot, free of synthetic pesticides.</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-200">
                     <CheckCircle2 className="w-5 h-5 text-[#5C4033] dark:text-amber-400 shrink-0" />
-                    <span><strong>Egg Box Subscriptions:</strong> Scheduled weekly &amp; monthly doorstep deliveries.</span>
+                    <span><strong>Farm-Fresh Egg Subscriptions:</strong> Scheduled weekly &amp; monthly doorstep deliveries for your daily protein needs.</span>
                   </div>
                 </div>
                 <Link
@@ -519,7 +421,7 @@ export default function Home() {
                 </Link>
               </div>
 
-              <div className="relative h-80 sm:h-96 rounded-2xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 lg:order-1">
+              <div className="relative h-80 sm:h-96 rounded-2xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700">
                 <Image
                   src="/images/poultry-story.jpg"
                   alt="Free-range local country chickens"
@@ -534,31 +436,82 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Vertical Story 3: Agritourism & Village Stay */}
+            {/* Story 2: Nurture the Soil */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center bg-white dark:bg-gray-900 p-8 sm:p-12 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 lg:flex-row-reverse">
+              <div className="lg:order-2">
+                <div className="inline-flex items-center gap-2 bg-[#2D5A27]/10 text-[#2D5A27] dark:text-green-400 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
+                  <Sprout className="w-4 h-4" />
+                  <span>Nurture the Soil</span>
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                  Eco-Marketplace for Sustainable Gardening
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed mb-6">
+                  Our Eco-Marketplace provides everything you need to cultivate your own green spaces sustainably. It begins with our premium, 90-day cured organic vermicompost, powered by 100% pure <em>Eisenia fetida</em> red wrigglers. Beyond soil enrichers, we offer a complete ecosystem of gardening tools, breathable grow bags, and natural bio-pesticides to empower you to grow your own food with confidence.
+                </p>
+                <div className="space-y-3 mb-8">
+                  <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-200">
+                    <CheckCircle2 className="w-5 h-5 text-[#2D5A27] dark:text-green-400 shrink-0" />
+                    <span><strong>Premium 90-Day Vermicompost:</strong> Nutrient-dense organic castings to instantly restore your soil's vitality.</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-200">
+                    <CheckCircle2 className="w-5 h-5 text-[#2D5A27] dark:text-green-400 shrink-0" />
+                    <span><strong>Natural Bio-Pesticides &amp; Tonics:</strong> 100% chemical-free pest protection to preserve soil microbiology.</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-200">
+                    <CheckCircle2 className="w-5 h-5 text-[#2D5A27] dark:text-green-400 shrink-0" />
+                    <span><strong>Essential Gardening Tools:</strong> High-quality grow bags and tools to easily kickstart your terrace garden.</span>
+                  </div>
+                </div>
+                <Link
+                  href="/shop"
+                  className="inline-flex items-center gap-2 bg-[#2D5A27] hover:bg-[#23471f] text-white font-bold py-3.5 px-6 rounded-xl text-sm transition-all shadow-md"
+                >
+                  <span>Explore Soil Inputs &amp; Worms</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+
+              <div className="relative h-80 sm:h-96 rounded-2xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 lg:order-1">
+                <Image
+                  src="/images/duwakot-heritage.jpg"
+                  alt="Vermiculture Beds in Duwakot"
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md p-4 rounded-xl text-xs">
+                  <span className="font-bold text-[#2D5A27] dark:text-green-400 block">Duwakot Homestead Beds</span>
+                  <span className="text-gray-600 dark:text-gray-300">100% Pure Eisenia fetida breeding cultures</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Story 3: Restore the Soul */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center bg-white dark:bg-gray-900 p-8 sm:p-12 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800">
               <div>
                 <div className="inline-flex items-center gap-2 bg-[#2D5A27]/10 text-[#2D5A27] dark:text-green-400 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider mb-4">
                   <HomeIcon className="w-4 h-4" />
-                  <span>Vertical 3: Agritourism &amp; Village Stay</span>
+                  <span>Restore the Soul</span>
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">
                   Authentic Duwakot Village Homestead Experience
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed mb-6">
-                  Unplug in traditional mud-brick Nepali cottages in Duwakot, Bhaktapur. Enjoy wood-fired organic meals harvested by your own hands and guided farm tours.
+                  Our traditional Nepali Farm Stays offer a sanctuary from city life. Experience peace, practice yoga, and reconnect with authentic village life. Unplug in mud-brick cottages in Duwakot, Bhaktapur, and enjoy wood-fired organic meals harvested by your own hands.
                 </p>
                 <div className="space-y-3 mb-8">
                   <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-200">
                     <CheckCircle2 className="w-5 h-5 text-[#2D5A27] dark:text-green-400 shrink-0" />
-                    <span><strong>Traditional Mud-Brick Architecture:</strong> Authentic rustic Nepali village charm.</span>
+                    <span><strong>Traditional Mud-Brick Architecture:</strong> Authentic rustic Nepali village charm for a peaceful retreat.</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-200">
                     <CheckCircle2 className="w-5 h-5 text-[#2D5A27] dark:text-green-400 shrink-0" />
-                    <span><strong>Wood-Fired Organic Dining:</strong> Farm-to-table traditional meals.</span>
+                    <span><strong>Wood-Fired Organic Dining:</strong> Farm-to-table traditional meals that heal and comfort the soul.</span>
                   </div>
                   <div className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-200">
                     <CheckCircle2 className="w-5 h-5 text-[#2D5A27] dark:text-green-400 shrink-0" />
-                    <span><strong>Guided Farm Tours:</strong> Hands-on vermiculture &amp; agriculture experience.</span>
+                    <span><strong>Guided Farm Tours:</strong> Hands-on vermiculture &amp; agriculture experience to ground yourself.</span>
                   </div>
                 </div>
                 <Link
@@ -590,10 +543,13 @@ export default function Home() {
           {/* Farm Moments Media Carousel */}
           <div className="mt-20">
             <div className="text-center mb-10">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Live Farm Moments &amp; Activities
+              <span className="text-[#2D5A27] dark:text-green-400 font-bold uppercase tracking-widest text-xs block mb-2">
+                Gallery &amp; Experience
+              </span>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
+                Farm Moments &amp; Activities
               </h3>
-              <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">
+              <p className="text-gray-500 dark:text-gray-400 text-sm mt-2 max-w-2xl mx-auto">
                 Real moments captured across our vermiculture beds, poultry fields, and village retreat.
               </p>
             </div>

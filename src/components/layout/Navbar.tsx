@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
-import { Menu, ShoppingCart, User, X, Sprout, Bell, Truck, Package, Store, LogOut, LayoutDashboard, Home, BookOpen, FileText, Phone } from "lucide-react";
+import { Menu, ShoppingCart, User, X, Sprout, Bell, Truck, Package, Store, LogOut, LayoutDashboard, Home, BookOpen, FileText, Phone, Tent } from "lucide-react";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import CartBadge from "./CartBadge";
 import { NotificationService } from "@/services/notification.service";
@@ -20,6 +20,7 @@ export default function Navbar() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const mobileMenuRef = useRef<HTMLDivElement>(null);
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const { user, dbUser, logout } = useAuth();
     const [unreadCount, setUnreadCount] = useState(0);
     const [activeOrderCount, setActiveOrderCount] = useState(0);
@@ -31,13 +32,28 @@ export default function Navbar() {
 
     const links = [
         { href: "/", label: "Home", icon: Home },
-        { href: "/shop", label: "Vermicompost & Shop", icon: Store },
+        { href: "/shop", label: "Eco-Marketplace", icon: Store },
         { href: "/shop?category=produce", label: "Farm Produce", icon: Sprout },
+        { href: "/booking", label: "Farm Stay", icon: Tent },
         { href: "/about", label: "Our Story", icon: BookOpen },
         { href: "/contact", label: "Contact Us", icon: Phone },
     ];
 
-    const isActive = (path: string) => pathname === path;
+    const isActive = (path: string) => {
+        if (path === "/") return pathname === "/";
+        const [basePath, queryStr] = path.split("?");
+        if (pathname !== basePath) return false;
+        if (queryStr) {
+            const params = new URLSearchParams(queryStr);
+            for (const [key, value] of params.entries()) {
+                if (searchParams.get(key) !== value) return false;
+            }
+            return true;
+        } else {
+            if (basePath === "/shop" && searchParams.get("category")) return false;
+            return true;
+        }
+    };
 
     useEffect(() => {
         setIsSearchOpen(false);
